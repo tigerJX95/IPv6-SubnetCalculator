@@ -1,0 +1,75 @@
+import ipaddress
+import unittest
+from ipv6_core import calculate, InputError
+
+
+class CalculatorTests(unittest.TestCase):
+    def test_reference_48_to_64(self):
+        r = calculate("2001:db8:1234::/48", "64")
+        self.assertEqual(str(r.start_address), "2001:db8:1234::")
+        self.assertEqual(str(r.end_address), "2001:db8:1234:ffff:ffff:ffff:ffff:ffff")
+        self.assertEqual(r.subnet_count, 65536)
+        self.assertEqual(r.addresses_per_subnet, 2**64)
+        self.assertEqual(str(r.preview[0]), "2001:db8:1234::/64")
+        self.assertEqual(str(r.preview[1]), "2001:db8:1234:1::/64")
+        self.assertEqual(len(r.preview), 100)
+
+    def test_same_prefix(self):
+        r = calculate("2001:db8:1234::/64", "64")
+        self.assertEqual(r.subnet_count, 1)
+        self.assertEqual(str(r.preview[0]), "2001:db8:1234::/64")
+
+    def test_normalized_input(self):
+        r = calculate("2001:0DB8:1234:5678::1/48", "64")
+        self.assertTrue(r.normalized)
+        self.assertEqual(str(r.network), "2001:db8:1234::/48")
+
+    def test_small_subnets(self):
+        r = calculate("2001:db8::/126", "128")
+        self.assertEqual([str(x) for x in r.preview], [
+            "2001:db8::/128", "2001:db8::1/128", "2001:db8::2/128", "2001:db8::3/128"])
+
+    def test_all_space(self):
+        r = calculate("::/0", "128")
+        self.assertEqual(r.subnet_count, 2**128)
+        self.assertEqual(r.addresses_per_subnet, 1)
+        self.assertEqual(str(r.end_address), "ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff")
+        self.assertEqual(len(r.preview), 100)
+
+    def test_boundary_128(self):
+        r = calculate("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff/128", "128")
+        self.assertEqual(r.start_address, r.end_address)
+        self.assertEqual(r.subnet_count, 1)
+
+    def test_prefix_examples(self):
+        for src, target, expected in [("2001:db8::/32", "48", 65536),
+                                      ("2001:db8::/64", "65", 2),
+                                      ("2001:db8::/56", "64", 256)]:
+            with self.subTest(src=src, target=target):
+                self.assertEqual(calculate(src, target).subnet_count, expected)
+
+    def test_all_small_results_match_stdlib(self):
+        for initial, target in [("2001:db8::/124", 128), ("fd12::/120", 123), ("::/125", 127)]:
+            r = calculate(initial, str(target))
+            expected = list(ipaddress.IPv6Network(initial).subnets(new_prefix=target))
+            self.assertEqual(list(r.preview), expected)
+
+    def test_bad_input(self):
+        invalid = [("", "64"), ("2001:db8::", "64"), ("2001:db8::/129", "129"),
+                   ("gggg::/64", "64"), ("2001:db8::/64", "63"),
+                   ("2001:db8::/64", "abc"), ("2001:db8::/64", "-1"),
+                   ("2001:db8::/64", "129"), ("2001:::db8/64", "64"),
+                   ("2001:db8::/64/65", "65"), ("2001:db8::/64", "")]
+        for a, b in invalid:
+            with self.subTest(a=a, b=b), self.assertRaises(InputError):
+                calculate(a, b)
+
+    def test_preview_limits(self):
+        self.assertEqual(len(calculate("::/0", "128", preview_limit=0).preview), 0)
+        self.assertEqual(len(calculate("::/0", "128", preview_limit=8).preview), 8)
+        with self.assertRaises(ValueError):
+            calculate("::/0", "128", preview_limit=101)
+
+
+if __name__ == "__main__":
+    unittest.main()
