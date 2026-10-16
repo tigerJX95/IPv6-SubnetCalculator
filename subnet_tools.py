@@ -1,5 +1,6 @@
 """子网范围复制与详情导航的独立计算逻辑。"""
 from ipaddress import IPv6Network
+from dataclasses import dataclass
 from ipv6_core import InputError, subnet_at_index, validate_subnet_index
 
 MAX_COPY_RECORDS = 5000
@@ -75,3 +76,31 @@ def visible_selection_counts(selected_indices, visible_indices, highlighted_rang
     highlighted = (sum(1 for n in visible if highlighted_range[0] <= n <= highlighted_range[1])
                    if highlighted_range is not None else 0)
     return selected, highlighted
+
+
+@dataclass(frozen=True)
+class SelectionSummary:
+    count: int
+    first: int | None
+    last: int | None
+    contiguous: bool
+    address_count: int
+    highlighted_on_page: int
+    highlighted_total: int
+
+
+def summarize_selection(selected_indices, visible_indices, addresses_per_subnet: int,
+                        highlighted_range=None) -> SelectionSummary:
+    """仅处理当前页的行；全量范围数量使用整数运算，不枚举跨页范围。
+
+    非连续选择的容量只累计实际选中子网，不将序号跨度中的空隙计入。
+    """
+    visible = set(visible_indices)
+    selected = sorted(visible.intersection(selected_indices))
+    count, highlighted = visible_selection_counts(selected, visible, highlighted_range)
+    first, last = (selected[0], selected[-1]) if selected else (None, None)
+    return SelectionSummary(
+        count, first, last, bool(count and last - first + 1 == count),
+        count * addresses_per_subnet, highlighted,
+        highlighted_range[1] - highlighted_range[0] + 1 if highlighted_range else 0,
+    )

@@ -11,7 +11,9 @@ from ipv6_core import calculate, InputError, locate_subnet, common_target_prefix
 from subnet_export import XLSX_MAX_RECORDS, ExportCancelled, export_all, page_subnets
 from export_estimate import estimate_export_range, format_size_range
 from address_usage import describe_network
-from subnet_tools import MAX_COPY_RECORDS, validate_copy_range, subnet_range_text, adjacent_subnet_index, LOCATOR_MODES, resolve_locator_range, visible_selection_counts
+from subnet_tools import MAX_COPY_RECORDS, validate_copy_range, subnet_range_text, adjacent_subnet_index, LOCATOR_MODES, resolve_locator_range, summarize_selection
+
+APP_VERSION = '0.6'
 
 
 class Tooltip:
@@ -76,7 +78,7 @@ def compact_count(number: int) -> str:
 class App(tk.Tk):
     def __init__(self):
         super().__init__()
-        self.title('IPv6 子网计算器 V0.5')
+        self.title(f'IPv6 子网计算器 V{APP_VERSION}')
         self.geometry('1080x760')
         self.minsize(900, 620)
         icon = Path(getattr(sys, '_MEIPASS', Path(__file__).resolve().parent)) / 'app.ico'
@@ -248,10 +250,12 @@ class App(tk.Tk):
         bar.grid(row=1, column=1, sticky='ns')
         self.table.configure(yscrollcommand=bar.set)
         self.table.bind('<Control-c>', self._key_copy)
+        self.table.bind('<Control-C>', self._key_copy)
         self.table.bind('<Control-a>', self._key_select_all)
         self.table.bind('<Control-A>', self._key_select_all)
+        self.table.bind('<Escape>', self.clear_selection)
         self.table.bind('<Double-1>', self.show_subnet_detail)
-        Tooltip(self.table, '双击任意子网可查看网络范围、地址数量与复制选项。')
+        Tooltip(self.table, 'Ctrl+单击多选，Shift+单击连续选择；Ctrl+A 全选本页，Ctrl+C 复制，Esc 清除选择。\n双击查看子网详情。翻页清除手动选择，定位范围高亮继续保留。')
         paging = ttk.Frame(results)
         paging.grid(row=2, column=0, sticky='ew', pady=(7, 0))
         self.nav_buttons = []
@@ -295,16 +299,35 @@ class App(tk.Tk):
         paging.bind('<Configure>', self._resize_paging)
         footer = ttk.Frame(results)
         footer.grid(row=0, column=0, sticky='ew', pady=(0, 6))
-        self.selection_status = tk.StringVar(value='选中 0 条 · 本页范围高亮 0 条')
-        ttk.Label(footer, textvariable=self.selection_status, style='Hint.TLabel').pack(side='bottom', anchor='w', pady=(5, 0))
+        tools = ttk.Frame(footer)
+        tools.pack(fill='x')
+        self.selection_status = tk.StringVar(value='本页选中 0 条 · 地址总量 0')
+        selection_label = ttk.Label(footer, textvariable=self.selection_status,
+                                    style='Hint.TLabel', justify='left', wraplength=800,
+                                    cursor='hand2')
+        selection_label.pack(fill='x', pady=(7, 0))
+        selection_label.bind('<Configure>', lambda event: selection_label.configure(
+            wraplength=max(200, event.width - 10)))
+        selection_label.bind('<Button-1>', self._copy_selection_statistics)
+        self._selection_tooltip = Tooltip(selection_label, '点击复制完整选择统计。')
+        self.range_status = tk.StringVar(value='定位范围：未设置')
+        range_label = ttk.Label(footer, textvariable=self.range_status,
+                                style='Hint.TLabel', justify='left', wraplength=800)
+        range_label.pack(fill='x', pady=(2, 0))
+        range_label.bind('<Configure>', lambda event: range_label.configure(
+            wraplength=max(200, event.width - 10)))
+        self._range_tooltip = Tooltip(range_label, '范围高亮与手动选择分别统计。')
         self.table.bind('<<TreeviewSelect>>', self._refresh_selection_statistics)
-        self.copy_selected_button = self._icon_button(footer, 'copy', '复制选中的子网（Ctrl+C）', self.copy_selected)
+        self.copy_selected_button = self._icon_button(tools, 'copy', '按序号顺序复制本页选中的子网（Ctrl+C）', self.copy_selected)
         self.copy_selected_button.pack(side='left', padx=(0, 7))
-        self.copy_page_button = self._icon_button(footer, 'copy_page', '复制当前页全部子网（点击直接复制，无需先选中）', self.copy_page)
+        self.copy_page_button = self._icon_button(tools, 'copy_page', '复制当前页全部子网（点击直接复制，无需先选中）', self.copy_page)
         self.copy_page_button.pack(side='left')
-        self.copy_range_button = self._icon_button(footer, 'copy_range', f'按起止序号复制子网（最多 {MAX_COPY_RECORDS:,} 条）', self.copy_index_range)
+        self.copy_range_button = self._icon_button(tools, 'copy_range', f'按起止序号复制子网（最多 {MAX_COPY_RECORDS:,} 条）', self.copy_index_range)
         self.copy_range_button.pack(side='left', padx=(12, 0))
-        self.export_button = self._icon_button(footer, 'export',
+        self.clear_selection_button = self._icon_button(
+            tools, 'clear_selection', '清除选择（Esc）\n取消本页手动选择，保留定位范围高亮。', self.clear_selection)
+        self.clear_selection_button.pack(side='left', padx=(12, 0))
+        self.export_button = self._icon_button(tools, 'export',
             '导出全部子网或指定序号范围（TXT / Excel）。\nExcel 最多 1,048,575 条；超出可确认改为 TXT。\n超大导出可能占用大量磁盘空间和时间。',
             self.request_export)
         self.export_button.pack(side='right')
@@ -326,25 +349,74 @@ class App(tk.Tk):
         self.locator_tip = Tooltip(self.locator_entry, '输入当前网络中的 IPv6 地址，例如 2026:1015:abcd::1。')
         self.locator_button = ttk.Button(locator, text='定位', command=self.locate_selected)
         self.locator_button.pack(side='left')
+        self.clear_range_button = ttk.Button(locator, text='清除高亮', command=self.clear_locator_range)
+        self.clear_range_button.pack(side='left', padx=(6, 0))
+        Tooltip(self.clear_range_button, '清除定位范围高亮，保留本页手动选择。')
+        feedback = ttk.Label(results, textvariable=self.status, style='Hint.TLabel',
+                             justify='left', wraplength=800)
+        feedback.grid(row=4, column=0, sticky='ew', pady=(6, 0))
+        feedback.bind('<Configure>', lambda event: feedback.configure(
+            wraplength=max(200, event.width - 10)))
         Tooltip(self.locator_button, '定位至对应页面；定位范围时高亮当前页内的匹配子网，翻页后继续高亮。')
         self._set_locator_state(False)
         self.table.tag_configure('even', background='#FFFFFF')
         self.table.tag_configure('odd', background='#EDF4FA')
         self.table.tag_configure('range_match', background='#C8E2FC')
         self._update_nav()
+        self._refresh_selection_statistics()
         self._set_button_state(self.export_button, False, 'export')
 
     def _refresh_selection_statistics(self, _event=None):
-        """统计当前页的手动选中条数及范围高亮条数。"""
-        if not self.result:
-            self.selection_status.set('选中 0 条 · 本页范围高亮 0 条')
-            return
+        """区分本页手动选择与跨页定位范围，容量只计入实际选中的子网。"""
         rows = {item: int(self.table.item(item, 'values')[0])
                 for item in self.table.get_children()}
-        selection, highlighted = visible_selection_counts(
+        stats = summarize_selection(
             (rows[item] for item in self.table.selection() if item in rows),
-            rows.values(), self.locator_range)
-        self.selection_status.set(f'选中 {selection:,} 条 · 本页范围高亮 {highlighted:,} 条')
+            rows.values(), self.result.addresses_per_subnet if self.result else 0,
+            self.locator_range)
+        span = ''
+        if stats.count:
+            span = (f' · 序号 {compact_count(stats.first)}' if stats.count == 1 else
+                    f' · 序号 {compact_count(stats.first)}～{compact_count(stats.last)}'
+                    f'（{"连续" if stats.contiguous else "非连续"}）')
+        self.selection_status.set(
+            f'本页选中 {stats.count:,} 条{span} · 地址总量 {compact_count(stats.address_count)}')
+        self._selection_stats_full = (
+            f'本页选中子网数：{stats.count:,}\n'
+            f'首个选中序号：{stats.first:,}\n末个选中序号：{stats.last:,}\n'
+            f'选择连续性：{"连续" if stats.contiguous else "非连续"}\n'
+            if stats.count else '本页选中子网数：0\n')
+        self._selection_stats_full += f'选中子网地址总量：{stats.address_count:,}'
+        self._selection_tooltip.text = self._selection_stats_full + '\n点击复制以上数据。'
+        self.range_status.set(
+            f'定位范围：共 {compact_count(stats.highlighted_total)} 条 · 本页高亮 {stats.highlighted_on_page:,} 条'
+            if self.locator_range else '定位范围：未设置')
+        self._range_tooltip.text = (
+            f'定位序号：{self.locator_range[0]:,}～{self.locator_range[1]:,}\n'
+            f'范围总数：{stats.highlighted_total:,}\n本页高亮：{stats.highlighted_on_page:,}\n'
+            '高亮不等于选中；翻页后继续保留。' if self.locator_range else '尚未设置定位范围。')
+        self._set_button_state(self.copy_selected_button, bool(stats.count), 'copy')
+        self._set_button_state(self.clear_selection_button, bool(stats.count), 'clear_selection')
+        self.clear_range_button.configure(state='normal' if self.locator_range else 'disabled')
+
+    def _copy_selection_statistics(self, _event=None):
+        if not self.result:
+            return
+        self.clipboard_clear()
+        self.clipboard_append(self._selection_stats_full)
+        self.update_idletasks()
+        self.status.set('完整选择统计已复制到剪贴板。')
+        self.status_label.configure(style='Success.TLabel')
+
+    def clear_selection(self, _event=None):
+        self.table.selection_remove(self.table.selection())
+        self._refresh_selection_statistics()
+        return 'break'
+
+    def clear_locator_range(self):
+        self.locator_range = None
+        self._highlight_locator_range()
+        self._refresh_selection_statistics()
 
     def _refresh_prefix_shortcuts(self, *_):
         """根据用户当前输入的原始前缀调整快捷选项。"""
@@ -400,9 +472,7 @@ class App(tk.Tk):
         }
         self.locator_tip.text = hints.get(self.locator_mode.get(), '')
         self.locator_value.set('')
-        self.locator_range = None
-        if self.result:
-            self.show_page(self.page)
+        self.clear_locator_range()
         self.locator_entry.focus_set()
 
     def locate_selected(self):
@@ -432,20 +502,18 @@ class App(tk.Tk):
             if int(self.table.item(item, 'values')[0]) == index:
                 self.table.focus(item)
                 self.table.see(item)
-                if not self.locator_range or not (self.locator_range[0] <= index <= self.locator_range[1]):
-                    self.table.selection_set(item)
+                self.table.selection_set(item)
+                self.table.focus_set()
                 break
+        self._refresh_selection_statistics()
 
     def _highlight_locator_range(self):
         """只标记当前页命中的子网，不枚举范围中的全部网段。"""
-        selected = []
         for item in self.table.get_children():
             row_index = int(self.table.item(item, 'values')[0])
-            if self.locator_range and self.locator_range[0] <= row_index <= self.locator_range[1]:
-                self.table.item(item, tags=('range_match',))
-                selected.append(item)
-        if selected:
-            self.table.selection_set(selected)
+            matched = self.locator_range and self.locator_range[0] <= row_index <= self.locator_range[1]
+            self.table.item(item, tags=('range_match' if matched else
+                                       'even' if row_index % 2 else 'odd',))
 
     # 保留独立的定位调用入口，兼容已有菜单与测试调用。
     def locate(self):
@@ -467,8 +535,10 @@ class App(tk.Tk):
         area = ttk.Frame(dlg, padding=18)
         area.pack(fill='both', expand=True)
         ttk.Label(area, text=f'选择需要复制的子网序号（最多 {MAX_COPY_RECORDS:,} 条）').grid(row=0, column=0, columnspan=2, sticky='w', pady=(0, 12))
-        start_text = tk.StringVar(value='1')
-        end_text = tk.StringVar(value=str(min(100, self.result.subnet_count)))
+        # 优先带入定位范围；超过单次上限时由原有校验提示使用文件导出。
+        first, last = self.locator_range or (1, min(100, self.result.subnet_count))
+        start_text = tk.StringVar(value=str(first))
+        end_text = tk.StringVar(value=str(last))
         for row, (label, variable) in enumerate((('起始序号', start_text), ('结束序号（包含）', end_text)), start=1):
             ttk.Label(area, text=label+'：').grid(row=row, column=0, sticky='w', pady=5, padx=(0, 10))
             ttk.Entry(area, textvariable=variable, width=24).grid(row=row, column=1, sticky='ew', pady=5)
@@ -616,8 +686,7 @@ class App(tk.Tk):
         for btn, name, can in zip(self.nav_buttons, ('first','previous','next','last'), enabled):
             self._set_button_state(btn, can, name + '_small')
         self._set_button_state(self.jump_button, bool(last), 'jump_small')
-        state = 'normal' if last else 'disabled'
-        self._set_button_state(self.copy_selected_button, bool(last), 'copy')
+        self._set_button_state(self.copy_selected_button, bool(self.table.selection()), 'copy')
         self._set_button_state(self.copy_page_button, bool(last), 'copy_page')
         self._set_button_state(self.copy_range_button, bool(last), 'copy_range')
         if not (self.export_thread and self.export_thread.is_alive()):
@@ -726,6 +795,9 @@ class App(tk.Tk):
         items = self.table.get_children()
         if items:
             self.table.selection_set(items)
+            self.table.focus(items[0])
+            self.table.focus_set()
+        self._refresh_selection_statistics()
         return 'break'
 
     def _key_copy(self, _event=None):
@@ -737,7 +809,9 @@ class App(tk.Tk):
         selected = self.table.selection()
         if not selected:
             messagebox.showinfo('提示', '请先选中子网。', parent=self); return
-        self._copy([self.table.item(item, 'values')[1] for item in selected])
+        selected = set(selected)
+        self._copy([self.table.item(item, 'values')[1]
+                    for item in self.table.get_children() if item in selected])
 
     def copy_page(self):
         if not self.result: return
