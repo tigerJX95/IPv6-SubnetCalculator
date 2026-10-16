@@ -135,3 +135,25 @@ def subnet_count_description(result: SubnetResult) -> str:
     if result.target_prefix == result.network.prefixlen:
         return '1（未进一步划分，保留原网络）'
     return f'{result.subnet_count:,}'
+
+
+def subnet_at_index(network: IPv6Network, target_prefix: int, index: int) -> IPv6Network:
+    """通过一基序号直接获取目标子网，不枚举此前的网段。"""
+    if not network.prefixlen <= target_prefix <= 128:
+        raise InputError('目标子网前缀必须介于原网络前缀与 128 之间。')
+    total = 1 << (target_prefix - network.prefixlen)
+    if isinstance(index, bool) or not isinstance(index, int) or not 1 <= index <= total:
+        raise InputError(f'子网序号必须在 1～{total:,} 之间。')
+    start = int(network.network_address) + (index - 1) * (1 << (128 - target_prefix))
+    return IPv6Network((IPv6Address(start), target_prefix))
+
+
+def validate_subnet_index(text: str, total: int) -> int:
+    """严格校验子网序号，拒绝小数、负数及超出范围的数值。"""
+    value = text.strip()
+    if not value.isascii() or not value.isdecimal() or len(value) > 40:
+        raise InputError('请输入有效的正整数子网序号。')
+    index = int(value)
+    if not 1 <= index <= total:
+        raise InputError(f'子网序号超出范围，请输入 1～{total:,}。')
+    return index

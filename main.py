@@ -1,15 +1,17 @@
 """IPv6 子网计算器图形界面。"""
 from __future__ import annotations
 import shutil
+from ipaddress import IPv6Network, IPv6Address
 import sys
 import threading
 import tkinter as tk
 from pathlib import Path
 from tkinter import filedialog, messagebox, ttk
-from ipv6_core import calculate, InputError, locate_subnet, common_target_prefixes, prefix_analysis, subnet_count_description, normalize_ipv6_input
+from ipv6_core import calculate, InputError, locate_subnet, common_target_prefixes, prefix_analysis, subnet_count_description, normalize_ipv6_input, subnet_at_index, validate_subnet_index
 from subnet_export import XLSX_MAX_RECORDS, ExportCancelled, export_all, page_subnets
 from export_estimate import estimate_export_range, format_size_range
 from address_usage import describe_network
+from subnet_tools import MAX_COPY_RECORDS, validate_copy_range, subnet_range_text, adjacent_subnet_index, LOCATOR_MODES, resolve_locator_range
 
 
 class Tooltip:
@@ -74,7 +76,7 @@ def compact_count(number: int) -> str:
 class App(tk.Tk):
     def __init__(self):
         super().__init__()
-        self.title('IPv6 子网计算器 V0.3')
+        self.title('IPv6 子网计算器 V0.4')
         self.geometry('1080x910')
         self.minsize(900, 710)
         icon = Path(getattr(sys, '_MEIPASS', Path(__file__).resolve().parent)) / 'app.ico'
@@ -83,6 +85,7 @@ class App(tk.Tk):
             except tk.TclError: pass
         self.result = None
         self.page = 1
+        self.locator_range = None  # 当前高亮的子网序号闭区间
         self.export_stop = None
         self.export_thread = None
         self._button_images = {}
@@ -149,14 +152,14 @@ class App(tk.Tk):
     def _create_ui(self):
         sty = ttk.Style(self)
         if 'vista' in sty.theme_names(): sty.theme_use('vista')
-        sty.configure('.', font=('Microsoft YaHei UI', 11))
+        sty.configure('.', font=('Microsoft YaHei UI', 12))
         sty.configure('Title.TLabel', font=('Microsoft YaHei UI', 22, 'bold'))
         sty.configure('Hint.TLabel', font=('Microsoft YaHei UI', 11), foreground='#17659a')
-        sty.configure('Usage.TLabel', font=('Microsoft YaHei UI', 11), foreground='#B42318')
-        sty.configure('UsageTitle.TLabel', font=('Microsoft YaHei UI', 11, 'bold'), foreground='#B42318')
+        sty.configure('Usage.TLabel', font=('Microsoft YaHei UI', 12), foreground='#B42318')
+        sty.configure('UsageTitle.TLabel', font=('Microsoft YaHei UI', 12, 'bold'), foreground='#B42318')
         sty.configure('Warn.TLabel', font=('Microsoft YaHei UI', 11, 'bold'), foreground='#b42318')
         sty.configure('Success.TLabel', font=('Microsoft YaHei UI', 11, 'bold'), foreground='#137547')
-        sty.configure('Result.TLabel', font=('Consolas', 12, 'bold'))
+        sty.configure('Result.TLabel', font=('Consolas', 13, 'bold'))
         sty.configure('Treeview', font=('Consolas', 12), rowheight=30)
         sty.configure('Treeview.Heading', font=('Microsoft YaHei UI', 11, 'bold'))
         base = ttk.Frame(self, padding=17)
@@ -219,7 +222,7 @@ class App(tk.Tk):
         self.usage_text.bind('<Configure>', lambda event: self.usage_text.configure(
             wraplength=max(200, event.width - 10)))
         ttk.Label(usage_panel, textvariable=self.usage_reference,
-                  foreground='#66788a').pack(anchor='w')
+                  foreground='#66788a', font=('Microsoft YaHei UI', 12)).pack(anchor='w')
         results = ttk.LabelFrame(base, text='子网结果列表', padding=8)
         results.pack(fill='both', expand=True)
         results.columnconfigure(0, weight=1)
@@ -236,6 +239,8 @@ class App(tk.Tk):
         self.table.bind('<Control-c>', self._key_copy)
         self.table.bind('<Control-a>', self._key_select_all)
         self.table.bind('<Control-A>', self._key_select_all)
+        self.table.bind('<Double-1>', self.show_subnet_detail)
+        Tooltip(self.table, '双击任意子网可查看网络范围、地址数量与复制选项。')
         paging = ttk.Frame(results)
         paging.grid(row=2, column=0, sticky='ew', pady=(7, 0))
         self.nav_buttons = []
@@ -283,26 +288,35 @@ class App(tk.Tk):
         self.copy_selected_button.pack(side='left', padx=(0, 7))
         self.copy_page_button = self._icon_button(footer, 'copy_page', '复制当前页全部子网（点击直接复制，无需先选中）', self.copy_page)
         self.copy_page_button.pack(side='left')
+        self.copy_range_button = self._icon_button(footer, 'copy_range', f'按起止序号复制子网（最多 {MAX_COPY_RECORDS:,} 条）', self.copy_index_range)
+        self.copy_range_button.pack(side='left', padx=(12, 0))
         self.export_button = self._icon_button(footer, 'export',
             '导出全部子网或指定序号范围（TXT / Excel）。\nExcel 最多 1,048,575 条；超出可确认改为 TXT。\n超大导出可能占用大量磁盘空间和时间。',
             self.request_export)
         self.export_button.pack(side='right')
         locator = ttk.Frame(results)
         locator.grid(row=3, column=0, sticky='ew', pady=(8, 0))
-        ttk.Label(locator, text='地址定位：').pack(side='left')
-        self.locate_address = tk.StringVar()
-        self.locate_entry = ttk.Entry(locator, textvariable=self.locate_address,
-                                      font=('Consolas', 11), width=40)
-        self.locate_entry.pack(side='left', padx=(4, 7), fill='x', expand=True)
-        Tooltip(self.locate_entry, '输入当前网络中的任意 IPv6 地址，定位并选中其所属子网。')
-        self.locate_entry.bind('<FocusOut>', lambda _: self._normalize_address_field(self.locate_address))
-        self.locate_entry.bind('<Return>', lambda _: self.locate())
-        self.locate_button = ttk.Button(locator, text='定位所属子网', command=self.locate)
-        self.locate_button.pack(side='left')
-        Tooltip(self.locate_button, '直接跳转至该地址所在的子网及页面，不逐条搜索。')
+        ttk.Label(locator, text='定位方式：').pack(side='left')
+        self.locator_mode = tk.StringVar(value=LOCATOR_MODES[0])
+        self.locator_combo = ttk.Combobox(locator, textvariable=self.locator_mode,
+                                          values=LOCATOR_MODES, state='readonly', width=17)
+        self.locator_combo.pack(side='left', padx=(5, 9))
+        self.locator_combo.bind('<<ComboboxSelected>>', self._locator_mode_changed)
+        Tooltip(self.locator_combo, '选择按 IPv6 地址、子网序号或对应起止范围定位。')
+        self.locator_value = tk.StringVar()
+        self.locator_entry = ttk.Entry(locator, textvariable=self.locator_value,
+                                       font=('Consolas', 11))
+        self.locator_entry.pack(side='left', fill='x', expand=True, padx=(0, 9))
+        self.locator_entry.bind('<FocusOut>', self._normalize_locator_field)
+        self.locator_entry.bind('<Return>', lambda _: self.locate_selected())
+        self.locator_tip = Tooltip(self.locator_entry, '输入当前网络中的 IPv6 地址，例如 2026:1015:abcd::1。')
+        self.locator_button = ttk.Button(locator, text='定位', command=self.locate_selected)
+        self.locator_button.pack(side='left')
+        Tooltip(self.locator_button, '定位至对应页面；定位范围时高亮当前页内的匹配子网，翻页后继续高亮。')
         self._set_locator_state(False)
         self.table.tag_configure('even', background='#FFFFFF')
         self.table.tag_configure('odd', background='#EDF4FA')
+        self.table.tag_configure('range_match', background='#C8E2FC')
         self._update_nav()
         self._set_button_state(self.export_button, False, 'export')
 
@@ -335,8 +349,9 @@ class App(tk.Tk):
 
     def _set_locator_state(self, enabled):
         state = 'normal' if enabled else 'disabled'
-        self.locate_entry.configure(state=state)
-        self.locate_button.configure(state=state)
+        self.locator_entry.configure(state=state)
+        self.locator_button.configure(state=state)
+        self.locator_combo.configure(state='readonly' if enabled else 'disabled')
 
     @staticmethod
     def _normalize_address_field(variable):
@@ -345,25 +360,168 @@ class App(tk.Tk):
         if updated != value:
             variable.set(updated)
 
-    def locate(self):
-        self._normalize_address_field(self.locate_address)
+    def _normalize_locator_field(self, _event=None):
+        if self.locator_mode.get() in ('按 IPv6 地址', '按 IPv6 地址范围'):
+            self._normalize_address_field(self.locator_value)
+
+    def _locator_mode_changed(self, _event=None):
+        """切换定位方式时更新输入提示，清除旧范围的高亮。"""
+        hints = {
+            '按 IPv6 地址': '例如：2026:1015:abcd::1',
+            '按子网序号': '例如：30（序号从 1 开始）',
+            '按 IPv6 地址范围': '例如：2026:1015:abcd::1 - 2026:1015:abcd:2::1',
+            '按子网序号范围': '例如：1000-1500（包含起止序号）',
+        }
+        self.locator_tip.text = hints.get(self.locator_mode.get(), '')
+        self.locator_value.set('')
+        self.locator_range = None
+        if self.result:
+            self.show_page(self.page)
+        self.locator_entry.focus_set()
+
+    def locate_selected(self):
+        """统一按地址、序号或起止范围进行定位。"""
         if not self.result:
             return
+        self._normalize_locator_field()
         try:
-            index = locate_subnet(self.result.network, self.result.target_prefix, self.locate_address.get())
+            first, last = resolve_locator_range(
+                self.locator_mode.get(), self.locator_value.get(),
+                self.result.network, self.result.target_prefix)
         except InputError as exc:
             messagebox.showwarning('定位失败', str(exc), parent=self)
             return
+        self.locator_range = (first, last)
+        self._select_index(first)
+        count = last - first + 1
+        self.status.set(f'定位成功：第 {first:,} 个子网。' if count == 1
+                        else f'已定位第 {first:,}～{last:,} 个子网，共 {count:,} 项；翻页仍保留范围高亮。')
+        self.status_label.configure(style='Success.TLabel')
+
+    def _select_index(self, index):
+        """跳转到指定子网，并根据当前定位范围保持高亮。"""
         page = (index - 1) // int(self.size.get()) + 1
         self.show_page(page)
         for item in self.table.get_children():
             if int(self.table.item(item, 'values')[0]) == index:
-                self.table.selection_set(item)
                 self.table.focus(item)
                 self.table.see(item)
+                if not self.locator_range or not (self.locator_range[0] <= index <= self.locator_range[1]):
+                    self.table.selection_set(item)
                 break
-        self.status.set(f'定位成功：第 {index:,} 个子网。')
-        self.status_label.configure(style='Success.TLabel')
+
+    def _highlight_locator_range(self):
+        """只标记当前页命中的子网，不枚举范围中的全部网段。"""
+        selected = []
+        for item in self.table.get_children():
+            row_index = int(self.table.item(item, 'values')[0])
+            if self.locator_range and self.locator_range[0] <= row_index <= self.locator_range[1]:
+                self.table.item(item, tags=('range_match',))
+                selected.append(item)
+        if selected:
+            self.table.selection_set(selected)
+
+    # 保留独立的定位调用入口，兼容已有菜单与测试调用。
+    def locate(self):
+        self.locator_mode.set('按 IPv6 地址')
+        self.locate_selected()
+
+    def locate_index(self):
+        self.locator_mode.set('按子网序号')
+        self.locate_selected()
+
+    def copy_index_range(self):
+        """按序号复制子网范围，不创建文件且限制内存占用。"""
+        if not self.result:
+            return
+        dlg = tk.Toplevel(self)
+        self._prepare_dialog(dlg)
+        dlg.title('按序号范围复制子网')
+        dlg.resizable(False, False)
+        area = ttk.Frame(dlg, padding=18)
+        area.pack(fill='both', expand=True)
+        ttk.Label(area, text=f'选择需要复制的子网序号（最多 {MAX_COPY_RECORDS:,} 条）').grid(row=0, column=0, columnspan=2, sticky='w', pady=(0, 12))
+        start_text = tk.StringVar(value='1')
+        end_text = tk.StringVar(value=str(min(100, self.result.subnet_count)))
+        for row, (label, variable) in enumerate((('起始序号', start_text), ('结束序号（包含）', end_text)), start=1):
+            ttk.Label(area, text=label+'：').grid(row=row, column=0, sticky='w', pady=5, padx=(0, 10))
+            ttk.Entry(area, textvariable=variable, width=24).grid(row=row, column=1, sticky='ew', pady=5)
+        def perform():
+            try:
+                start, end = validate_copy_range(start_text.get(), end_text.get(), self.result.subnet_count)
+                value = subnet_range_text(self.result.network, self.result.target_prefix, start, end)
+            except InputError as exc:
+                messagebox.showwarning('无法复制', str(exc), parent=dlg)
+                return
+            self.clipboard_clear()
+            self.clipboard_append(value)
+            self.update_idletasks()
+            self.status.set(f'已复制第 {start:,}～{end:,} 项，共 {end-start+1:,} 个子网。')
+            self.status_label.configure(style='Success.TLabel')
+            dlg.destroy()
+        buttons = ttk.Frame(area)
+        buttons.grid(row=3, column=0, columnspan=2, sticky='e', pady=(12, 0))
+        ttk.Button(buttons, text='复制', command=perform).pack(side='left', padx=(0, 8))
+        ttk.Button(buttons, text='取消', command=dlg.destroy).pack(side='left')
+        dlg.bind('<Return>', lambda _: perform())
+        self._show_centered_dialog(dlg)
+        self.wait_window(dlg)
+
+    def show_subnet_detail(self, event=None):
+        """双击表格行显示该子网的范围与可复制数据。"""
+        if not self.result:
+            return
+        if event is not None:
+            item = self.table.identify_row(event.y)
+            if not item:
+                return
+        else:
+            selection = self.table.selection()
+            if not selection:
+                return
+            item = selection[0]
+        current_index = int(self.table.item(item, 'values')[0])
+        dlg = tk.Toplevel(self)
+        self._prepare_dialog(dlg)
+        dlg.title('IPv6 子网详情')
+        dlg.resizable(False, False)
+        area = ttk.Frame(dlg, padding=18)
+        area.pack(fill='both', expand=True)
+        labels = ('子网序号', 'IPv6 子网', '起始地址', '结束地址', '地址数量')
+        value_vars = [tk.StringVar() for _ in labels]
+        for row, (label, var) in enumerate(zip(labels, value_vars)):
+            ttk.Label(area, text=label+'：').grid(row=row, column=0, sticky='w', pady=5, padx=(0, 12))
+            ttk.Label(area, textvariable=var, font=('Consolas', 11, 'bold')).grid(row=row, column=1, sticky='w', pady=5)
+        buttons = ttk.Frame(area)
+        buttons.grid(row=len(labels), column=0, columnspan=2, sticky='e', pady=(15, 0))
+        def update_detail():
+            subnet = subnet_at_index(self.result.network, self.result.target_prefix, current_index)
+            data = (f'{current_index:,}', str(subnet), str(subnet.network_address),
+                    str(IPv6Address(int(subnet.broadcast_address))), f'{subnet.num_addresses:,}')
+            for var, value in zip(value_vars, data):
+                var.set(value)
+            prev_button.configure(state='normal' if current_index > 1 else 'disabled')
+            next_button.configure(state='normal' if current_index < self.result.subnet_count else 'disabled')
+        def step(direction):
+            nonlocal current_index
+            current_index = adjacent_subnet_index(current_index, self.result.subnet_count, direction)
+            update_detail()
+            self._select_index(current_index)
+        def copy_info():
+            self.clipboard_clear()
+            self.clipboard_append('\n'.join(f'{key}：{var.get()}' for key, var in zip(labels, value_vars)))
+            self.update_idletasks()
+            self.status.set('子网详细信息已复制到剪贴板。')
+        prev_button = ttk.Button(buttons, text='上一条', command=lambda: step(-1))
+        prev_button.pack(side='left', padx=(0, 8))
+        next_button = ttk.Button(buttons, text='下一条', command=lambda: step(1))
+        next_button.pack(side='left', padx=(0, 12))
+        ttk.Button(buttons, text='复制详情', command=copy_info).pack(side='left', padx=(0, 10))
+        ttk.Button(buttons, text='关闭', command=dlg.destroy).pack(side='left')
+        update_detail()
+        dlg.protocol('WM_DELETE_WINDOW', dlg.destroy)
+        self._show_centered_dialog(dlg)
+        self.wait_window(dlg)
 
     def _choose_export_range(self, total):
         """选择全部导出或按一基序号选择闭区间。"""
@@ -435,6 +593,7 @@ class App(tk.Tk):
         state = 'normal' if last else 'disabled'
         self._set_button_state(self.copy_selected_button, bool(last), 'copy')
         self._set_button_state(self.copy_page_button, bool(last), 'copy_page')
+        self._set_button_state(self.copy_range_button, bool(last), 'copy_range')
         if not (self.export_thread and self.export_thread.is_alive()):
             self._set_button_state(self.export_button, bool(last), 'export')
 
@@ -444,6 +603,7 @@ class App(tk.Tk):
             messagebox.showwarning('提示', '请先完成或取消导出。', parent=self)
             return
         self.result = None
+        self.locator_range = None
         self._set_locator_state(False)
         self.table.delete(*self.table.get_children())
         for field in self.fields.values(): field.set('—')
@@ -485,6 +645,7 @@ class App(tk.Tk):
         self.page_status.set(f'第 {compact_count(page)} / {compact_count(self._total_pages())} 页 · 共 {compact_count(self.result.subnet_count)} 项')
         self._page_stats_full = f'子网总数：{self.result.subnet_count:,}\n当前页码：{page:,}\n总页数：{self._total_pages():,}'
         self._refresh_page_tooltip()
+        self._highlight_locator_range()
         self._update_nav()
 
     def _refresh_page_tooltip(self):
