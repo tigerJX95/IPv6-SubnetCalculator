@@ -11,7 +11,7 @@ from ipv6_core import calculate, InputError, locate_subnet, common_target_prefix
 from subnet_export import XLSX_MAX_RECORDS, ExportCancelled, export_all, page_subnets
 from export_estimate import estimate_export_range, format_size_range
 from address_usage import describe_network
-from subnet_tools import MAX_COPY_RECORDS, validate_copy_range, subnet_range_text, adjacent_subnet_index, LOCATOR_MODES, resolve_locator_range
+from subnet_tools import MAX_COPY_RECORDS, validate_copy_range, subnet_range_text, adjacent_subnet_index, LOCATOR_MODES, resolve_locator_range, visible_selection_counts
 
 
 class Tooltip:
@@ -76,9 +76,9 @@ def compact_count(number: int) -> str:
 class App(tk.Tk):
     def __init__(self):
         super().__init__()
-        self.title('IPv6 子网计算器 V0.4')
-        self.geometry('1080x910')
-        self.minsize(900, 710)
+        self.title('IPv6 子网计算器 V0.5')
+        self.geometry('1080x760')
+        self.minsize(900, 620)
         icon = Path(getattr(sys, '_MEIPASS', Path(__file__).resolve().parent)) / 'app.ico'
         if icon.exists():
             try: self.iconbitmap(str(icon))
@@ -101,11 +101,14 @@ class App(tk.Tk):
                 dialog.iconbitmap(str(icon))
             except tk.TclError:
                 pass
-        dialog.transient(self)
+        parent = self
+        dialog.transient(parent)
+        dialog._center_anchor = parent
 
     def _show_centered_dialog(self, dialog, fixed_size=None):
         """在内容完成布局后计算实际尺寸，再显示并取得焦点。"""
-        self.update_idletasks()
+        anchor = getattr(dialog, '_center_anchor', self)
+        anchor.update_idletasks()
         dialog.update_idletasks()
         width, height = dialog.winfo_reqwidth(), dialog.winfo_reqheight()
         # 若窗口指定了 geometry 尺寸，优先以配置的最终尺寸定位。
@@ -115,13 +118,13 @@ class App(tk.Tk):
         if fixed_size is not None:
             width, height = fixed_size
         x, y = centered_dialog_position(
-            (self.winfo_rootx(), self.winfo_rooty(), self.winfo_width(), self.winfo_height()),
+            (anchor.winfo_rootx(), anchor.winfo_rooty(), anchor.winfo_width(), anchor.winfo_height()),
             (width, height),
             (self.winfo_screenwidth(), self.winfo_screenheight()),
         )
         dialog.geometry(f'+{x}+{y}')
         dialog.deiconify()
-        dialog.lift(self)
+        dialog.lift(anchor)
         dialog.grab_set()
 
     def _icon_button(self, parent, name, tooltip, command):
@@ -166,7 +169,15 @@ class App(tk.Tk):
         base.pack(fill='both', expand=True)
         ttk.Label(base, text='IPv6 子网计算器', style='Title.TLabel', anchor='center').pack(fill='x')
         ttk.Label(base, text='网络范围 · 子网划分 · 容量计算', style='Hint.TLabel', anchor='center').pack(fill='x', pady=(1, 12))
-        form = ttk.LabelFrame(base, text='计算参数', padding=12)
+        self.notebook = ttk.Notebook(base)
+        self.notebook.pack(fill='both', expand=True)
+        self.calculation_tab = ttk.Frame(self.notebook, padding=8)
+        self.results_tab = ttk.Frame(self.notebook, padding=8)
+        self.notebook.add(self.calculation_tab, text='子网计算')
+        self.notebook.add(self.results_tab, text='子网结果')
+        self.notebook.select(self.calculation_tab)
+        calc_base = self.calculation_tab
+        form = ttk.LabelFrame(calc_base, text='计算参数', padding=12)
         form.pack(fill='x')
         form.columnconfigure(0, weight=4)
         form.columnconfigure(1, weight=1)
@@ -194,9 +205,9 @@ class App(tk.Tk):
         net_entry.bind('<Return>', lambda _: self.calculate())
         prefix_entry.bind('<Return>', lambda _: self.calculate())
         self.status = tk.StringVar(value='输入参数后点击“开始计算”。')
-        self.status_label = ttk.Label(base, textvariable=self.status, style='Hint.TLabel')
+        self.status_label = ttk.Label(calc_base, textvariable=self.status, style='Hint.TLabel')
         self.status_label.pack(fill='x', pady=(9, 6))
-        summary = ttk.LabelFrame(base, text='网络计算摘要', padding=9)
+        summary = ttk.LabelFrame(calc_base, text='网络计算摘要', padding=9)
         summary.pack(fill='x', pady=(0, 10))
         summary.columnconfigure(1, weight=1)
         self.fields = {}
@@ -208,7 +219,7 @@ class App(tk.Tk):
             var = tk.StringVar(value='—')
             self.fields[key] = var
             ttk.Label(summary, textvariable=var, style='Result.TLabel').grid(row=row, column=1, sticky='w', pady=2)
-        usage_panel = ttk.LabelFrame(base, text='地址类型与部署提示', padding=8)
+        usage_panel = ttk.LabelFrame(calc_base, text='地址类型与部署提示', padding=8)
         usage_panel.pack(fill='x', pady=(0, 8))
         self.usage_type = tk.StringVar(value='—')
         self.usage_message = tk.StringVar(value='计算后显示网络地址用途与部署限制。')
@@ -223,8 +234,8 @@ class App(tk.Tk):
             wraplength=max(200, event.width - 10)))
         ttk.Label(usage_panel, textvariable=self.usage_reference,
                   foreground='#66788a', font=('Microsoft YaHei UI', 12)).pack(anchor='w')
-        results = ttk.LabelFrame(base, text='子网结果列表', padding=8)
-        results.pack(fill='both', expand=True)
+        results = ttk.LabelFrame(self.results_tab, text='完整子网结果列表', padding=10)
+        results.pack(fill='both', expand=True, padx=3, pady=3)
         results.columnconfigure(0, weight=1)
         results.rowconfigure(1, weight=1)
         self.table = ttk.Treeview(results, columns=('num','subnet'), show='headings', selectmode='extended')
@@ -284,6 +295,9 @@ class App(tk.Tk):
         paging.bind('<Configure>', self._resize_paging)
         footer = ttk.Frame(results)
         footer.grid(row=0, column=0, sticky='ew', pady=(0, 6))
+        self.selection_status = tk.StringVar(value='选中 0 条 · 本页范围高亮 0 条')
+        ttk.Label(footer, textvariable=self.selection_status, style='Hint.TLabel').pack(side='bottom', anchor='w', pady=(5, 0))
+        self.table.bind('<<TreeviewSelect>>', self._refresh_selection_statistics)
         self.copy_selected_button = self._icon_button(footer, 'copy', '复制选中的子网（Ctrl+C）', self.copy_selected)
         self.copy_selected_button.pack(side='left', padx=(0, 7))
         self.copy_page_button = self._icon_button(footer, 'copy_page', '复制当前页全部子网（点击直接复制，无需先选中）', self.copy_page)
@@ -319,6 +333,18 @@ class App(tk.Tk):
         self.table.tag_configure('range_match', background='#C8E2FC')
         self._update_nav()
         self._set_button_state(self.export_button, False, 'export')
+
+    def _refresh_selection_statistics(self, _event=None):
+        """统计当前页的手动选中条数及范围高亮条数。"""
+        if not self.result:
+            self.selection_status.set('选中 0 条 · 本页范围高亮 0 条')
+            return
+        rows = {item: int(self.table.item(item, 'values')[0])
+                for item in self.table.get_children()}
+        selection, highlighted = visible_selection_counts(
+            (rows[item] for item in self.table.selection() if item in rows),
+            rows.values(), self.locator_range)
+        self.selection_status.set(f'选中 {selection:,} 条 · 本页范围高亮 {highlighted:,} 条')
 
     def _refresh_prefix_shortcuts(self, *_):
         """根据用户当前输入的原始前缀调整快捷选项。"""
@@ -606,6 +632,7 @@ class App(tk.Tk):
         self.locator_range = None
         self._set_locator_state(False)
         self.table.delete(*self.table.get_children())
+        self._refresh_selection_statistics()
         for field in self.fields.values(): field.set('—')
         self.page_status.set('暂无计算结果')
         self._page_stats_full = ''
@@ -632,6 +659,7 @@ class App(tk.Tk):
         self.status_label.configure(style='Success.TLabel')
         self.show_page(1)
         self._set_locator_state(True)
+        self.notebook.select(self.results_tab)
 
     def show_page(self, page):
         if not self.result or not 1 <= page <= self._total_pages(): return
@@ -646,6 +674,7 @@ class App(tk.Tk):
         self._page_stats_full = f'子网总数：{self.result.subnet_count:,}\n当前页码：{page:,}\n总页数：{self._total_pages():,}'
         self._refresh_page_tooltip()
         self._highlight_locator_range()
+        self._refresh_selection_statistics()
         self._update_nav()
 
     def _refresh_page_tooltip(self):

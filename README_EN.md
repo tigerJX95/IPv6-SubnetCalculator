@@ -1,39 +1,36 @@
-# 🌐 IPv6 Subnet Calculator V0.4
+# 🌐 IPv6 Subnet Calculator V0.5
 
 [简体中文](README.md) | **English**
 
 ## 📖 Overview
 
-IPv6SubnetCalculator is a lightweight, offline IPv6 subnet calculator for Windows. It helps analyze network ranges, divide subnets, recognize special-purpose IPv6 addressing, locate subnets, and export results.
+IPv6SubnetCalculator is an offline IPv6 subnet calculator for Windows. It calculates network ranges, divides subnets, identifies special-purpose address space, and provides two tabs for calculating and browsing large result sets.
 
 ## ✨ Features
 
-- **Network calculation:** Supports IPv6 CIDR `/0`–`/128`; calculates first and last addresses, subnet counts, and address capacity. Normalizes letter case and provides descriptive input errors.
-- **Prefix analysis:** Offers commonly used target prefixes, shows additional subnet bits, and explains `/127` and `/128` boundaries.
-- **Address type and deployment guidance:** Identifies ULA, link-local, multicast, 6to4, Teredo, documentation addresses, and other known ranges. Displays typical uses, restrictions, and references to IANA and RFCs. Mathematical subnet calculations remain available for special-purpose addresses.
-- **Pagination and copy:** Displays 25, 50, 100, or 200 entries per page; supports navigation, jumping, copying selected rows or the current page, and compact statistics for very large results.
-- **Unified lookup:** Choose an IPv6 address, subnet index, IPv6 address range, or subnet index range from one dropdown. Matching subnets on the current page are highlighted, including when navigating across pages.
-- **Subnet details:** Double-click a subnet to view its address range and address count, with an option to copy the details.
-- **Export:** Exports all subnets or an index range to TXT or Excel (XLSX), with progress, cancellation, estimated file size, and large-export warnings.
+- **Subnet calculations:** IPv6 CIDR `/0`–`/128`, network range, subnet counts, and addresses per subnet; lowercase normalization and clear input validation.
+- **Prefix and usage analysis:** Common prefix shortcuts, additional subnet bits, special-purpose classifications including ULA, 6to4, multicast and link-local, and deployment guidance with standards references.
+- **Two-tab layout:** Use the Calculation tab for inputs, summaries, and address guidance, and the Results tab for the complete table and actions. Switching tabs preserves pagination and locator ranges.
+- **Pagination and location:** 25, 50, 100, or 200 rows per page, page navigation, and lookup by IPv6 address, subnet number, address range, or subnet-number range. Range highlighting continues across pages.
+- **Selection statistics:** Counts selected rows and highlighted range matches **on the current page** and refreshes the counts as selection and pages change.
+- **Copy and inspect:** Copy selected rows, the current page, or a specified subnet-number range (up to 5,000 rows per copy). Double-click a row for subnet details and adjacent-record navigation.
+- **Export:** Export all or a selected range to TXT or Excel (XLSX), with size estimates, progress tracking, and cancellation.
 
-- **Copy an index range:** Use a dedicated bracket-and-copy icon to copy up to 5,000 subnets by start and end indices; use file export for larger ranges.
-- **Browse adjacent subnet details:** Move to the previous or next subnet directly from the detail dialog, with the corresponding row selected.
+## 🆕 What's New in V0.5
 
-## 🆕 What's New in V0.4
+- Introduced Calculation and Results tabs, with full browsing, pagination, locating, copying, and exporting on the Results tab.
+- Kept the Calculation tab focused on summaries and address guidance, without a cramped preview table.
+- Added current-page selected-row and range-highlight counts.
+- Preserved page and locator state when switching tabs.
 
-- Added subnet details with copying and previous/next browsing.
-- Combined lookup into one dropdown for individual addresses, subnet indices, and address or index ranges, including highlighting across pages.
-- Added range copying (up to 5,000 entries), with a matching blue line icon.
+## 📦 Download and Usage
 
-## 📦 Download and Use
-
-Get the Windows application from GitHub [Releases](../../releases) and launch it directly.
-
-Enter an IPv6 network and target prefix, then click the calculate icon. Browse the results, double-click a row for details, or select a lookup mode to locate one subnet or an inclusive range. Use the export icon to save all results or a selected range.
+Get the Windows application from GitHub [Releases](../../releases). Enter a network and target prefix, calculate, then switch to the Results tab to browse the full list.
 
 ## 💡 Notes
 
-- Default sample network: `2026:1015:abcd::/48`.
-- IPv6 has no broadcast address. “Last network address” refers to the numerically highest address in the network.
-- An Excel worksheet can contain up to 1,048,575 subnet records plus one header row. Use TXT for larger outputs. Very large exports require sufficient storage and time.
-- Address-type guidance does not imply public routability or address assignment rights. See the [IANA IPv6 Special-Purpose Address Registry](https://www.iana.org/assignments/iana-ipv6-special-registry).
+- The default example network is `2026:1015:abcd::/48`.
+- IPv6 has no broadcast address; the displayed end address is the last address in the range.
+- Selection and highlight counts refer only to the **currently displayed page**, not an entire multi-page range.
+- Excel exports support at most 1,048,575 subnet records in one worksheet; use TXT for larger exports.
+- Address classification does not imply allocation authorization or public reachability. See the [IANA IPv6 Special-Purpose Address Registry](https://www.iana.org/assignments/iana-ipv6-special-registry).

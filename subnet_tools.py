@@ -66,3 +66,12 @@ def resolve_locator_range(mode: str, value: str, network: IPv6Network, prefix: i
     if first > last:
         raise InputError('起始子网序号不能大于结束序号。')
     return first, last
+
+
+def visible_selection_counts(selected_indices, visible_indices, highlighted_range=None):
+    """分别统计当前页选中条数和定位范围命中条数，不枚举完整范围。"""
+    visible = set(visible_indices)
+    selected = len(visible.intersection(selected_indices))
+    highlighted = (sum(1 for n in visible if highlighted_range[0] <= n <= highlighted_range[1])
+                   if highlighted_range is not None else 0)
+    return selected, highlighted
