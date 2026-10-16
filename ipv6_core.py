@@ -1,4 +1,4 @@
-"""Pure IPv6 subnet calculations. No GUI dependencies."""
+"""独立的 IPv6 子网计算逻辑，不依赖图形界面。"""
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -9,7 +9,7 @@ MAX_PREVIEW = 100
 
 
 class InputError(ValueError):
-    """User-facing validation error."""
+    """面向用户的输入校验错误。"""
 
 
 @dataclass(frozen=True)
@@ -31,13 +31,13 @@ class SubnetResult:
 
 
 def calculate(network_text: str, target_text: str, *, preview_limit: int = MAX_PREVIEW) -> SubnetResult:
-    """Validate CIDR then compute subnet details; never enumerate entire IPv6 space."""
+    """校验 CIDR 并计算子网信息，不遍历整个 IPv6 地址空间。"""
     source = network_text.strip()
     target = target_text.strip()
     if not source:
-        raise InputError("请输入 IPv6 网络地址及前缀，例如 2001:db8::/32。")
+        raise InputError("请输入 IPv6 网络地址及前缀，例如 2026:1015:abcd::/48。")
     if source.count("/") != 1:
-        raise InputError("网络地址必须包含一个 CIDR 前缀，例如 2001:db8::/32。")
+        raise InputError("网络地址必须包含一个 CIDR 前缀，例如 2026:1015:abcd::/48。")
     addr, prefix = (part.strip() for part in source.split("/"))
     if not addr or not prefix or not re.fullmatch(r"[0-9]{1,3}", prefix):
         raise InputError("原始网络前缀必须为 0～128 的整数。")
@@ -63,3 +63,18 @@ def calculate(network_text: str, target_text: str, *, preview_limit: int = MAX_P
     first = int(net.network_address)
     preview = tuple(IPv6Network((IPv6Address(first + i * step), target_prefix)) for i in range(min(count, preview_limit)))
     return SubnetResult(net, target_prefix, ip != net.network_address, count, step, preview)
+
+
+def locate_subnet(network: IPv6Network, target_prefix: int, address_text: str) -> int:
+    """返回指定 IPv6 地址所属子网的一基序号，计算复杂度与子网数量无关。"""
+    text = address_text.strip()
+    if not text:
+        raise InputError('请输入需要定位的 IPv6 地址。')
+    try:
+        address = IPv6Address(text)
+    except ValueError as exc:
+        raise InputError('IPv6 地址格式不正确。请输入单个地址，不包含 / 前缀。') from exc
+    if address not in network:
+        raise InputError('该 IPv6 地址不在当前计算的网络范围内。')
+    step = 1 << (128 - target_prefix)
+    return (int(address) - int(network.network_address)) // step + 1

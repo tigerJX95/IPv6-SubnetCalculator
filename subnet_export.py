@@ -1,4 +1,4 @@
-"""Bounded-memory IPv6 subnet exports with transactional file replacement."""
+"""使用有限内存导出 IPv6 子网，并在成功后替换目标文件。"""
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -11,7 +11,7 @@ import zipfile
 from xml.sax.saxutils import escape
 from ipaddress import IPv6Address, IPv6Network
 
-XLSX_MAX_RECORDS = 1_048_575  # One header row on a 1,048,576-row worksheet.
+XLSX_MAX_RECORDS = 1_048_575  # 工作表总行数为 1,048,576，其中一行用于表头。
 BATCH_SIZE = 1024
 
 class ExportCancelled(Exception):
@@ -41,23 +41,23 @@ def page_subnets(network: IPv6Network, target_prefix: int, page: int, page_size:
     return [(i + 1, str(subnet_at(network, target_prefix, i))) for i in range(begin, min(begin + page_size, total))]
 
 
-def _iter_subnets(network: IPv6Network, target_prefix: int, total: int, stop: Event | None) -> Iterator[str]:
+def _iter_subnets(network: IPv6Network, target_prefix: int, total: int, stop: Event | None, start_index: int = 0) -> Iterator[str]:
     first = int(network.network_address)
     step = 1 << (128 - target_prefix)
     for i in range(total):
         if stop is not None and stop.is_set():
             raise ExportCancelled()
-        yield str(IPv6Network((IPv6Address(first + i * step), target_prefix)))
+        yield str(IPv6Network((IPv6Address(first + (start_index + i) * step), target_prefix)))
 
 
-def _write_txt(file, network, prefix, total, stop, progress):
-    for index, address in enumerate(_iter_subnets(network, prefix, total, stop), 1):
+def _write_txt(file, network, prefix, total, stop, progress, start_index=0):
+    for index, address in enumerate(_iter_subnets(network, prefix, total, stop, start_index), 1):
         file.write((address + '\n').encode('utf-8'))
         if index % BATCH_SIZE == 0 or index == total:
             progress(index, total)
 
 
-def _write_xlsx(file, network, prefix, total, stop, progress):
+def _write_xlsx(file, network, prefix, total, stop, progress, start_index=0):
     if total > XLSX_MAX_RECORDS:
         raise ValueError('Excel 单工作表超出最大记录数量')
     with zipfile.ZipFile(file, 'w', compression=zipfile.ZIP_DEFLATED, compresslevel=4, allowZip64=True) as z:
@@ -67,9 +67,9 @@ def _write_xlsx(file, network, prefix, total, stop, progress):
         z.writestr('xl/_rels/workbook.xml.rels', '<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/></Relationships>')
         with z.open('xl/worksheets/sheet1.xml', 'w', force_zip64=True) as output:
             output.write('<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><cols><col min="1" max="1" width="13" customWidth="1"/><col min="2" max="2" width="48" customWidth="1"/></cols><sheetData><row r="1"><c r="A1" t="inlineStr"><is><t>序号</t></is></c><c r="B1" t="inlineStr"><is><t>IPv6 子网</t></is></c></row>'.encode())
-            for index, address in enumerate(_iter_subnets(network, prefix, total, stop), 1):
+            for index, address in enumerate(_iter_subnets(network, prefix, total, stop, start_index), 1):
                 row = index + 1
-                output.write(f'<row r="{row}"><c r="A{row}"><v>{index}</v></c><c r="B{row}" t="inlineStr"><is><t>{escape(address)}</t></is></c></row>'.encode())
+                output.write(f'<row r="{row}"><c r="A{row}"><v>{index + start_index}</v></c><c r="B{row}" t="inlineStr"><is><t>{escape(address)}</t></is></c></row>'.encode())
                 if index % BATCH_SIZE == 0 or index == total:
                     progress(index, total)
             output.write(b'</sheetData></worksheet>')
@@ -77,12 +77,20 @@ def _write_xlsx(file, network, prefix, total, stop, progress):
 
 def export_all(destination: str | Path, network: IPv6Network, target_prefix: int,
                format_type: str, *, stop: Event | None = None,
-               progress: Callable[[int, int], None] | None = None) -> ExportReport:
-    """Write a temporary file then atomically replace destination on success.
+               progress: Callable[[int, int], None] | None = None,
+               start: int = 1, end: int | None = None) -> ExportReport:
+    """先写入临时文件，成功后再替换目标文件。
 
-    The GUI must confirm potentially huge exports and target overwrites before calling.
+    调用前须在界面确认超大导出和覆盖现有文件。
     """
-    total = 1 << (target_prefix - network.prefixlen)
+    full_total = 1 << (target_prefix - network.prefixlen)
+    if end is None:
+        end = full_total
+    if (isinstance(start, bool) or isinstance(end, bool) or
+        not isinstance(start, int) or not isinstance(end, int) or
+        not 1 <= start <= end <= full_total):
+        raise ValueError('导出范围无效，请输入有效的起始和结束序号。')
+    total = end - start + 1
     if format_type not in ('txt', 'xlsx'):
         raise ValueError('不支持的导出格式')
     if format_type == 'xlsx' and total > XLSX_MAX_RECORDS:
@@ -95,9 +103,9 @@ def export_all(destination: str | Path, network: IPv6Network, target_prefix: int
     try:
         with os.fdopen(fd, 'wb') as out:
             if format_type == 'txt':
-                _write_txt(out, network, target_prefix, total, stop, progress)
+                _write_txt(out, network, target_prefix, total, stop, progress, start - 1)
             else:
-                _write_xlsx(out, network, target_prefix, total, stop, progress)
+                _write_xlsx(out, network, target_prefix, total, stop, progress, start - 1)
         if stop is not None and stop.is_set():
             raise ExportCancelled()
         os.replace(temp, path)

@@ -1,4 +1,4 @@
-"""IPv6 calculator GUI."""
+"""IPv6 子网计算器图形界面。"""
 from __future__ import annotations
 import shutil
 import sys
@@ -6,7 +6,7 @@ import threading
 import tkinter as tk
 from pathlib import Path
 from tkinter import filedialog, messagebox, ttk
-from ipv6_core import calculate, InputError
+from ipv6_core import calculate, InputError, locate_subnet
 from subnet_export import XLSX_MAX_RECORDS, ExportCancelled, export_all, page_subnets
 from export_estimate import estimate_export_range, format_size_range
 
@@ -37,7 +37,7 @@ class Tooltip:
 
 
 def determine_export_format(path: Path, oversized: bool) -> str:
-    """Validate the format chosen in Save As; never silently truncate."""
+    """校验另存为窗口选择的格式，禁止静默截断结果。"""
     suffix = path.suffix.lower()
     if suffix not in ('.xlsx', '.txt'):
         raise ValueError('请选择 Excel（.xlsx）或 TXT（.txt）格式保存。')
@@ -49,9 +49,9 @@ def determine_export_format(path: Path, oversized: bool) -> str:
 class App(tk.Tk):
     def __init__(self):
         super().__init__()
-        self.title('IPv6 子网计算器 V0.1')
-        self.geometry('1080x800')
-        self.minsize(900, 680)
+        self.title('IPv6 子网计算器 V0.2')
+        self.geometry('1080x830')
+        self.minsize(900, 710)
         icon = Path(getattr(sys, '_MEIPASS', Path(__file__).resolve().parent)) / 'app.ico'
         if icon.exists():
             try: self.iconbitmap(str(icon))
@@ -65,7 +65,7 @@ class App(tk.Tk):
         self.protocol('WM_DELETE_WINDOW', self.on_close)
 
     def _icon_button(self, parent, name, tooltip, command):
-        """Unified light-theme line icon; artwork also has future dark-theme separation."""
+        """统一浅色线性图标，并为未来深色主题预留独立素材。"""
         root = Path(getattr(sys, '_MEIPASS', Path(__file__).resolve().parent)) / 'assets'
         if name not in self._button_images:
             self._button_images[name] = {
@@ -137,30 +137,21 @@ class App(tk.Tk):
         results = ttk.LabelFrame(base, text='子网结果列表', padding=8)
         results.pack(fill='both', expand=True)
         results.columnconfigure(0, weight=1)
-        results.rowconfigure(2, weight=1)
-        toolbar = ttk.Frame(results)
-        toolbar.grid(row=0, column=0, sticky='ew', pady=(0, 6))
-        ttk.Label(toolbar, text='每页显示：').pack(side='left')
-        self.size = tk.StringVar(value='100')
-        size_combo = ttk.Combobox(toolbar, textvariable=self.size, values=('25','50','100','200'), state='readonly', width=6)
-        size_combo.pack(side='left', padx=(0, 12))
-        size_combo.bind('<<ComboboxSelected>>', lambda _: self.change_size())
-        self.page_status = tk.StringVar(value='暂无计算结果')
-        ttk.Label(toolbar, textvariable=self.page_status, style='Hint.TLabel').pack(side='left')
+        results.rowconfigure(1, weight=1)
         self.table = ttk.Treeview(results, columns=('num','subnet'), show='headings', selectmode='extended')
         self.table.heading('num', text='序号')
         self.table.heading('subnet', text='IPv6 子网')
         self.table.column('num', width=115, minwidth=90, anchor='center', stretch=False)
         self.table.column('subnet', width=700, anchor='center')
-        self.table.grid(row=2, column=0, sticky='nsew')
+        self.table.grid(row=1, column=0, sticky='nsew')
         bar = ttk.Scrollbar(results, orient='vertical', command=self.table.yview)
-        bar.grid(row=2, column=1, sticky='ns')
+        bar.grid(row=1, column=1, sticky='ns')
         self.table.configure(yscrollcommand=bar.set)
         self.table.bind('<Control-c>', self._key_copy)
         self.table.bind('<Control-a>', self._key_select_all)
         self.table.bind('<Control-A>', self._key_select_all)
         paging = ttk.Frame(results)
-        paging.grid(row=3, column=0, sticky='ew', pady=(7, 0))
+        paging.grid(row=2, column=0, sticky='ew', pady=(7, 0))
         self.nav_buttons = []
         for name, tip, callback in (
             ('first', '首页', lambda: self.show_page(1)),
@@ -177,20 +168,123 @@ class App(tk.Tk):
         self.jump_input.bind('<Return>', lambda _: self.jump())
         self.jump_button = self._icon_button(paging, 'jump', '跳转到指定页码', self.jump)
         self.jump_button.pack(side='left', padx=6)
+        # 分页信息放在列表右下角，与翻页按钮保持同一行。
+        page_info = ttk.Frame(paging)
+        page_info.pack(side='right', padx=(12, 0))
+        ttk.Label(page_info, text='每页显示：').pack(side='left')
+        self.size = tk.StringVar(value='100')
+        size_combo = ttk.Combobox(page_info, textvariable=self.size,
+                                  values=('25', '50', '100', '200'),
+                                  state='readonly', width=5)
+        size_combo.pack(side='left', padx=(0, 10))
+        size_combo.bind('<<ComboboxSelected>>', lambda _: self.change_size())
+        self.page_status = tk.StringVar(value='暂无计算结果')
+        ttk.Label(page_info, textvariable=self.page_status,
+                  style='Hint.TLabel').pack(side='left')
         footer = ttk.Frame(results)
-        footer.grid(row=1, column=0, sticky='ew', pady=(2, 9))
+        footer.grid(row=0, column=0, sticky='ew', pady=(0, 6))
         self.copy_selected_button = self._icon_button(footer, 'copy', '复制选中的子网（Ctrl+C）', self.copy_selected)
         self.copy_selected_button.pack(side='left', padx=(0, 7))
-        self.copy_page_button = self._icon_button(footer, 'copy_page', '复制当前页全部子网（Ctrl+A 选中当前页）', self.copy_page)
+        self.copy_page_button = self._icon_button(footer, 'copy_page', '复制当前页全部子网（点击直接复制，无需先选中）', self.copy_page)
         self.copy_page_button.pack(side='left')
         self.export_button = self._icon_button(footer, 'export',
-            '导出本次计算的全部子网（TXT / Excel）。\nExcel 最多 1,048,575 条；超出可确认改为 TXT。\n超大导出可能占用大量磁盘空间和时间。',
+            '导出全部子网或指定序号范围（TXT / Excel）。\nExcel 最多 1,048,575 条；超出可确认改为 TXT。\n超大导出可能占用大量磁盘空间和时间。',
             self.request_export)
         self.export_button.pack(side='right')
+        locator = ttk.Frame(results)
+        locator.grid(row=3, column=0, sticky='ew', pady=(8, 0))
+        ttk.Label(locator, text='地址定位：').pack(side='left')
+        self.locate_address = tk.StringVar()
+        self.locate_entry = ttk.Entry(locator, textvariable=self.locate_address,
+                                      font=('Consolas', 11), width=40)
+        self.locate_entry.pack(side='left', padx=(4, 7), fill='x', expand=True)
+        Tooltip(self.locate_entry, '输入当前网络中的任意 IPv6 地址，定位并选中其所属子网。')
+        self.locate_entry.bind('<Return>', lambda _: self.locate())
+        self.locate_button = ttk.Button(locator, text='定位所属子网', command=self.locate)
+        self.locate_button.pack(side='left')
+        Tooltip(self.locate_button, '直接跳转至该地址所在的子网及页面，不逐条搜索。')
+        self._set_locator_state(False)
         self.table.tag_configure('even', background='#FFFFFF')
         self.table.tag_configure('odd', background='#EDF4FA')
         self._update_nav()
         self._set_button_state(self.export_button, False, 'export')
+
+    def _set_locator_state(self, enabled):
+        state = 'normal' if enabled else 'disabled'
+        self.locate_entry.configure(state=state)
+        self.locate_button.configure(state=state)
+
+    def locate(self):
+        if not self.result:
+            return
+        try:
+            index = locate_subnet(self.result.network, self.result.target_prefix, self.locate_address.get())
+        except InputError as exc:
+            messagebox.showwarning('定位失败', str(exc), parent=self)
+            return
+        page = (index - 1) // int(self.size.get()) + 1
+        self.show_page(page)
+        for item in self.table.get_children():
+            if int(self.table.item(item, 'values')[0]) == index:
+                self.table.selection_set(item)
+                self.table.focus(item)
+                self.table.see(item)
+                break
+        self.status.set(f'定位成功：第 {index:,} 个子网。')
+        self.status_label.configure(style='Success.TLabel')
+
+    def _choose_export_range(self, total):
+        """选择全部导出或按一基序号选择闭区间。"""
+        dlg = tk.Toplevel(self)
+        dlg.title('选择子网导出范围')
+        dlg.resizable(False, False)
+        dlg.transient(self)
+        dlg.grab_set()
+        frame = ttk.Frame(dlg, padding=18)
+        frame.pack(fill='both', expand=True)
+        ttk.Label(frame, text=f'本次计算共有 {total:,} 个子网。').pack(anchor='w', pady=(0, 10))
+        mode = tk.StringVar(value='all')
+        ttk.Radiobutton(frame, text='导出全部子网', variable=mode, value='all').pack(anchor='w')
+        ttk.Radiobutton(frame, text='按序号范围导出（含起止项）', variable=mode, value='range').pack(anchor='w', pady=(8, 4))
+        inputs = ttk.Frame(frame)
+        inputs.pack(fill='x', pady=(3, 11))
+        ttk.Label(inputs, text='起始序号：').grid(row=0, column=0)
+        start_var = tk.StringVar(value='1')
+        start_entry = ttk.Entry(inputs, textvariable=start_var, width=18)
+        start_entry.grid(row=0, column=1, padx=(0, 10))
+        ttk.Label(inputs, text='结束序号：').grid(row=0, column=2)
+        end_var = tk.StringVar(value=str(min(total, 1000)))
+        end_entry = ttk.Entry(inputs, textvariable=end_var, width=18)
+        end_entry.grid(row=0, column=3)
+        Tooltip(start_entry, '输入子网序号，最小为 1。')
+        Tooltip(end_entry, f'输入子网序号，最大为 {total:,}，包含此项。')
+        chosen = []
+        def update(*_):
+            state = 'normal' if mode.get() == 'range' else 'disabled'
+            start_entry.configure(state=state)
+            end_entry.configure(state=state)
+        mode.trace_add('write', update)
+        update()
+        def accept():
+            if mode.get() == 'all':
+                chosen.append((1, total))
+            else:
+                a, b = start_var.get().strip(), end_var.get().strip()
+                if (not a.isascii() or not b.isascii() or not a.isdecimal() or
+                    not b.isdecimal() or len(a) > 42 or len(b) > 42 or
+                    not 1 <= int(a) <= int(b) <= total):
+                    messagebox.showwarning('导出范围错误', f'请输入 1～{total:,} 之间的有效起止序号，且起始序号不得大于结束序号。', parent=dlg)
+                    return
+                chosen.append((int(a), int(b)))
+            dlg.destroy()
+        actions = ttk.Frame(frame)
+        actions.pack(fill='x')
+        ttk.Button(actions, text='取消', command=dlg.destroy).pack(side='right')
+        ttk.Button(actions, text='确定', command=accept).pack(side='right', padx=(0, 10))
+        dlg.protocol('WM_DELETE_WINDOW', dlg.destroy)
+        dlg.bind('<Return>', lambda _: accept())
+        self.wait_window(dlg)
+        return chosen[0] if chosen else None
 
     def _total_pages(self):
         if not self.result: return 0
@@ -217,6 +311,7 @@ class App(tk.Tk):
             messagebox.showwarning('提示', '请先完成或取消导出。', parent=self)
             return
         self.result = None
+        self._set_locator_state(False)
         self.table.delete(*self.table.get_children())
         for field in self.fields.values(): field.set('—')
         self.page_status.set('暂无计算结果')
@@ -233,6 +328,7 @@ class App(tk.Tk):
         self.status.set('输入地址已规范化到所属网络。' if r.normalized else '计算完成。')
         self.status_label.configure(style='Success.TLabel')
         self.show_page(1)
+        self._set_locator_state(True)
 
     def show_page(self, page):
         if not self.result or not 1 <= page <= self._total_pages(): return
@@ -259,7 +355,7 @@ class App(tk.Tk):
         self.show_page(int(s))
 
     def _key_select_all(self, _event=None):
-        """Select every currently displayed subnet without generating other pages."""
+        """选中当前页全部子网，不生成其他页面的数据。"""
         items = self.table.get_children()
         if items:
             self.table.selection_set(items)
@@ -291,19 +387,24 @@ class App(tk.Tk):
         if not self.result or (self.export_thread and self.export_thread.is_alive()):
             return
         r = self.result
-        oversized = r.subnet_count > XLSX_MAX_RECORDS
+        span = self._choose_export_range(r.subnet_count)
+        if span is None:
+            return
+        start, end = span
+        count = end - start + 1
+        oversized = count > XLSX_MAX_RECORDS
         if oversized and not messagebox.askyesno(
             '超出 Excel 限制',
-            f'共 {r.subnet_count:,} 个子网，超出 Excel 单工作表最多 '
+            f'本次选中的 {count:,} 个子网超出 Excel 单工作表最多 '
             f'{XLSX_MAX_RECORDS:,} 条的限制。\n\n'
-            '如需继续保存全部结果，只能使用 TXT 格式。是否继续？',
+            '如需继续保存选定范围，只能使用 TXT 格式。是否继续？',
             parent=self
         ):
             return
 
-        # The Windows Save As dialog allows users to choose the file type directly.
-        # tkinter returns a path rather than the selected filter, so infer format
-        # from the final extension and validate it before writing anything.
+        # Windows 另存为窗口允许用户直接选择文件类型。
+        # 由于界面组件只返回路径而不返回选中的筛选器，需要根据
+        # 最终扩展名识别格式，并在写入前完成校验。
         filters = [('文本文件 (*.txt)', '*.txt')] if oversized else [
             ('Excel 工作簿 (*.xlsx)', '*.xlsx'),
             ('文本文件 (*.txt)', '*.txt'),
@@ -311,7 +412,7 @@ class App(tk.Tk):
         default_format = 'txt' if oversized else 'xlsx'
         selected = filedialog.asksaveasfilename(
             parent=self,
-            title='导出全部 IPv6 子网',
+            title='导出 IPv6 子网',
             defaultextension='.' + default_format,
             filetypes=filters,
             initialfile='IPv6Subnets.' + default_format,
@@ -325,12 +426,11 @@ class App(tk.Tk):
             messagebox.showerror('格式错误', str(err), parent=self)
             return
 
-        count = r.subnet_count
-        lower, upper = estimate_export_range(r.network, r.target_prefix, fmt, count)
+        lower, upper = estimate_export_range(r.network, r.target_prefix, fmt, count, start - 1)
         disk_hint = format_size_range(lower, upper)
         if count > 100_000:
             if not messagebox.askyesno('确认完整导出',
-                f'将导出全部 {count:,} 个子网（不是仅导出当前页）。\n'
+                f'将导出序号 {start:,}～{end:,}，共 {count:,} 个子网。\n'
                 f'预计占用磁盘空间约 {disk_hint}（范围估算），\n'
                 '实际大小取决于地址长度、压缩格式及文件内容。\n'
                 '数据量较大，导出可能耗时较长。\n\n是否继续导出？',
@@ -342,7 +442,7 @@ class App(tk.Tk):
             return
         try:
             usage = shutil.disk_usage(path.parent)
-            # Keep a modest reserve separate from the displayed size estimate.
+            # 额外预留少量磁盘空间，不计入显示的容量估算。
             reserve = max(256 * 1024**2, usage.total // 100)
             required = upper + reserve
             if required > usage.free and not messagebox.askyesno(
@@ -355,13 +455,13 @@ class App(tk.Tk):
                 return
         except OSError:
             pass
-        self._start_export(path, fmt, r)
+        self._start_export(path, fmt, r, start, end)
 
-    def _start_export(self, path, fmt, result):
+    def _start_export(self, path, fmt, result, start, end):
         self.export_stop = threading.Event()
         self.progress_dialog = tk.Toplevel(self)
         dialog = self.progress_dialog
-        dialog.title('正在导出全部子网')
+        dialog.title('正在导出子网')
         dialog.geometry('520x190')
         dialog.resizable(False, False)
         dialog.transient(self)
@@ -369,7 +469,7 @@ class App(tk.Tk):
         frame=ttk.Frame(dialog, padding=18)
         frame.pack(fill='both', expand=True)
         ttk.Label(frame, text=f'正在导出至：{path.name}').pack(anchor='w')
-        self.export_label=tk.StringVar(value=f'0 / {result.subnet_count:,} 项 (0.00%)')
+        self.export_label=tk.StringVar(value=f'0 / {end-start+1:,} 项 (0.00%)')
         ttk.Label(frame, textvariable=self.export_label).pack(anchor='w', pady=(12, 8))
         self.progress=ttk.Progressbar(frame, mode='determinate', maximum=10000)
         self.progress.pack(fill='x')
@@ -377,13 +477,13 @@ class App(tk.Tk):
         dialog.protocol('WM_DELETE_WINDOW', self.cancel_export)
         self._set_button_state(self.export_button, False, 'export')
         def update(done, total):
-            # The worker only writes to a synchronized Python structure, not Tk widgets.
+            # 工作线程仅写入同步数据结构，不直接操作界面组件。
             with self._export_lock:
                 self._export_progress = (done, total)
         def worker():
             try:
                 report=export_all(path, result.network, result.target_prefix, fmt,
-                                  stop=self.export_stop, progress=update)
+                                  stop=self.export_stop, progress=update, start=start, end=end)
                 outcome=('ok',report)
             except ExportCancelled:
                 outcome=('cancel',None)
@@ -392,7 +492,7 @@ class App(tk.Tk):
             with self._export_lock:
                 self._export_outcome=outcome
         self._export_lock=threading.Lock()
-        self._export_progress=(0,result.subnet_count)
+        self._export_progress=(0,end-start+1)
         self._export_outcome=None
         self.export_thread=threading.Thread(target=worker, daemon=False)
         self.export_thread.start()

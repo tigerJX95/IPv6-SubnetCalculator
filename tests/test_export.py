@@ -9,12 +9,12 @@ from subnet_export import page_subnets, subnet_at, export_all, ExportCancelled, 
 
 class ExportTests(unittest.TestCase):
     def setUp(self):
-        self.net = IPv6Network('2001:db8:1234::/48')
+        self.net = IPv6Network('2026:1015:abcd::/48')
 
     def test_pagination(self):
-        self.assertEqual(page_subnets(self.net, 64, 1, 25)[0], (1, '2001:db8:1234::/64'))
-        self.assertEqual(page_subnets(self.net, 64, 2, 25)[0], (26, '2001:db8:1234:19::/64'))
-        self.assertEqual(page_subnets(self.net, 64, 2622, 25)[-1], (65536, '2001:db8:1234:ffff::/64'))
+        self.assertEqual(page_subnets(self.net, 64, 1, 25)[0], (1, '2026:1015:abcd::/64'))
+        self.assertEqual(page_subnets(self.net, 64, 2, 25)[0], (26, '2026:1015:abcd:19::/64'))
+        self.assertEqual(page_subnets(self.net, 64, 2622, 25)[-1], (65536, '2026:1015:abcd:ffff::/64'))
         with self.assertRaises(ValueError): page_subnets(self.net, 64, 2623, 25)
 
     def test_huge_random_access(self):
@@ -27,22 +27,22 @@ class ExportTests(unittest.TestCase):
     def test_txt_export(self):
         with tempfile.TemporaryDirectory() as d:
             path=Path(d)/'out.txt'
-            report=export_all(path, IPv6Network('2001:db8::/126'), 128,'txt')
+            report=export_all(path, IPv6Network('2026:1015:abcd::/126'), 128,'txt')
             self.assertEqual(report.rows,4)
             self.assertEqual(path.read_text().splitlines(),
-                ['2001:db8::/128','2001:db8::1/128','2001:db8::2/128','2001:db8::3/128'])
+                ['2026:1015:abcd::/128','2026:1015:abcd::1/128','2026:1015:abcd::2/128','2026:1015:abcd::3/128'])
 
     def test_xlsx_export_valid_xml(self):
         with tempfile.TemporaryDirectory() as d:
             path=Path(d)/'out.xlsx'
-            export_all(path, IPv6Network('2001:db8::/126'), 128,'xlsx')
+            export_all(path, IPv6Network('2026:1015:abcd::/126'), 128,'xlsx')
             with zipfile.ZipFile(path) as z:
                 self.assertIsNone(z.testzip())
                 xml=ET.fromstring(z.read('xl/worksheets/sheet1.xml'))
                 ns={'x':'http://schemas.openxmlformats.org/spreadsheetml/2006/main'}
                 rows=xml.findall('.//x:sheetData/x:row',ns)
                 self.assertEqual(len(rows),5)
-                self.assertIn('2001:db8::3/128',z.read('xl/worksheets/sheet1.xml').decode())
+                self.assertIn('2026:1015:abcd::3/128',z.read('xl/worksheets/sheet1.xml').decode())
 
     def test_cancel_preserves_existing(self):
         with tempfile.TemporaryDirectory() as d:
@@ -58,7 +58,7 @@ class ExportTests(unittest.TestCase):
     def test_excel_limit(self):
         with tempfile.TemporaryDirectory() as d:
             with self.assertRaises(ValueError):
-                export_all(Path(d)/'out.xlsx',IPv6Network('2001:db8::/32'),64,'xlsx')
+                export_all(Path(d)/'out.xlsx',IPv6Network('2026:1015:abcd::/48'),80,'xlsx')
             self.assertFalse((Path(d)/'out.xlsx').exists())
             self.assertEqual(XLSX_MAX_RECORDS,1048575)
 

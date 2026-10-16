@@ -1,4 +1,4 @@
-"""Export format validation regression checks (no GUI needed)."""
+"""导出格式校验回归测试，无需启动图形界面。"""
 import ast
 import unittest
 from pathlib import Path

@@ -11,13 +11,13 @@ class EstimateTests(unittest.TestCase):
         self.assertGreaterEqual(high,actual)
 
     def test_huge_count_is_fast_and_bounded(self):
-        n=IPv6Network('2001:db8::/32')
-        low,high=estimate_export_range(n,64,'txt',2**32)
+        n=IPv6Network('2026:1015:abcd::/48')
+        low,high=estimate_export_range(n,80,'txt',2**32)
         self.assertLess(low,high)
         self.assertGreater(high,2**32*10)
 
     def test_xlsx_range(self):
-        n=IPv6Network('2001:db8::/120')
+        n=IPv6Network('2026:1015:abcd::/120')
         low,high=estimate_export_range(n,128,'xlsx',256)
         self.assertLess(low,high)
 
