@@ -6,7 +6,8 @@ ROOT = Path(__file__).resolve().parents[1]
 ASSETS = ROOT / 'assets'
 STATES = ('normal', 'hover', 'disabled')
 ACTIVE = ('calculate', 'copy', 'copy_page', 'copy_range', 'clear_selection', 'export',
-          'first_small', 'previous_small', 'next_small', 'last_small', 'jump_small')
+          'first_small', 'previous_small', 'next_small', 'last_small', 'jump_small',
+          'locate_small', 'clear_highlight_small')
 
 class IconResourcesTest(unittest.TestCase):
     def test_all_active_icons_have_three_states(self):

@@ -66,10 +66,19 @@ def _write_xlsx(file, network, prefix, total, stop, progress, start_index=0):
         z.writestr('xl/workbook.xml', '<?xml version="1.0" encoding="UTF-8"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="IPv6子网" sheetId="1" r:id="rId1"/></sheets></workbook>')
         z.writestr('xl/_rels/workbook.xml.rels', '<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/></Relationships>')
         with z.open('xl/worksheets/sheet1.xml', 'w', force_zip64=True) as output:
-            output.write('<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><cols><col min="1" max="1" width="13" customWidth="1"/><col min="2" max="2" width="48" customWidth="1"/></cols><sheetData><row r="1"><c r="A1" t="inlineStr"><is><t>序号</t></is></c><c r="B1" t="inlineStr"><is><t>IPv6 子网</t></is></c></row>'.encode())
+            # Excel 数值只有 15 位有效数字。若本次范围含超长序号，整列
+            # 统一写为文本，避免精度丢失及同一列出现数值/文本混合类型。
+            indices_as_text = start_index + total >= 10**15
+            index_width = max(13, len(str(start_index + total)) + 2)
+            output.write(('<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><cols>'
+                          f'<col min="1" max="1" width="{index_width}" customWidth="1"/>'
+                          '<col min="2" max="2" width="48" customWidth="1"/></cols><sheetData><row r="1"><c r="A1" t="inlineStr"><is><t>序号</t></is></c><c r="B1" t="inlineStr"><is><t>IPv6 子网</t></is></c></row>').encode())
             for index, address in enumerate(_iter_subnets(network, prefix, total, stop, start_index), 1):
                 row = index + 1
-                output.write(f'<row r="{row}"><c r="A{row}"><v>{index + start_index}</v></c><c r="B{row}" t="inlineStr"><is><t>{escape(address)}</t></is></c></row>'.encode())
+                number = index + start_index
+                index_cell = (f'<c r="A{row}" t="inlineStr"><is><t>{number}</t></is></c>'
+                              if indices_as_text else f'<c r="A{row}"><v>{number}</v></c>')
+                output.write(f'<row r="{row}">{index_cell}<c r="B{row}" t="inlineStr"><is><t>{escape(address)}</t></is></c></row>'.encode())
                 if index % BATCH_SIZE == 0 or index == total:
                     progress(index, total)
             output.write(b'</sheetData></worksheet>')

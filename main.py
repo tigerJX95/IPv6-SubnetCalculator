@@ -13,7 +13,7 @@ from export_estimate import estimate_export_range, format_size_range
 from address_usage import describe_network
 from subnet_tools import MAX_COPY_RECORDS, validate_copy_range, subnet_range_text, adjacent_subnet_index, LOCATOR_MODES, resolve_locator_range, summarize_selection
 
-APP_VERSION = '0.6'
+APP_VERSION = '0.7'
 
 
 class Tooltip:
@@ -147,6 +147,7 @@ class App(tk.Tk):
                     if str(button.cget('state')) == 'normal' else None, add='+')
         button.bind('<Leave>', lambda e: button.configure(image=artwork['normal'])
                     if str(button.cget('state')) == 'normal' else None, add='+')
+        button.bind('<Return>', lambda _: button.invoke())
         Tooltip(button, tooltip)
         return button
 
@@ -347,17 +348,17 @@ class App(tk.Tk):
         self.locator_entry.bind('<FocusOut>', self._normalize_locator_field)
         self.locator_entry.bind('<Return>', lambda _: self.locate_selected())
         self.locator_tip = Tooltip(self.locator_entry, '输入当前网络中的 IPv6 地址，例如 2026:1015:abcd::1。')
-        self.locator_button = ttk.Button(locator, text='定位', command=self.locate_selected)
+        self.locator_button = self._icon_button(locator, 'locate_small',
+            '定位（输入后按 Enter）\n跳转至对应子网；范围定位后，翻页继续保留高亮。', self.locate_selected)
         self.locator_button.pack(side='left')
-        self.clear_range_button = ttk.Button(locator, text='清除高亮', command=self.clear_locator_range)
+        self.clear_range_button = self._icon_button(locator, 'clear_highlight_small',
+            '清除定位高亮\n清除跨页定位范围，保留本页手动选择。', self.clear_locator_range)
         self.clear_range_button.pack(side='left', padx=(6, 0))
-        Tooltip(self.clear_range_button, '清除定位范围高亮，保留本页手动选择。')
-        feedback = ttk.Label(results, textvariable=self.status, style='Hint.TLabel',
-                             justify='left', wraplength=800)
-        feedback.grid(row=4, column=0, sticky='ew', pady=(6, 0))
-        feedback.bind('<Configure>', lambda event: feedback.configure(
+        self.result_status_label = ttk.Label(results, textvariable=self.status, style='Hint.TLabel',
+                                            justify='left', wraplength=800)
+        self.result_status_label.grid(row=4, column=0, sticky='ew', pady=(6, 0))
+        self.result_status_label.bind('<Configure>', lambda event: self.result_status_label.configure(
             wraplength=max(200, event.width - 10)))
-        Tooltip(self.locator_button, '定位至对应页面；定位范围时高亮当前页内的匹配子网，翻页后继续高亮。')
         self._set_locator_state(False)
         self.table.tag_configure('even', background='#FFFFFF')
         self.table.tag_configure('odd', background='#EDF4FA')
@@ -397,26 +398,48 @@ class App(tk.Tk):
             '高亮不等于选中；翻页后继续保留。' if self.locator_range else '尚未设置定位范围。')
         self._set_button_state(self.copy_selected_button, bool(stats.count), 'copy')
         self._set_button_state(self.clear_selection_button, bool(stats.count), 'clear_selection')
-        self.clear_range_button.configure(state='normal' if self.locator_range else 'disabled')
+        self._set_button_state(self.clear_range_button, bool(self.locator_range), 'clear_highlight_small')
+
+    def _set_status(self, text, style='Hint.TLabel'):
+        """两页共享消息内容与颜色，避免复制、定位或错误反馈不一致。"""
+        self.status.set(text)
+        self.status_label.configure(style=style)
+        self.result_status_label.configure(style=style)
+
+    def _copy_to_clipboard(self, text, success_message, parent=None):
+        """复制失败时保留当前操作上下文，让用户可以重试。"""
+        try:
+            self.clipboard_clear()
+            self.clipboard_append(text)
+            self.update_idletasks()
+        except tk.TclError:
+            self._set_status('复制失败：无法访问剪贴板，请稍后重试。', 'Warn.TLabel')
+            messagebox.showwarning('复制失败', '暂时无法访问剪贴板，请稍后重试。', parent=parent or self)
+            return False
+        self._set_status(success_message, 'Success.TLabel')
+        return True
 
     def _copy_selection_statistics(self, _event=None):
         if not self.result:
             return
-        self.clipboard_clear()
-        self.clipboard_append(self._selection_stats_full)
-        self.update_idletasks()
-        self.status.set('完整选择统计已复制到剪贴板。')
-        self.status_label.configure(style='Success.TLabel')
+        self._copy_to_clipboard(self._selection_stats_full, '完整选择统计已复制到剪贴板。')
 
     def clear_selection(self, _event=None):
+        had_selection = bool(self.table.selection())
         self.table.selection_remove(self.table.selection())
         self._refresh_selection_statistics()
+        if had_selection:
+            self._set_status('已清除本页手动选择；定位范围高亮已保留。' if self.locator_range
+                             else '已清除本页手动选择。')
         return 'break'
 
     def clear_locator_range(self):
+        had_range = self.locator_range is not None
         self.locator_range = None
         self._highlight_locator_range()
         self._refresh_selection_statistics()
+        if had_range:
+            self._set_status('已清除定位范围高亮；本页手动选择已保留。')
 
     def _refresh_prefix_shortcuts(self, *_):
         """根据用户当前输入的原始前缀调整快捷选项。"""
@@ -448,7 +471,7 @@ class App(tk.Tk):
     def _set_locator_state(self, enabled):
         state = 'normal' if enabled else 'disabled'
         self.locator_entry.configure(state=state)
-        self.locator_button.configure(state=state)
+        self._set_button_state(self.locator_button, enabled, 'locate_small')
         self.locator_combo.configure(state='readonly' if enabled else 'disabled')
 
     @staticmethod
@@ -485,14 +508,15 @@ class App(tk.Tk):
                 self.locator_mode.get(), self.locator_value.get(),
                 self.result.network, self.result.target_prefix)
         except InputError as exc:
+            self._set_status('定位失败：'+str(exc), 'Warn.TLabel')
             messagebox.showwarning('定位失败', str(exc), parent=self)
             return
         self.locator_range = (first, last)
         self._select_index(first)
         count = last - first + 1
-        self.status.set(f'定位成功：第 {first:,} 个子网。' if count == 1
-                        else f'已定位第 {first:,}～{last:,} 个子网，共 {count:,} 项；翻页仍保留范围高亮。')
-        self.status_label.configure(style='Success.TLabel')
+        self._set_status(f'定位成功：第 {first:,} 个子网。' if count == 1
+                         else f'已定位第 {first:,}～{last:,} 个子网，共 {count:,} 项；翻页仍保留范围高亮。',
+                         'Success.TLabel')
 
     def _select_index(self, index):
         """跳转到指定子网，并根据当前定位范围保持高亮。"""
@@ -549,12 +573,9 @@ class App(tk.Tk):
             except InputError as exc:
                 messagebox.showwarning('无法复制', str(exc), parent=dlg)
                 return
-            self.clipboard_clear()
-            self.clipboard_append(value)
-            self.update_idletasks()
-            self.status.set(f'已复制第 {start:,}～{end:,} 项，共 {end-start+1:,} 个子网。')
-            self.status_label.configure(style='Success.TLabel')
-            dlg.destroy()
+            if self._copy_to_clipboard(value,
+                    f'已复制第 {start:,}～{end:,} 项，共 {end-start+1:,} 个子网。', parent=dlg):
+                dlg.destroy()
         buttons = ttk.Frame(area)
         buttons.grid(row=3, column=0, columnspan=2, sticky='e', pady=(12, 0))
         ttk.Button(buttons, text='复制', command=perform).pack(side='left', padx=(0, 8))
@@ -604,10 +625,9 @@ class App(tk.Tk):
             update_detail()
             self._select_index(current_index)
         def copy_info():
-            self.clipboard_clear()
-            self.clipboard_append('\n'.join(f'{key}：{var.get()}' for key, var in zip(labels, value_vars)))
-            self.update_idletasks()
-            self.status.set('子网详细信息已复制到剪贴板。')
+            self._copy_to_clipboard(
+                '\n'.join(f'{key}：{var.get()}' for key, var in zip(labels, value_vars)),
+                '子网详细信息已复制到剪贴板。', parent=dlg)
         prev_button = ttk.Button(buttons, text='上一条', command=lambda: step(-1))
         prev_button.pack(side='left', padx=(0, 8))
         next_button = ttk.Button(buttons, text='下一条', command=lambda: step(1))
@@ -686,6 +706,7 @@ class App(tk.Tk):
         for btn, name, can in zip(self.nav_buttons, ('first','previous','next','last'), enabled):
             self._set_button_state(btn, can, name + '_small')
         self._set_button_state(self.jump_button, bool(last), 'jump_small')
+        self.jump_input.configure(state='normal' if last else 'disabled')
         self._set_button_state(self.copy_selected_button, bool(self.table.selection()), 'copy')
         self._set_button_state(self.copy_page_button, bool(last), 'copy_page')
         self._set_button_state(self.copy_range_button, bool(last), 'copy_range')
@@ -710,8 +731,7 @@ class App(tk.Tk):
         self.usage_reference.set('')
         try: self.result = calculate(self.net.get(), self.target.get(), preview_limit=0)
         except InputError as err:
-            self.status.set('输入错误：'+str(err))
-            self.status_label.configure(style='Warn.TLabel')
+            self._set_status('输入错误：'+str(err), 'Warn.TLabel')
             self._update_nav()
             return
         r = self.result
@@ -724,8 +744,7 @@ class App(tk.Tk):
         self.usage_message.set(usage.guidance)
         self.usage_reference.set(f'规范参考：{usage.reference}')
         self.usage_text.configure(style='Usage.TLabel')
-        self.status.set('输入地址已规范化到所属网络。' if r.normalized else '计算完成。')
-        self.status_label.configure(style='Success.TLabel')
+        self._set_status('输入地址已规范化到所属网络。' if r.normalized else '计算完成。', 'Success.TLabel')
         self.show_page(1)
         self._set_locator_state(True)
         self.notebook.select(self.results_tab)
@@ -755,10 +774,7 @@ class App(tk.Tk):
 
     def _copy_page_statistics(self, _event=None):
         if not self.result: return
-        self.clipboard_clear()
-        self.clipboard_append(getattr(self, '_page_stats_full', ''))
-        self.update_idletasks()
-        self.status.set('完整分页统计已复制到剪贴板。')
+        self._copy_to_clipboard(getattr(self, '_page_stats_full', ''), '完整分页统计已复制到剪贴板。')
 
     def _resize_paging(self, event=None):
         if self._paging_layout_busy: return
@@ -780,7 +796,18 @@ class App(tk.Tk):
 
     def show_last(self): self.show_page(self._total_pages())
 
-    def change_size(self): self.show_page(1)
+    def change_size(self):
+        """保留原页首子网所在位置，改变页大小后不再无条件返回首页。"""
+        items = self.table.get_children()
+        if not self.result or not items:
+            return
+        anchor = int(self.table.item(items[0], 'values')[0])
+        self.show_page((anchor - 1) // int(self.size.get()) + 1)
+        for item in self.table.get_children():
+            if int(self.table.item(item, 'values')[0]) == anchor:
+                self.table.focus(item)
+                self.table.see(item)
+                break
 
     def jump(self):
         s = self.page_entry.get().strip()
@@ -818,11 +845,7 @@ class App(tk.Tk):
         self._copy([self.table.item(item, 'values')[1] for item in self.table.get_children()])
 
     def _copy(self, lines):
-        self.clipboard_clear()
-        self.clipboard_append('\n'.join(lines))
-        self.update_idletasks()
-        self.status.set(f'已复制 {len(lines)} 个子网。')
-        self.status_label.configure(style='Success.TLabel')
+        self._copy_to_clipboard('\n'.join(lines), f'已复制 {len(lines)} 个子网。')
 
     def request_export(self):
         if not self.result or (self.export_thread and self.export_thread.is_alive()):
@@ -955,15 +978,12 @@ class App(tk.Tk):
         self._set_button_state(self.export_button, True, 'export')
         kind, payload=outcome
         if kind=='ok':
-            self.status.set(f'导出成功：共 {payload.rows:,} 项，保存至 {payload.path}')
-            self.status_label.configure(style='Success.TLabel')
+            self._set_status(f'导出成功：共 {payload.rows:,} 项，保存至 {payload.path}', 'Success.TLabel')
             messagebox.showinfo('导出完成', f'已导出 {payload.rows:,} 项。\n保存位置：{payload.path}', parent=self)
         elif kind=='cancel':
-            self.status.set('导出已取消，未保留未完成文件。')
-            self.status_label.configure(style='Hint.TLabel')
+            self._set_status('导出已取消，未保留未完成文件。')
         else:
-            self.status.set('导出失败。')
-            self.status_label.configure(style='Warn.TLabel')
+            self._set_status('导出失败。', 'Warn.TLabel')
             messagebox.showerror('导出失败', str(payload), parent=self)
 
     def cancel_export(self):

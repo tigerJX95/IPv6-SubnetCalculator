@@ -162,7 +162,8 @@ class ResultsInteractionTests(unittest.TestCase):
         self.app.change_size()
         self.app.update()
         self.assertEqual(self.app.locator_range, (90, 210))
-        self.assertIn('本页高亮 0 条', self.app.range_status.get())
+        self.assertEqual(self.app.page, 9)
+        self.assertIn('本页高亮 10 条', self.app.range_status.get())
 
     def test_clear_highlight_preserves_selection_and_restores_stripes(self):
         self.locate_range()
