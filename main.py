@@ -6,9 +6,10 @@ import threading
 import tkinter as tk
 from pathlib import Path
 from tkinter import filedialog, messagebox, ttk
-from ipv6_core import calculate, InputError, locate_subnet
+from ipv6_core import calculate, InputError, locate_subnet, common_target_prefixes, prefix_analysis, subnet_count_description, normalize_ipv6_input
 from subnet_export import XLSX_MAX_RECORDS, ExportCancelled, export_all, page_subnets
 from export_estimate import estimate_export_range, format_size_range
+from address_usage import describe_network
 
 
 class Tooltip:
@@ -46,11 +47,35 @@ def determine_export_format(path: Path, oversized: bool) -> str:
     return suffix[1:]
 
 
+def centered_dialog_position(parent_box: tuple[int, int, int, int], size: tuple[int, int], screen: tuple[int, int]) -> tuple[int, int]:
+    """使子窗口居中于主窗口，并限制在当前屏幕可见区域。"""
+    px, py, pw, ph = parent_box
+    dw, dh = size
+    sw, sh = screen
+    x = px + (pw - dw) // 2
+    y = py + (ph - dh) // 2
+    return max(0, min(x, max(0, sw - dw))), max(0, min(y, max(0, sh - dh)))
+
+
+def compact_count(number: int) -> str:
+    """仅缩短巨量统计信息的视觉长度，所有内部数值仍保持整数精度。"""
+    if number >= 10**20:
+        exponent = len(str(number)) - 1
+        divisor = 10**exponent
+        scaled = (number * 100 + divisor // 2) // divisor
+        return f'{scaled // 100}.{scaled % 100:02d}×10^{exponent}'
+    for unit, divisor in (('京', 10**16), ('万亿', 10**12), ('亿', 10**8)):
+        if number >= divisor:
+            scaled = (number * 100 + divisor // 2) // divisor
+            whole, fractional = divmod(scaled, 100)
+            return (str(whole) if fractional == 0 else f'{whole}.{fractional:02d}') + unit
+    return f'{number:,}'
+
 class App(tk.Tk):
     def __init__(self):
         super().__init__()
-        self.title('IPv6 子网计算器 V0.2')
-        self.geometry('1080x830')
+        self.title('IPv6 子网计算器 V0.3')
+        self.geometry('1080x910')
         self.minsize(900, 710)
         icon = Path(getattr(sys, '_MEIPASS', Path(__file__).resolve().parent)) / 'app.ico'
         if icon.exists():
@@ -63,6 +88,38 @@ class App(tk.Tk):
         self._button_images = {}
         self._create_ui()
         self.protocol('WM_DELETE_WINDOW', self.on_close)
+
+    def _prepare_dialog(self, dialog):
+        """继承程序图标，首帧显示在主窗口中央，避免闪现于屏幕左上角。"""
+        dialog.withdraw()
+        icon = Path(getattr(sys, '_MEIPASS', Path(__file__).resolve().parent)) / 'app.ico'
+        if icon.exists():
+            try:
+                dialog.iconbitmap(str(icon))
+            except tk.TclError:
+                pass
+        dialog.transient(self)
+
+    def _show_centered_dialog(self, dialog, fixed_size=None):
+        """在内容完成布局后计算实际尺寸，再显示并取得焦点。"""
+        self.update_idletasks()
+        dialog.update_idletasks()
+        width, height = dialog.winfo_reqwidth(), dialog.winfo_reqheight()
+        # 若窗口指定了 geometry 尺寸，优先以配置的最终尺寸定位。
+        actual_width, actual_height = dialog.winfo_width(), dialog.winfo_height()
+        if actual_width > 1 and actual_height > 1:
+            width, height = actual_width, actual_height
+        if fixed_size is not None:
+            width, height = fixed_size
+        x, y = centered_dialog_position(
+            (self.winfo_rootx(), self.winfo_rooty(), self.winfo_width(), self.winfo_height()),
+            (width, height),
+            (self.winfo_screenwidth(), self.winfo_screenheight()),
+        )
+        dialog.geometry(f'+{x}+{y}')
+        dialog.deiconify()
+        dialog.lift(self)
+        dialog.grab_set()
 
     def _icon_button(self, parent, name, tooltip, command):
         """统一浅色线性图标，并为未来深色主题预留独立素材。"""
@@ -95,6 +152,8 @@ class App(tk.Tk):
         sty.configure('.', font=('Microsoft YaHei UI', 11))
         sty.configure('Title.TLabel', font=('Microsoft YaHei UI', 22, 'bold'))
         sty.configure('Hint.TLabel', font=('Microsoft YaHei UI', 11), foreground='#17659a')
+        sty.configure('Usage.TLabel', font=('Microsoft YaHei UI', 11), foreground='#B42318')
+        sty.configure('UsageTitle.TLabel', font=('Microsoft YaHei UI', 11, 'bold'), foreground='#B42318')
         sty.configure('Warn.TLabel', font=('Microsoft YaHei UI', 11, 'bold'), foreground='#b42318')
         sty.configure('Success.TLabel', font=('Microsoft YaHei UI', 11, 'bold'), foreground='#137547')
         sty.configure('Result.TLabel', font=('Consolas', 12, 'bold'))
@@ -114,10 +173,21 @@ class App(tk.Tk):
         self.target = tk.StringVar(value='64')
         net_entry = ttk.Entry(form, textvariable=self.net, font=('Consolas', 13, 'bold'))
         net_entry.grid(row=1, column=0, sticky='ew', padx=(0, 12), pady=(5, 8))
-        prefix_entry = ttk.Entry(form, textvariable=self.target, font=('Consolas', 13, 'bold'))
-        prefix_entry.grid(row=1, column=1, sticky='ew', pady=(5, 8))
-        Tooltip(prefix_entry, '目标前缀：0～128，且不得小于原网络前缀。')
+        prefix_area = ttk.Frame(form)
+        prefix_area.grid(row=1, column=1, sticky='ew', pady=(5, 8))
+        prefix_area.columnconfigure(0, weight=1)
+        prefix_entry = ttk.Entry(prefix_area, textvariable=self.target, font=('Consolas', 13, 'bold'))
+        prefix_entry.grid(row=0, column=0, sticky='ew', padx=(0, 6))
+        Tooltip(prefix_entry, '可手工输入 0～128 的目标前缀，不得小于原网络前缀。')
+        self.prefix_shortcuts = ttk.Combobox(prefix_area, state='readonly', width=8, values=())
+        self.prefix_shortcuts.grid(row=0, column=1, sticky='e')
+        self.prefix_shortcuts.set('常用前缀')
+        Tooltip(self.prefix_shortcuts, '选择适用于当前网络的常用前缀，并立即重新计算；手工输入仍可使用。')
+        self.prefix_shortcuts.bind('<<ComboboxSelected>>', self._choose_common_prefix)
+        self.net.trace_add('write', self._refresh_prefix_shortcuts)
+        self._refresh_prefix_shortcuts()
         self._icon_button(form, 'calculate', '开始计算 IPv6 子网', self.calculate).grid(row=2, column=0, sticky='w')
+        net_entry.bind('<FocusOut>', lambda _: self._normalize_address_field(self.net))
         net_entry.bind('<Return>', lambda _: self.calculate())
         prefix_entry.bind('<Return>', lambda _: self.calculate())
         self.status = tk.StringVar(value='输入参数后点击“开始计算”。')
@@ -129,11 +199,27 @@ class App(tk.Tk):
         self.fields = {}
         for row, (title, key) in enumerate((('网络地址', 'network'), ('网络起始地址', 'start'),
                                             ('网络结束地址', 'end'), ('可划分子网数', 'count'),
-                                            ('每个子网地址数', 'capacity'))):
+                                            ('每个子网地址数', 'capacity'),
+                                            ('新增子网位数', 'bits'))):
             ttk.Label(summary, text=title + '：').grid(row=row, column=0, sticky='w', pady=2)
             var = tk.StringVar(value='—')
             self.fields[key] = var
             ttk.Label(summary, textvariable=var, style='Result.TLabel').grid(row=row, column=1, sticky='w', pady=2)
+        usage_panel = ttk.LabelFrame(base, text='地址类型与部署提示', padding=8)
+        usage_panel.pack(fill='x', pady=(0, 8))
+        self.usage_type = tk.StringVar(value='—')
+        self.usage_message = tk.StringVar(value='计算后显示网络地址用途与部署限制。')
+        self.usage_reference = tk.StringVar(value='')
+        ttk.Label(usage_panel, textvariable=self.usage_type,
+                  style='UsageTitle.TLabel').pack(anchor='w')
+        # wraplength 由控件实际宽度更新，避免缩窄窗口时文字被截断。
+        self.usage_text = ttk.Label(usage_panel, textvariable=self.usage_message,
+                                    style='Usage.TLabel', justify='left', wraplength=870)
+        self.usage_text.pack(fill='x', pady=(3, 1))
+        self.usage_text.bind('<Configure>', lambda event: self.usage_text.configure(
+            wraplength=max(200, event.width - 10)))
+        ttk.Label(usage_panel, textvariable=self.usage_reference,
+                  foreground='#66788a').pack(anchor='w')
         results = ttk.LabelFrame(base, text='子网结果列表', padding=8)
         results.pack(fill='both', expand=True)
         results.columnconfigure(0, weight=1)
@@ -153,25 +239,28 @@ class App(tk.Tk):
         paging = ttk.Frame(results)
         paging.grid(row=2, column=0, sticky='ew', pady=(7, 0))
         self.nav_buttons = []
+        nav_group = ttk.Frame(paging)
+        nav_group.grid(row=0, column=0, sticky='w')
         for name, tip, callback in (
             ('first', '首页', lambda: self.show_page(1)),
             ('previous', '上一页', lambda: self.show_page(self.page-1)),
             ('next', '下一页', lambda: self.show_page(self.page+1)),
             ('last', '末页', self.show_last)):
-            btn = self._icon_button(paging, name, tip, callback)
+            btn = self._icon_button(nav_group, name + '_small', tip, callback)
             btn.pack(side='left', padx=(0, 6))
             self.nav_buttons.append(btn)
-        ttk.Label(paging, text='页码：').pack(side='left', padx=(12, 4))
+        ttk.Label(nav_group, text='页码：').pack(side='left', padx=(6, 4))
         self.page_entry = tk.StringVar(value='1')
-        self.jump_input = ttk.Entry(paging, textvariable=self.page_entry, width=11)
+        self.jump_input = ttk.Entry(nav_group, textvariable=self.page_entry, width=11)
         self.jump_input.pack(side='left')
         self.jump_input.bind('<Return>', lambda _: self.jump())
-        self.jump_button = self._icon_button(paging, 'jump', '跳转到指定页码', self.jump)
-        self.jump_button.pack(side='left', padx=6)
-        # 分页信息放在列表右下角，与翻页按钮保持同一行。
+        self.jump_button = self._icon_button(nav_group, 'jump_small', '跳转到指定页码', self.jump)
+        self.jump_button.pack(side='left', padx=(5, 0))
+        # 分页操作和统计信息分别布局；空间不足时仅让统计行下移。
+        paging.columnconfigure(0, weight=1)
         page_info = ttk.Frame(paging)
-        page_info.pack(side='right', padx=(12, 0))
-        ttk.Label(page_info, text='每页显示：').pack(side='left')
+        page_info.grid(row=0, column=1, sticky='e', padx=(10, 0))
+        ttk.Label(page_info, text='每页：').pack(side='left')
         self.size = tk.StringVar(value='100')
         size_combo = ttk.Combobox(page_info, textvariable=self.size,
                                   values=('25', '50', '100', '200'),
@@ -179,8 +268,15 @@ class App(tk.Tk):
         size_combo.pack(side='left', padx=(0, 10))
         size_combo.bind('<<ComboboxSelected>>', lambda _: self.change_size())
         self.page_status = tk.StringVar(value='暂无计算结果')
-        ttk.Label(page_info, textvariable=self.page_status,
-                  style='Hint.TLabel').pack(side='left')
+        self.page_status_label = ttk.Label(page_info, textvariable=self.page_status,
+                                           style='Hint.TLabel', cursor='hand2')
+        self.page_status_label.pack(side='left')
+        self._page_stats_tooltip = Tooltip(self.page_status_label, '悬停查看完整子网数和页数；点击可复制完整统计数据。')
+        self.page_status_label.bind('<Button-1>', self._copy_page_statistics)
+        self._paging_info = page_info
+        self._paging_wrapped = False
+        self._paging_layout_busy = False
+        paging.bind('<Configure>', self._resize_paging)
         footer = ttk.Frame(results)
         footer.grid(row=0, column=0, sticky='ew', pady=(0, 6))
         self.copy_selected_button = self._icon_button(footer, 'copy', '复制选中的子网（Ctrl+C）', self.copy_selected)
@@ -199,6 +295,7 @@ class App(tk.Tk):
                                       font=('Consolas', 11), width=40)
         self.locate_entry.pack(side='left', padx=(4, 7), fill='x', expand=True)
         Tooltip(self.locate_entry, '输入当前网络中的任意 IPv6 地址，定位并选中其所属子网。')
+        self.locate_entry.bind('<FocusOut>', lambda _: self._normalize_address_field(self.locate_address))
         self.locate_entry.bind('<Return>', lambda _: self.locate())
         self.locate_button = ttk.Button(locator, text='定位所属子网', command=self.locate)
         self.locate_button.pack(side='left')
@@ -209,12 +306,47 @@ class App(tk.Tk):
         self._update_nav()
         self._set_button_state(self.export_button, False, 'export')
 
+    def _refresh_prefix_shortcuts(self, *_):
+        """根据用户当前输入的原始前缀调整快捷选项。"""
+        text = self.net.get().strip()
+        choices = ()
+        if text.count('/') == 1:
+            address, prefix = (part.strip() for part in text.split('/'))
+            if prefix.isascii() and prefix.isdecimal() and len(prefix) <= 3:
+                number = int(prefix)
+                if 0 <= number <= 128:
+                    try:
+                        from ipaddress import IPv6Address
+                        IPv6Address(address)
+                    except ValueError:
+                        pass
+                    else:
+                        choices = common_target_prefixes(number)
+        self.prefix_shortcuts.configure(values=tuple(f'/{value}' for value in choices))
+        self.prefix_shortcuts.set('常用前缀')
+        self.prefix_shortcuts.configure(state='readonly' if choices else 'disabled')
+
+    def _choose_common_prefix(self, _event=None):
+        selected = self.prefix_shortcuts.get()
+        if not selected.startswith('/') or not selected[1:].isdigit():
+            return
+        self.target.set(selected[1:])
+        self.calculate()
+
     def _set_locator_state(self, enabled):
         state = 'normal' if enabled else 'disabled'
         self.locate_entry.configure(state=state)
         self.locate_button.configure(state=state)
 
+    @staticmethod
+    def _normalize_address_field(variable):
+        value = variable.get()
+        updated = normalize_ipv6_input(value)
+        if updated != value:
+            variable.set(updated)
+
     def locate(self):
+        self._normalize_address_field(self.locate_address)
         if not self.result:
             return
         try:
@@ -236,10 +368,9 @@ class App(tk.Tk):
     def _choose_export_range(self, total):
         """选择全部导出或按一基序号选择闭区间。"""
         dlg = tk.Toplevel(self)
+        self._prepare_dialog(dlg)
         dlg.title('选择子网导出范围')
         dlg.resizable(False, False)
-        dlg.transient(self)
-        dlg.grab_set()
         frame = ttk.Frame(dlg, padding=18)
         frame.pack(fill='both', expand=True)
         ttk.Label(frame, text=f'本次计算共有 {total:,} 个子网。').pack(anchor='w', pady=(0, 10))
@@ -283,6 +414,7 @@ class App(tk.Tk):
         ttk.Button(actions, text='确定', command=accept).pack(side='right', padx=(0, 10))
         dlg.protocol('WM_DELETE_WINDOW', dlg.destroy)
         dlg.bind('<Return>', lambda _: accept())
+        self._show_centered_dialog(dlg)
         self.wait_window(dlg)
         return chosen[0] if chosen else None
 
@@ -298,8 +430,8 @@ class App(tk.Tk):
                    self.result is not None and self.page<last,
                    self.result is not None and self.page<last]
         for btn, name, can in zip(self.nav_buttons, ('first','previous','next','last'), enabled):
-            self._set_button_state(btn, can, name)
-        self._set_button_state(self.jump_button, bool(last), 'jump')
+            self._set_button_state(btn, can, name + '_small')
+        self._set_button_state(self.jump_button, bool(last), 'jump_small')
         state = 'normal' if last else 'disabled'
         self._set_button_state(self.copy_selected_button, bool(last), 'copy')
         self._set_button_state(self.copy_page_button, bool(last), 'copy_page')
@@ -307,6 +439,7 @@ class App(tk.Tk):
             self._set_button_state(self.export_button, bool(last), 'export')
 
     def calculate(self):
+        self._normalize_address_field(self.net)
         if self.export_thread and self.export_thread.is_alive():
             messagebox.showwarning('提示', '请先完成或取消导出。', parent=self)
             return
@@ -315,6 +448,10 @@ class App(tk.Tk):
         self.table.delete(*self.table.get_children())
         for field in self.fields.values(): field.set('—')
         self.page_status.set('暂无计算结果')
+        self._page_stats_full = ''
+        self.usage_type.set('—')
+        self.usage_message.set('计算后显示网络地址用途与部署限制。')
+        self.usage_reference.set('')
         try: self.result = calculate(self.net.get(), self.target.get(), preview_limit=0)
         except InputError as err:
             self.status.set('输入错误：'+str(err))
@@ -322,9 +459,15 @@ class App(tk.Tk):
             self._update_nav()
             return
         r = self.result
-        for k, v in dict(network=str(r.network), start=str(r.start_address), end=str(r.end_address),
-                         count=f'{r.subnet_count:,}', capacity=f'{r.addresses_per_subnet:,}').items():
+        bits = prefix_analysis(r)
+        for k, v in dict(bits=f'{bits} 位', network=str(r.network), start=str(r.start_address), end=str(r.end_address),
+                         count=subnet_count_description(r), capacity=f'{r.addresses_per_subnet:,}').items():
             self.fields[k].set(v)
+        usage = describe_network(r.network)
+        self.usage_type.set(f'地址类型：{usage.name}')
+        self.usage_message.set(usage.guidance)
+        self.usage_reference.set(f'规范参考：{usage.reference}')
+        self.usage_text.configure(style='Usage.TLabel')
         self.status.set('输入地址已规范化到所属网络。' if r.normalized else '计算完成。')
         self.status_label.configure(style='Success.TLabel')
         self.show_page(1)
@@ -339,8 +482,42 @@ class App(tk.Tk):
         for index, subnet in data:
             self.table.insert('', 'end', values=(str(index), subnet),
                               tags=('even' if index % 2 else 'odd',))
-        self.page_status.set(f'共 {self.result.subnet_count:,} 项 · 第 {page:,} / {self._total_pages():,} 页')
+        self.page_status.set(f'第 {compact_count(page)} / {compact_count(self._total_pages())} 页 · 共 {compact_count(self.result.subnet_count)} 项')
+        self._page_stats_full = f'子网总数：{self.result.subnet_count:,}\n当前页码：{page:,}\n总页数：{self._total_pages():,}'
+        self._refresh_page_tooltip()
         self._update_nav()
+
+    def _refresh_page_tooltip(self):
+        """悬停显示完整统计，点击统计可复制，不依赖截断显示的字符串。"""
+        # 复用原有提示组件，动态更新文本。
+        tip = getattr(self, '_page_stats_tooltip', None)
+        if tip is not None:
+            tip.text = self._page_stats_full + '\n点击复制以上数据。'
+
+    def _copy_page_statistics(self, _event=None):
+        if not self.result: return
+        self.clipboard_clear()
+        self.clipboard_append(getattr(self, '_page_stats_full', ''))
+        self.update_idletasks()
+        self.status.set('完整分页统计已复制到剪贴板。')
+
+    def _resize_paging(self, event=None):
+        if self._paging_layout_busy: return
+        paging = self._paging_info.master
+        available = event.width if event is not None else paging.winfo_width()
+        controls = self.nav_buttons[0].master.winfo_reqwidth()
+        stats = self._paging_info.winfo_reqwidth()
+        wrapped = available < controls + stats + 20
+        if wrapped == self._paging_wrapped: return
+        self._paging_wrapped = wrapped
+        self._paging_layout_busy = True
+        try:
+            self._paging_info.grid_configure(row=1 if wrapped else 0,
+                column=0 if wrapped else 1,
+                sticky='e', padx=(0, 0) if wrapped else (10, 0),
+                pady=(4, 0) if wrapped else (0, 0))
+        finally:
+            self._paging_layout_busy = False
 
     def show_last(self): self.show_page(self._total_pages())
 
@@ -461,11 +638,10 @@ class App(tk.Tk):
         self.export_stop = threading.Event()
         self.progress_dialog = tk.Toplevel(self)
         dialog = self.progress_dialog
+        self._prepare_dialog(dialog)
         dialog.title('正在导出子网')
         dialog.geometry('520x190')
         dialog.resizable(False, False)
-        dialog.transient(self)
-        dialog.grab_set()
         frame=ttk.Frame(dialog, padding=18)
         frame.pack(fill='both', expand=True)
         ttk.Label(frame, text=f'正在导出至：{path.name}').pack(anchor='w')
@@ -475,6 +651,7 @@ class App(tk.Tk):
         self.progress.pack(fill='x')
         ttk.Button(frame, text='取消导出', command=self.cancel_export).pack(pady=(12, 0))
         dialog.protocol('WM_DELETE_WINDOW', self.cancel_export)
+        self._show_centered_dialog(dialog, fixed_size=(520, 190))
         self._set_button_state(self.export_button, False, 'export')
         def update(done, total):
             # 工作线程仅写入同步数据结构，不直接操作界面组件。

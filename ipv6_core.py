@@ -30,6 +30,45 @@ class SubnetResult:
         return IPv6Address(int(self.network.network_address) + self.network.num_addresses - 1)
 
 
+
+def validate_ipv6_address(text: str) -> IPv6Address:
+    """校验单个 IPv6 地址，并对常见输入错误给出针对性提示。"""
+    value = text.strip()
+    if not value:
+        raise InputError('请输入 IPv6 地址。')
+    if '/' in value:
+        raise InputError('IPv6 地址部分不能包含 / 前缀，请只填写地址。')
+    if value.count('::') > 1 or ':::' in value:
+        raise InputError('IPv6 地址中双冒号 :: 只能出现一次，且不能写成三个连续冒号。')
+    if '%' in value:
+        raise InputError('请输入不带区域标识（例如 %12）的 IPv6 地址。')
+    # 带点分十进制尾部的 IPv4 映射写法属于合法 IPv6 表示形式。
+    if '.' in value:
+        try:
+            return IPv6Address(value)
+        except ValueError as exc:
+            raise InputError('IPv6 地址中的 IPv4 尾部格式不正确，请检查四段数字（0～255）。') from exc
+    if not re.fullmatch(r'[0-9a-fA-F:.]+', value):
+        raise InputError('IPv6 地址包含非法字符，请使用 0–9、a–f 和冒号（:）；大写 A–F 会自动转换为小写。')
+    if re.search(r'(^:[^:]|[^:]:$)', value):
+        raise InputError('IPv6 地址首尾若需压缩零组，必须使用双冒号 ::。')
+    try:
+        return IPv6Address(value)
+    except ValueError as exc:
+        groups = value.split(':')
+        if any(len(group) > 4 for group in groups if group):
+            raise InputError('IPv6 地址每组最多 4 位十六进制字符。') from exc
+        if '::' not in value and len(groups) != 8:
+            raise InputError('未使用 :: 压缩时，IPv6 地址必须完整填写 8 组。') from exc
+        if '::' in value and len([g for g in groups if g]) >= 8:
+            raise InputError('使用 :: 时必须至少压缩一组全零地址。') from exc
+        raise InputError('IPv6 地址格式不正确，请检查冒号位置及地址组数。') from exc
+
+
+def normalize_ipv6_input(text: str) -> str:
+    """把输入中的 A～F 规范为小写，保留用户填写的完整地址形式。"""
+    return text.lower()
+
 def calculate(network_text: str, target_text: str, *, preview_limit: int = MAX_PREVIEW) -> SubnetResult:
     """校验 CIDR 并计算子网信息，不遍历整个 IPv6 地址空间。"""
     source = network_text.strip()
@@ -51,11 +90,8 @@ def calculate(network_text: str, target_text: str, *, preview_limit: int = MAX_P
         raise InputError("目标子网前缀必须为 0～128 的整数。")
     if target_prefix < original_prefix:
         raise InputError("目标子网前缀不能小于原始网络前缀。")
-    try:
-        ip = IPv6Address(addr)
-        net = IPv6Network((ip, original_prefix), strict=False)
-    except (AddressValueError, NetmaskValueError, ValueError) as exc:
-        raise InputError("IPv6 地址格式不正确，请检查地址字符和冒号位置。") from exc
+    ip = validate_ipv6_address(addr)
+    net = IPv6Network((ip, original_prefix), strict=False)
     if isinstance(preview_limit, bool) or not isinstance(preview_limit, int) or not 0 <= preview_limit <= MAX_PREVIEW:
         raise ValueError(f"preview_limit must be an integer from 0 to {MAX_PREVIEW}")
     count = 1 << (target_prefix - original_prefix)
@@ -70,11 +106,32 @@ def locate_subnet(network: IPv6Network, target_prefix: int, address_text: str) -
     text = address_text.strip()
     if not text:
         raise InputError('请输入需要定位的 IPv6 地址。')
-    try:
-        address = IPv6Address(text)
-    except ValueError as exc:
-        raise InputError('IPv6 地址格式不正确。请输入单个地址，不包含 / 前缀。') from exc
+    address = validate_ipv6_address(text)
     if address not in network:
         raise InputError('该 IPv6 地址不在当前计算的网络范围内。')
     step = 1 << (128 - target_prefix)
     return (int(address) - int(network.network_address)) // step + 1
+
+
+COMMON_TARGET_PREFIXES = (48, 56, 60, 64, 127, 128)
+
+
+def common_target_prefixes(original_prefix: int) -> tuple[int, ...]:
+    """返回不小于原网络前缀的常用目标前缀。"""
+    if isinstance(original_prefix, bool) or not isinstance(original_prefix, int) or not 0 <= original_prefix <= 128:
+        raise ValueError('原始网络前缀必须为 0～128 的整数。')
+    return tuple(prefix for prefix in COMMON_TARGET_PREFIXES if prefix >= original_prefix)
+
+
+def prefix_analysis(result: SubnetResult) -> int:
+    """返回目标子网前缀相对原网络新增的子网位数。"""
+    return result.target_prefix - result.network.prefixlen
+
+
+def subnet_count_description(result: SubnetResult) -> str:
+    """根据划分边界生成不引起误解的子网数量说明。"""
+    if result.network.prefixlen == 128:
+        return '1（已是单个 IPv6 地址，无法继续划分子网）'
+    if result.target_prefix == result.network.prefixlen:
+        return '1（未进一步划分，保留原网络）'
+    return f'{result.subnet_count:,}'

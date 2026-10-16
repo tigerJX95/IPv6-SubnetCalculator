@@ -19,10 +19,16 @@ IPv6SubnetCalculator is a lightweight, offline IPv6 subnet utility for Windows. 
 
 > 💡 **Note:** A single Excel sheet supports at most 1,048,575 subnet records when one row is reserved for headers. TXT export has no equivalent row limit, but very large exports may take substantial time and disk space. IPv6 has no broadcast address; the displayed “last network address” is simply the numerically highest address in the range.
 
-## 🆕 New in V0.2
+## 🆕 New in V0.3
 
-- **Export a subnet range**: Export an inclusive start-to-end sequence of subnet indices, without exporting the entire result. The Excel record limit applies to the selected export size.
-- **Locate an IPv6 address**: Enter an IPv6 address within the calculated network to jump directly to its subnet and select the matching row.
+- **Prefix division analysis**: The summary shows additional subnet bits (for example, `/48 → /64` adds 16 bits), alongside the existing subnet-count result.
+- **Common-prefix quick selection**: Pick `/48`, `/56`, `/60`, `/64`, `/127`, or `/128` where valid for the source network. Inapplicable values are excluded, selection recalculates immediately, and manual prefix entry remains available.
+
+- **IPv6 address classification**: The calculation summary identifies common address categories, their intended use, and relevant standards.
+- **Deployment guidance**: Distinguishes global unicast, ULA for private networks/VPNs, link-local, historic transition mechanisms, and documentation-only ranges; mixed ranges receive a caution.
+- **No artificial calculation restrictions**: Subnet arithmetic remains available for special-purpose ranges, without implying Internet reachability or allocation rights.
+
+> 💡 **Address usage:** Classification uses commonly registered IANA special-purpose prefixes and relevant RFCs; it does not guarantee current registry status, allocation rights, or Internet reachability. Reference: https://www.iana.org/assignments/iana-ipv6-special-registry
 
 ## 📦 Download & Usage
 
@@ -30,4 +36,3 @@ Visit the GitHub [Releases](../../releases) page for available Windows releases.
 
 Enter the IPv6 network and prefix along with the target prefix, then select “开始计算” (Calculate). Browse pages, copy subnets, locate the subnet containing an address, or export all or a selected range to a file.
 
-> Refer to the actual files listed on the Releases page. Windows desktop verification is required before final release.
