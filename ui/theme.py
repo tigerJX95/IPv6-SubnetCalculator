@@ -19,6 +19,7 @@
 from PyQt6.QtCore import QObject, QSettings, pyqtSignal
 from PyQt6.QtWidgets import QApplication
 from app_info import resource_path
+from ui.fonts import TITLE_PIXEL_SIZE
 
 THEMES = {
     'light': dict(text='#23364a', window='#f5f7fa', surface='#ffffff', title='#172e45',
@@ -44,8 +45,8 @@ def stylesheet(name):
     return '''
 QWidget {{ color: {text}; background: transparent; }}
 QMainWindow, QDialog, QWidget#AppRoot {{ background: {window}; }}
-QWidget#CalculationPage, QWidget#ResultsPage {{ background: {surface}; }}
-QLabel#AppTitle {{ color: {title}; font-size: 25px; font-weight: 700; }}
+QWidget#CalculationPage, QWidget#ResultsPage, QWidget#AddressToolsPage {{ background: {surface}; }}
+QLabel#AppTitle {{ color: {title}; font-size: {title_px}px; font-weight: 700; }}
 QLabel#AppSubtitle {{ color: {muted}; }}
 QTabWidget::pane {{ border: 1px solid {border}; background: {surface}; border-radius: 8px; }}
 QTabBar::tab {{ background: {tab}; padding: 10px 26px; margin-right: 4px;
@@ -101,10 +102,10 @@ QProgressBar {{ border: 0; background: {progress}; border-radius: 5px; min-heigh
 QProgressBar::chunk {{ background: {focus}; border-radius: 5px; }}
 QToolTip {{ color: {text}; background: {tooltip}; border: 1px solid {border}; padding: 7px; }}
 QScrollArea {{ border: 0; background: {surface}; }}
-QWidget#CalculationViewport, QWidget#CalculationContent {{ background: {surface}; }}
+QWidget#CalculationViewport, QWidget#CalculationContent, QWidget#ToolsViewport, QWidget#ToolsContent {{ background: {surface}; }}
 QMenu {{ background: {surface}; color: {text}; border: 1px solid {border}; padding: 4px; }}
 QMenu::item:selected {{ background: {selected}; color: {selected_text}; }}
-'''.format(arrow=arrow, **c)
+'''.format(arrow=arrow, title_px=TITLE_PIXEL_SIZE, **c)
 
 
 class ThemeManager(QObject):

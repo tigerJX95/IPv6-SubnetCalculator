@@ -91,7 +91,7 @@ class SubnetDetailDialog(AppDialog):
     def __init__(self, result, index, clipboard, parent=None):
         super().__init__('IPv6 子网详情', parent)
         self.subnet_result, self.current_index, self.clipboard = result, index, clipboard
-        self.resize(670, 300)
+        self.resize(760, 350)
         layout = QVBoxLayout(self)
         layout.setContentsMargins(22, 20, 22, 16)
         form = QFormLayout()
@@ -141,7 +141,7 @@ class ExportRangeDialog(AppDialog):
     def __init__(self, total, parent=None):
         super().__init__('选择子网导出范围', parent)
         self.total, self.span = total, None
-        self.resize(580, 280)
+        self.resize(640, 320)
         layout = QVBoxLayout(self)
         layout.setContentsMargins(22, 20, 22, 16)
         layout.setSpacing(12)
@@ -200,7 +200,7 @@ class ExportProgressDialog(AppDialog):
     def __init__(self, filename, total, parent=None):
         super().__init__('正在导出子网', parent)
         self._active, self._cancelling = True, False
-        self.resize(560, 220)
+        self.resize(620, 250)
         layout = QVBoxLayout(self)
         layout.setContentsMargins(22, 20, 22, 16)
         layout.setSpacing(14)

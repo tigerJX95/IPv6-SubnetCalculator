@@ -17,8 +17,9 @@
 
 """结果表格的数据模型：只保存当前页，完整序号始终保留 Python 整数。"""
 from PyQt6.QtCore import Qt, QAbstractTableModel, QModelIndex
-from PyQt6.QtGui import QColor, QFont
+from PyQt6.QtGui import QColor
 from PyQt6.QtWidgets import QApplication
+from ui.fonts import data_font
 from ui.theme import current_colors
 
 
@@ -51,7 +52,7 @@ class SubnetTableModel(QAbstractTableModel):
         if role == Qt.ItemDataRole.TextAlignmentRole:
             return Qt.AlignmentFlag.AlignCenter
         if role == Qt.ItemDataRole.FontRole:
-            return QFont('Consolas', 11)
+            return data_font()
         if role == Qt.ItemDataRole.BackgroundRole and self.locator_range:
             if self.locator_range[0] <= number <= self.locator_range[1]:
                 return QColor(current_colors()['highlight'])

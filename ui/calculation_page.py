@@ -18,21 +18,24 @@
 """计算页：参数输入与结果展示，不执行导出或管理其他页面。"""
 from ipaddress import IPv6Address
 from PyQt6.QtCore import Qt, pyqtSignal
-from PyQt6.QtGui import QFont
 from PyQt6.QtWidgets import (QWidget, QScrollArea, QVBoxLayout, QGridLayout,
                              QHBoxLayout, QGroupBox, QLabel, QLineEdit, QComboBox)
 from app_info import DEFAULT_NETWORK
 from core.ipv6_core import common_target_prefixes, prefix_analysis, subnet_count_description
 from core.address_usage import describe_network
+from core.calculation_summary import format_calculation_summary
+from ui.fonts import data_font
 from ui.widgets import IconButton, value_label
 
 
 class CalculationPage(QWidget):
     calculate_requested = pyqtSignal()
+    summary_copy_requested = pyqtSignal(str)
 
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setObjectName('CalculationPage')
+        self._summary_text = ''
         layout = QVBoxLayout(self)
         layout.setContentsMargins(12, 12, 12, 12)
         scroll = QScrollArea()
@@ -56,14 +59,14 @@ class CalculationPage(QWidget):
         grid.addWidget(QLabel('目标子网前缀'), 0, 1)
         self.network_input = QLineEdit(DEFAULT_NETWORK)
         self.network_input.setObjectName('network_input')
-        self.network_input.setFont(QFont('Consolas', 11))
+        self.network_input.setFont(data_font())
         self.network_input.setMaxLength(200)
         self.network_input.setToolTip('填写 IPv6 网络地址及 CIDR 前缀，例如 2026:1015:abcd::/48。')
         grid.addWidget(self.network_input, 1, 0)
         prefix_area = QHBoxLayout()
         self.target_input = QLineEdit('64')
         self.target_input.setObjectName('target_input')
-        self.target_input.setFont(QFont('Consolas', 11))
+        self.target_input.setFont(data_font())
         self.target_input.setMaxLength(3)
         self.target_input.setMinimumWidth(55)
         self.target_input.setToolTip('输入 0～128 的目标前缀，不需要 /，且不得小于原网络前缀。')
@@ -83,6 +86,13 @@ class CalculationPage(QWidget):
         summary_grid.setHorizontalSpacing(16)
         summary_grid.setVerticalSpacing(11)
         summary_grid.setColumnStretch(1, 1)
+        self.copy_summary_button = IconButton('copy',
+            '复制计算摘要\n复制当前显示的计算结果及地址用途提示；修改输入后需重新计算。')
+        self.copy_summary_button.setObjectName('copy_calculation_summary')
+        self.copy_summary_button.setEnabled(False)
+        self.copy_summary_button.clicked.connect(self.copy_summary)
+        summary_grid.addWidget(self.copy_summary_button, 0, 2, 6, 1,
+                               alignment=Qt.AlignmentFlag.AlignTop)
         self.fields = {}
         for row, (label, key) in enumerate((
                 ('网络地址', 'network'), ('网络起始地址', 'start'), ('网络结束地址', 'end'),
@@ -148,7 +158,17 @@ class CalculationPage(QWidget):
             self.target_input.setText(str(prefix))
             self.calculate_requested.emit()
 
+    def summary_text(self):
+        """返回最后一次成功计算的快照，不读取尚未计算的输入框。"""
+        return self._summary_text
+
+    def copy_summary(self):
+        if self._summary_text:
+            self.summary_copy_requested.emit(self._summary_text)
+
     def set_result(self, result):
+        self._summary_text = format_calculation_summary(result) if result is not None else ''
+        self.copy_summary_button.setEnabled(result is not None)
         if result is None:
             for label in self.fields.values():
                 label.setText('—')

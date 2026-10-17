@@ -49,7 +49,7 @@ class Version02Tests(unittest.TestCase):
             path = Path(d) / 'range.txt'
             report = export_all(path, self.net, 64, 'txt', start=25, end=27)
             self.assertEqual(report.rows, 3)
-            self.assertEqual(path.read_text().splitlines(), [
+            self.assertEqual(path.read_text(encoding='utf-8').splitlines(), [
                 '2026:1015:abcd:18::/64',
                 '2026:1015:abcd:19::/64',
                 '2026:1015:abcd:1a::/64',
@@ -86,12 +86,12 @@ class Version02Tests(unittest.TestCase):
     def test_range_cancel_retains_previous_file(self):
         with tempfile.TemporaryDirectory() as d:
             path = Path(d) / 'range.txt'
-            path.write_text('此前内容')
+            path.write_text('此前内容', encoding='utf-8')
             stop = Event()
             def progress(done, total): stop.set()
             with self.assertRaises(ExportCancelled):
                 export_all(path, self.net, 64, 'txt', start=1000, end=4000, stop=stop, progress=progress)
-            self.assertEqual(path.read_text(), '此前内容')
+            self.assertEqual(path.read_text(encoding='utf-8'), '此前内容')
             self.assertEqual([f.name for f in Path(d).iterdir()], ['range.txt'])
 
     def test_estimate_respects_start(self):

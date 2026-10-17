@@ -99,11 +99,189 @@ class QtWorkflowTests(unittest.TestCase):
         QApplication.processEvents()
 
     def test_default_calculation_and_tabs(self):
-        self.assertEqual(self.window.tabs.count(), 2)
+        self.assertEqual(self.window.tabs.count(), 3)
         self.assertEqual(self.window.tabs.currentWidget(), self.page)
         self.assertEqual(self.page.model.rowCount(), 100)
         self.assertEqual(self.page.model.records[0], (1, '2026:1015:abcd::/64'))
         self.assertEqual(self.window.calculation_page.fields['count'].text(), '65,536')
+
+    def test_summary_copy_in_both_themes_preserves_snapshot_and_result_state(self):
+        self.locate('190-210')
+        calculation = self.window.calculation_page
+        expected = calculation.summary_text()
+        records = list(self.page.model.records)
+        calculation.network_input.setText('::/0')
+        calculation.target_input.setText('128')
+        self.window.tabs.setCurrentIndex(0)
+        for theme in ('light', 'dark'):
+            with self.subTest(theme=theme):
+                self.application.theme_manager.apply(theme, persist=False)
+                button = calculation.copy_summary_button
+                self.assertTrue(button.isEnabled())
+                self.assertFalse(button.icon().isNull())
+                self.assertIn('修改输入后需重新计算', button.toolTip())
+                self.assertEqual(button.accessibleName(), '复制计算摘要')
+                QTest.mouseClick(button, Qt.MouseButton.LeftButton)
+                self.assertEqual(QApplication.clipboard().text(), expected)
+                self.assertIn('可划分子网数：65,536', expected)
+                self.assertEqual(self.window.feedback.property('severity'), 'success')
+                self.assertEqual(self.page.selected_indices(), [190])
+                self.assertEqual(self.page.locator_range, (190, 210))
+                self.assertEqual(self.page.model.records, records)
+                self.assertEqual(self.window.tabs.currentIndex(), 0)
+
+    def test_summary_invalid_recalculation_clears_copy_and_valid_retry_restores_it(self):
+        calculation = self.window.calculation_page
+        calculation.network_input.setText('bad-network')
+        self.window.calculate()
+        self.assertFalse(calculation.copy_summary_button.isEnabled())
+        self.assertEqual(calculation.summary_text(), '')
+        with patch.object(self.window.clipboard, 'copy_text') as copy:
+            calculation.copy_summary()
+            copy.assert_not_called()
+        calculation.network_input.setText('::/0')
+        calculation.target_input.setText('128')
+        self.window.calculate()
+        self.window.tabs.setCurrentIndex(0)
+        calculation.copy_summary_button.click()
+        self.assertTrue(calculation.copy_summary_button.isEnabled())
+        self.assertIn(f'可划分子网数：{2**128:,}', QApplication.clipboard().text())
+
+    def test_summary_clipboard_failure_preserves_result_and_allows_retry(self):
+        calculation = self.window.calculation_page
+        self.window.tabs.setCurrentIndex(0)
+        snapshot = calculation.summary_text()
+        result = self.window.result
+        with patch('services.clipboard_service.QApplication.clipboard', side_effect=RuntimeError('busy')), \
+                patch('services.clipboard_service.QMessageBox.warning'):
+            calculation.copy_summary_button.click()
+        self.assertEqual(self.window.feedback.property('severity'), 'error')
+        self.assertIs(self.window.result, result)
+        self.assertEqual(calculation.summary_text(), snapshot)
+        self.assertTrue(calculation.copy_summary_button.isEnabled())
+        calculation.copy_summary_button.click()
+        self.assertEqual(QApplication.clipboard().text(), snapshot)
+        self.assertEqual(self.window.feedback.property('severity'), 'success')
+
+    def test_summary_copy_starts_disabled_without_a_calculation(self):
+        from ui.calculation_page import CalculationPage
+        page = CalculationPage()
+        try:
+            self.assertFalse(page.copy_summary_button.isEnabled())
+            self.assertEqual(page.summary_text(), '')
+            with patch.object(page, 'summary_copy_requested') as signal:
+                page.copy_summary()
+                signal.emit.assert_not_called()
+        finally:
+            page.deleteLater()
+
+    def test_address_tools_start_disabled_and_enter_converts_and_copies(self):
+        tools = self.window.address_tools_page
+        self.window.tabs.setCurrentIndex(2)
+        self.assertFalse(tools.copy_formats_button.isEnabled())
+        self.assertFalse(tools.copy_relation_button.isEnabled())
+        tools.address_input.setText('2026:1015:ABCD::1')
+        QTest.keyClick(tools.address_input, Qt.Key.Key_Return)
+        self.assertEqual(tools.format_fields['compressed'].text(), '2026:1015:abcd::1')
+        for key, button in tools.format_copy_buttons.items():
+            button.click()
+            self.assertEqual(QApplication.clipboard().text(), getattr(tools.formats, key))
+        self.assertEqual(len(tools.formats.binary), 128)
+        tools.copy_formats_button.click()
+        self.assertEqual(QApplication.clipboard().text(), tools.formats.as_text())
+
+    def test_address_tools_edits_and_invalid_conversion_clear_only_conversion(self):
+        tools = self.window.address_tools_page
+        tools.convert()
+        tools.analyze()
+        relation = tools.relation
+        tools.address_input.setText('bad')
+        self.assertFalse(tools.copy_formats_button.isEnabled())
+        self.assertTrue(all(not button.isEnabled() for button in tools.format_copy_buttons.values()))
+        tools.convert()
+        self.assertEqual(self.window.feedback.property('severity'), 'error')
+        self.assertIsNone(tools.formats)
+        self.assertIs(tools.relation, relation)
+        self.assertTrue(tools.copy_relation_button.isEnabled())
+
+    def test_network_relation_direction_normalization_copy_and_invalid_retry(self):
+        tools = self.window.address_tools_page
+        tools.network_a_input.setText('2026:1015:abcd::1234/64')
+        tools.network_b_input.setText('2026:1015:abcd::/48')
+        QTest.keyClick(tools.network_b_input, Qt.Key.Key_Return)
+        self.assertEqual(tools.relation.kind, 'b_contains_a')
+        self.assertIn('主机位已规范化：A', self.window.feedback.text())
+        tools.copy_relation_button.click()
+        self.assertEqual(QApplication.clipboard().text(), tools.relation.as_text())
+        self.assertIn('关系：B 包含 A', QApplication.clipboard().text())
+        tools.network_b_input.setText('invalid')
+        self.assertFalse(tools.copy_relation_button.isEnabled())
+        tools.analyze()
+        self.assertIn('网段 B：', self.window.feedback.text())
+        self.assertTrue(all(field.text()=='—' for field in tools.relation_fields.values()))
+        tools.network_b_input.setText('2026:1015:abcd::/64')
+        tools.analyze()
+        self.assertEqual(tools.relation.kind, 'same')
+        self.assertTrue(tools.copy_relation_button.isEnabled())
+
+    def test_tools_preserve_calculator_selection_and_results_across_tabs_and_themes(self):
+        self.locate('190-210')
+        records = list(self.page.model.records)
+        result = self.window.result
+        tools = self.window.address_tools_page
+        tools.convert()
+        tools.analyze()
+        formats, relation = tools.formats, tools.relation
+        for theme in ('light', 'dark'):
+            self.application.theme_manager.apply(theme, persist=False)
+            self.window.tabs.setCurrentIndex(2)
+            tools.copy_formats_button.click()
+            tools.copy_relation_button.click()
+            self.window.tabs.setCurrentIndex(1)
+            self.assertIs(self.window.result, result)
+            self.assertEqual(self.page.model.records, records)
+            self.assertEqual(self.page.selected_indices(), [190])
+            self.assertEqual(self.page.locator_range, (190,210))
+            self.assertIs(tools.formats, formats)
+            self.assertIs(tools.relation, relation)
+
+    def test_tools_clipboard_failure_retains_both_results_and_can_retry(self):
+        tools = self.window.address_tools_page
+        tools.convert()
+        tools.analyze()
+        formats, relation = tools.formats, tools.relation
+        with patch('services.clipboard_service.QApplication.clipboard', side_effect=RuntimeError('busy')), \
+                patch('services.clipboard_service.QMessageBox.warning'):
+            tools.copy_formats_button.click()
+            tools.copy_relation_button.click()
+        self.assertEqual(self.window.feedback.property('severity'), 'error')
+        self.assertIs(tools.formats, formats)
+        self.assertIs(tools.relation, relation)
+        tools.copy_relation_button.click()
+        self.assertEqual(QApplication.clipboard().text(), relation.as_text())
+
+    def test_tools_minimum_window_scroll_and_background_in_both_themes(self):
+        tools = self.window.address_tools_page
+        self.window.tabs.setCurrentIndex(2)
+        tools.address_input.setText('ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff')
+        tools.convert()
+        tools.network_a_input.setText('::/0')
+        tools.network_b_input.setText('::/0')
+        tools.analyze()
+        scroll = tools.findChild(QScrollArea)
+        for theme in ('light', 'dark'):
+            self.application.theme_manager.apply(theme, persist=False)
+            self.window.resize(900,620)
+            QApplication.processEvents()
+            self.assertEqual(scroll.horizontalScrollBar().maximum(),0)
+            for widget in (scroll.viewport(),scroll.widget()):
+                rendered = widget.grab().toImage()
+                self.assertEqual(rendered.pixelColor(1,1).name(), THEMES[theme]['surface'])
+            self.assertIn(f'{2**128:,}', tools.relation_fields['counts'].text())
+            scroll.ensureWidgetVisible(tools.copy_relation_button)
+            QApplication.processEvents()
+            self.assertTrue(scroll.viewport().rect().intersects(tools.copy_relation_button.geometry().translated(
+                tools.copy_relation_button.parentWidget().mapTo(scroll.viewport(),tools.copy_relation_button.parentWidget().rect().topLeft()))))
 
     def test_calculation_background_uses_theme_with_dark_system_palette(self):
         original_palette = self.application.palette()
@@ -428,12 +606,12 @@ class QtWorkflowTests(unittest.TestCase):
     def test_export_cancel_preserves_existing_file(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory)/'existing.txt'
-            path.write_text('original')
+            path.write_text('original', encoding='utf-8')
             full = calculate('::/0', '128', preview_limit=0)
             self.window.export_controller.start_export(path, 'txt', full, 1, full.subnet_count)
             self.window.export_controller.cancel()
             wait_until(lambda: not self.window.export_service.busy)
-            self.assertEqual(path.read_text(), 'original')
+            self.assertEqual(path.read_text(encoding='utf-8'), 'original')
             self.assertEqual([file.name for file in Path(directory).iterdir()], ['existing.txt'])
 
     def test_export_failure_releases_service_and_actions(self):
@@ -458,7 +636,7 @@ class QtWorkflowTests(unittest.TestCase):
             with patch('ui.export_controller.QMessageBox.information'):
                 self.window.export_controller.start_export(path, 'txt', self.window.result, 1, 3)
                 wait_until(lambda: not self.window.export_service.busy)
-            self.assertEqual(len(path.read_text().splitlines()), 3)
+            self.assertEqual(len(path.read_text(encoding='utf-8').splitlines()), 3)
 
     def test_thread_start_without_running_is_reported_and_released(self):
         with patch.object(_ExportThread, 'start', return_value=None), \
@@ -545,8 +723,8 @@ class QtWorkflowTests(unittest.TestCase):
             controller.request_export(self.window.result)
             wait_until(lambda: not self.window.export_service.busy)
             path = Path(directory)/'subnets.txt'
-            self.assertEqual(path.read_text().splitlines()[0], '2026:1015:abcd:59::/64')
-            self.assertEqual(len(path.read_text().splitlines()), 3)
+            self.assertEqual(path.read_text(encoding='utf-8').splitlines()[0], '2026:1015:abcd:59::/64')
+            self.assertEqual(len(path.read_text(encoding='utf-8').splitlines()), 3)
 
     def test_export_request_rejects_unsupported_extension(self):
         with patch('ui.export_controller.ExportRangeDialog') as selector, \
@@ -602,7 +780,7 @@ class QtWorkflowTests(unittest.TestCase):
         for button in buttons:
             for state, icon in button._icons.items():
                 self.assertFalse(icon.isNull(), (button.objectName(), state))
-                self.assertTrue(resource_path(f'assets/{button.objectName()}_{state}.png').is_file())
+                self.assertTrue(resource_path(f'assets/{button.asset_name}_{state}.png').is_file())
 
     def test_enter_shortcut_opens_detail_for_current_row(self):
         self.page.select_index(5)

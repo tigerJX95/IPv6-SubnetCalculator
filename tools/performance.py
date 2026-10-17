@@ -25,6 +25,8 @@ from threading import Event
 from time import perf_counter
 from ipaddress import IPv6Network
 from core.ipv6_core import calculate, locate_subnet
+from core.address_conversion import convert_address
+from core.network_relations import analyze_networks
 from core.subnet_export import export_all, page_subnets, ExportCancelled
 
 
@@ -47,6 +49,8 @@ def measure_performance():
         calculation=timing(lambda: calculate('::/0', '128', preview_limit=0), 1000),
         maximum_space_last_page=timing(lambda: page_subnets(network, 128, last_page, 200), 100),
         maximum_space_location=timing(lambda: locate_subnet(network, 128, 'ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff'), 1000),
+        address_conversion=timing(lambda: convert_address('ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff'), 1000),
+        network_relation=timing(lambda: analyze_networks('::/0', 'ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff/128'), 1000),
         memory_scope='Python allocations tracked by tracemalloc; excludes native Qt allocations and process RSS',
         speed_threshold='Informational measurements; no hardware-dependent pass/fail limit')
     with tempfile.TemporaryDirectory(prefix='IPv6性能-') as directory:

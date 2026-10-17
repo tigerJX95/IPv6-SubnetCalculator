@@ -17,7 +17,7 @@
 
 """结果页负责表格、分页、定位与选择；导出任务由外部协调。"""
 from PyQt6.QtCore import Qt, pyqtSignal, QItemSelectionModel
-from PyQt6.QtGui import QKeySequence, QShortcut
+from PyQt6.QtGui import QKeySequence, QShortcut, QFontMetrics
 from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QTableView,
                              QAbstractItemView, QHeaderView, QLineEdit, QComboBox, QMessageBox)
 from core.ipv6_core import InputError
@@ -25,6 +25,7 @@ from core.subnet_export import page_subnets
 from core.subnet_tools import LOCATOR_MODES, resolve_locator_range, summarize_selection, MAX_COPY_RECORDS
 from core.formatting import compact_count
 from ui.widgets import IconButton, ClickableLabel
+from ui.fonts import data_font
 from ui.subnet_model import SubnetTableModel
 from ui.dialogs import RangeCopyDialog, SubnetDetailDialog
 
@@ -83,7 +84,7 @@ class ResultsPage(QWidget):
         self.table.setShowGrid(False)
         self.table.setWordWrap(False)
         self.table.verticalHeader().hide()
-        self.table.verticalHeader().setDefaultSectionSize(32)
+        self.table.verticalHeader().setDefaultSectionSize(38)
         self.table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.Interactive)
         self.table.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
         self.table.setColumnWidth(0, 130)
@@ -258,7 +259,8 @@ class ResultsPage(QWidget):
         self._page_stats_full = f'子网总数：{self.result.subnet_count:,}\n当前页码：{page:,}\n总页数：{self.total_pages:,}'
         self.page_label.setToolTip(self._page_stats_full+'\n点击复制完整统计。')
         # 极大序号可手工拖宽或横向滚动，显示和复制均保留完整整数。
-        width = min(410, max(115, len(str(self.model.records[-1][0]))*9+30))
+        width = min(470, max(115, QFontMetrics(data_font()).horizontalAdvance(
+            str(self.model.records[-1][0]))+30))
         self.table.setColumnWidth(0, width)
         self.refresh_statistics()
 

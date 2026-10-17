@@ -106,6 +106,7 @@ class ReleaseCheck(QObject):
     def check_resources_and_boundaries(self):
         from ui.widgets import IconButton
         self.window.show()
+        self.require(self.window.tabs.count() == 3, '工具标签页缺失')
         self.window.calculate()
         page = self.window.results_page
         self.require(page.model.rowCount() == 100, '默认结果行数不正确')
@@ -121,6 +122,36 @@ class ReleaseCheck(QObject):
                          'docs/licenses/PyQt6_GPLv3.txt', 'docs/licenses/Qt_LGPLv3.txt',
                          'docs/licenses/PyQt6_sip_LICENSE.txt'):
             self.require(resource_path(filename).is_file(), '缺少许可资源：'+filename)
+        calculation = self.window.calculation_page
+        self.require(calculation.copy_summary_button.isEnabled(), '摘要复制入口不可用')
+        self.require('目标子网前缀：/64' in calculation.summary_text(), '摘要缺少目标前缀')
+        self.require('可划分子网数：65,536' in calculation.summary_text(), '摘要子网总数不正确')
+        snapshot = calculation.summary_text()
+        calculation.target_input.setText('128')
+        self.require(calculation.summary_text() == snapshot, '摘要混入尚未计算的输入')
+        self.checks.append('calculation_summary_snapshot')
+        tools = self.window.address_tools_page
+        self.require(not tools.copy_formats_button.isEnabled(), '未转换时应禁用格式复制')
+        tools.address_input.setText('::ffff:192.0.2.1')
+        tools.convert()
+        self.require(tools.formats.expanded == '0000:0000:0000:0000:0000:ffff:c000:0201', '映射地址展开不完整')
+        self.require(len(tools.formats.binary) == 128, '二进制位数不正确')
+        tools.network_a_input.setText('::/0')
+        tools.network_b_input.setText('::/0')
+        tools.analyze()
+        self.require(tools.relation.overlap_count == 2**128, '最大空间重叠数量不正确')
+        tools.network_a_input.setText('::/127')
+        tools.network_b_input.setText('::2/128')
+        tools.analyze()
+        self.require(tools.relation.kind == 'adjacent', '不同前缀相邻判断不正确')
+        tools.network_b_input.setText('bad')
+        tools.analyze()
+        self.require(not tools.copy_relation_button.isEnabled(), '非法分析后未禁用复制')
+        tools.network_a_input.setText(DEFAULT_NETWORK)
+        tools.network_b_input.setText('2026:1015:abcd::/64')
+        tools.analyze()
+        self.require(tools.relation.kind == 'a_contains_b', '包含方向不正确')
+        self.checks.append('address_formats_and_network_relations')
         self.checks.append('default_calculation_and_resources')
         self.window.calculation_page.network_input.setText('::/0')
         self.window.calculation_page.target_input.setText('128')
@@ -129,6 +160,7 @@ class ReleaseCheck(QObject):
         self.require(page.model.records[-1] == (2**128, 'ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff/128'),
                      '最大 IPv6 结果末页不正确')
         self.require(page.model.rowCount() <= 200, '表格超出单页记录上限')
+        self.require(f'可划分子网数：{2**128:,}' in calculation.summary_text(), '摘要最大整数丢失精度')
         self.checks.append('maximum_ipv6_space_and_last_page')
         self.window.calculation_page.network_input.setText(DEFAULT_NETWORK)
         self.window.calculation_page.target_input.setText('64')
@@ -149,6 +181,8 @@ class ReleaseCheck(QObject):
         page.locate()
         self.require(page.selected_indices() == [first], '定位选择状态不正确')
         self.window.tabs.setCurrentIndex(0)
+        self.window.tabs.setCurrentIndex(2)
+        self.require(self.window.address_tools_page.relation.kind == 'a_contains_b', '工具结果状态丢失')
         self.window.tabs.setCurrentIndex(1)
         self.require(page.selected_indices() == [first], '切换标签后选择丢失')
         if step % 10 == 0:

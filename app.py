@@ -17,10 +17,11 @@
 
 """创建 Qt 应用并加载主窗口；不包含业务计算。"""
 import sys
-from PyQt6.QtGui import QFont, QIcon
-from PyQt6.QtWidgets import QApplication
+from PyQt6.QtGui import QIcon
+from PyQt6.QtWidgets import QApplication, QToolTip
 from app_info import APP_NAME, APP_VERSION, resource_path
 from ui.theme import ThemeManager
+from ui.fonts import application_font
 
 
 def create_application(argv=None, settings=None):
@@ -31,8 +32,9 @@ def create_application(argv=None, settings=None):
     application.setApplicationName(APP_NAME)
     application.setApplicationVersion(APP_VERSION)
     application.setStyle('Fusion')
-    font = QFont('Microsoft YaHei UI' if sys.platform == 'win32' else 'sans-serif', 10)
+    font = application_font()
     application.setFont(font)
+    QToolTip.setFont(font)
     application.setWindowIcon(QIcon(str(resource_path('app.ico'))))
     application.theme_manager = ThemeManager(application, settings)
     return application

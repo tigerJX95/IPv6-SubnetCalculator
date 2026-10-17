@@ -46,7 +46,7 @@ class ExportTests(unittest.TestCase):
             path=Path(d)/'out.txt'
             report=export_all(path, IPv6Network('2026:1015:abcd::/126'), 128,'txt')
             self.assertEqual(report.rows,4)
-            self.assertEqual(path.read_text().splitlines(),
+            self.assertEqual(path.read_text(encoding='utf-8').splitlines(),
                 ['2026:1015:abcd::/128','2026:1015:abcd::1/128','2026:1015:abcd::2/128','2026:1015:abcd::3/128'])
 
     def test_xlsx_export_valid_xml(self):
@@ -64,12 +64,12 @@ class ExportTests(unittest.TestCase):
     def test_cancel_preserves_existing(self):
         with tempfile.TemporaryDirectory() as d:
             path=Path(d)/'out.txt'
-            path.write_text('original')
+            path.write_text('original', encoding='utf-8')
             event=Event()
             def cancel(done,total): event.set()
             with self.assertRaises(ExportCancelled):
                 export_all(path,self.net,64,'txt',stop=event,progress=cancel)
-            self.assertEqual(path.read_text(),'original')
+            self.assertEqual(path.read_text(encoding='utf-8'),'original')
             self.assertEqual(sorted(p.name for p in Path(d).iterdir()), ['out.txt'])
 
     def test_excel_limit(self):

@@ -24,6 +24,7 @@ from services.clipboard_service import ClipboardService
 from services.export_service import ExportService
 from ui.calculation_page import CalculationPage
 from ui.results_page import ResultsPage
+from ui.address_tools_page import AddressToolsPage
 from ui.export_controller import ExportController
 from ui.widgets import FeedbackLabel, ThemeButton
 
@@ -64,19 +65,26 @@ class MainWindow(QMainWindow):
         self.tabs = QTabWidget()
         self.calculation_page = CalculationPage()
         self.results_page = ResultsPage(self.clipboard)
+        self.address_tools_page = AddressToolsPage(self.clipboard)
         self.tabs.addTab(self.calculation_page, '子网计算')
         self.tabs.addTab(self.results_page, '子网结果')
+        self.tabs.addTab(self.address_tools_page, '地址工具')
         layout.addWidget(self.tabs, 1)
         self.feedback = FeedbackLabel()
         layout.addWidget(self.feedback)
 
         self.export_controller = ExportController(self, self.export_service)
         self.calculation_page.calculate_requested.connect(self.calculate)
+        self.calculation_page.summary_copy_requested.connect(self._copy_calculation_summary)
         self.results_page.export_requested.connect(lambda: self.export_controller.request_export(self.result))
         self.results_page.feedback.connect(self.feedback.set_message)
+        self.address_tools_page.feedback.connect(self.feedback.set_message)
         self.clipboard.feedback.connect(self.feedback.set_message)
         self.export_controller.feedback.connect(self.feedback.set_message)
         self.export_controller.busy_changed.connect(self._export_busy_changed)
+
+    def _copy_calculation_summary(self, text):
+        self.clipboard.copy_text(text, '计算摘要已复制到剪贴板。', self.calculation_page)
 
     def _toggle_theme(self):
         saved = self.theme_manager.toggle()

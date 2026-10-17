@@ -19,9 +19,10 @@
 from math import cos, sin, pi
 from functools import lru_cache
 from PyQt6.QtCore import Qt, QSize, QEvent, QPointF, pyqtSignal
-from PyQt6.QtGui import QIcon, QFont, QImage, QPixmap, QColor, QPainter, QPen
+from PyQt6.QtGui import QIcon, QImage, QPixmap, QColor, QPainter, QPen
 from PyQt6.QtWidgets import QToolButton, QLabel, QApplication
 from app_info import resource_path
+from ui.fonts import data_font
 from ui.theme import current_colors
 
 
@@ -43,6 +44,7 @@ def dark_icon(path, state):
 class IconButton(QToolButton):
     def __init__(self, name, tooltip, parent=None):
         super().__init__(parent)
+        self.asset_name = name
         self._icons = {state: QIcon(str(resource_path(f'assets/{name}_{state}.png')))
                        for state in ('normal', 'hover', 'disabled')}
         self._dark_icons = {}
@@ -183,7 +185,7 @@ class FeedbackLabel(QLabel):
 def value_label(text='—', parent=None):
     label = QLabel(text, parent)
     label.setObjectName('MetricValue')
-    label.setFont(QFont('Consolas', 11))
+    label.setFont(data_font())
     label.setWordWrap(True)
     label.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
     return label
