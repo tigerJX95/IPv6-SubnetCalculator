@@ -1,41 +1,72 @@
-# 🌐 IPv6 Subnet Calculator V0.7
+# 🌐 IPv6 Subnet Calculator V0.8
 
 [简体中文](README.md) | **English**
 
 ## 📖 Overview
 
-IPv6SubnetCalculator is an offline IPv6 subnet calculator for Windows. It calculates network ranges, divides subnets, identifies special-purpose address space, and provides two tabs for calculating and browsing large result sets.
+IPv6SubnetCalculator is an offline IPv6 subnet calculator for Windows. It analyzes network ranges, divides subnets, identifies address usage, and provides two tabs for browsing, locating, and saving large result sets.
 
 ## ✨ Features
 
-- **Subnet calculations:** IPv6 CIDR `/0`–`/128`, network range, subnet counts, and addresses per subnet; lowercase normalization and clear input validation.
-- **Prefix and usage analysis:** Common prefix shortcuts, additional subnet bits, special-purpose classifications including ULA, 6to4, multicast and link-local, and deployment guidance with standards references.
-- **Two-tab layout:** Use the Calculation tab for inputs, summaries, and address guidance, and the Results tab for the complete table and actions. Switching tabs preserves pagination and locator ranges.
-- **Pagination and location:** 25, 50, 100, or 200 rows per page, page navigation, and lookup by IPv6 address, subnet number, address range, or subnet-number range. Range highlighting continues across pages.
-- **Selection statistics:** Shows the current-page selection count, first and last indices, continuity, and total address capacity. Non-contiguous selections count only the selected subnets. Hover for exact values or click to copy the statistics.
-- **Multiple selection and copying:** Ctrl+click to toggle rows, Shift+click for a contiguous selection, Ctrl+A to select the current page, Ctrl+C to copy in index order, and Esc to clear the selection. Copy the current page or an index range (up to 5,000 rows per range copy), or double-click for details and adjacent-record navigation.
-- **Export:** Export all or a selected range to TXT or Excel (XLSX), with size estimates, progress tracking, and cancellation.
+- **Network calculations:** IPv6 CIDR `/0`–`/128`, network ranges, subnet counts, addresses per subnet, and additional subnet bits. Includes common prefix shortcuts, address normalization, and Chinese input validation messages.
+- **Address guidance:** Classifies ULA, 6to4, multicast, link-local, and other address types, with usage, deployment limitations, and standards references. Mathematical subnetting remains available for special-purpose addresses.
+- **Appearance:** Light and dark themes, switched with the moon/sun icon at the top right or Ctrl+Shift+T. Your preference is remembered.
+- **Two-tab layout:** Calculation contains inputs, summaries, and usage guidance; Results contains the table and actions. Switching tabs preserves the current state.
+- **Pagination and location:** 25, 50, 100, or 200 rows per page; page navigation and lookup by IPv6 address, subnet index, or corresponding ranges. Only the current page is loaded, and locator highlighting persists across pages.
+- **Selection and copying:** Current-page counts, first and last indices, continuity, and total address capacity. Copy selected subnets, the current page, an index range, or exact statistics. Supports Ctrl/Shift selection, Ctrl+A, Ctrl+C, and Esc.
+- **Subnet details:** Double-click or press Enter to inspect full address ranges and capacity, browse adjacent subnets, and copy details.
+- **File export:** Export all subnets or a range to TXT or Excel (XLSX), with size estimates, progress, and cancellation. The destination is replaced only after its temporary file is written successfully.
 
-## 🆕 What's New in V0.7
+## 🆕 What's New in V0.8
 
-- Fixed a precision risk when exporting very large indices to Excel: if the range includes indices longer than 15 digits, the entire index column is stored as text, with its width adjusted automatically.
-- Changing page size now keeps the original page's first subnet in view and preserves locator highlighting, instead of always returning to the first page.
-- Added consistent clipboard error feedback while preserving the selection. The range-copy dialog stays open after a failed copy so you can retry.
-- Unified success, error, and informational colors across both tabs, with feedback for failed location and clearing actions.
-- Replaced Locate and Clear Highlight text buttons with icons, tooltips, and normal, hover, and disabled states. Focused icon buttons also support Enter.
+- Migrated the interface to **PyQt6 / Qt Widgets**, with consistent typography, spacing, tabs, tables, dialogs, and feedback.
+- Separated the main window, Calculation page, Results page, table model, and dialogs; core calculations, clipboard access, and background exports are maintained independently.
+- Prioritized icon actions with tooltips, normal/hover/disabled states, and keyboard support.
+- Background exports report progress through Qt signals. Cancellation keeps its cleanup message visible, and closing waits for export cancellation and temporary-file cleanup.
+- Preserved range highlighting, pagination position, exact statistics, and text storage of very large Excel indices.
+- Added light and dark themes across pages, table highlights, inputs, icons, and application dialogs. Switching preserves calculations and selections.
+- Fixed the Calculation page showing a black scroll-area background with a dark Windows system theme.
+- Declared GPL-3.0-or-later licensing and included project and third-party license notices.
+
+## 📸 Screenshots
+
+### Light Theme
+
+![Light Calculation page](docs/screenshots/calculation_light.png)
+
+![Light Results page](docs/screenshots/results_light.png)
+
+### Dark Theme
+
+![Dark Calculation page](docs/screenshots/calculation_dark.png)
+
+![Dark Results page](docs/screenshots/results_dark.png)
 
 ## 📦 Download and Usage
 
-Get the Windows application from GitHub [Releases](../../releases). Enter a network and target prefix, calculate, then switch to the Results tab to browse the full list.
+Get the Windows application from GitHub [Releases](../../releases), extract it, and run it. Enter an IPv6 network and target prefix, then click Calculate. The application switches to Results when calculation completes.
+
+For running from source and building, see [Development Notes](docs/DEVELOPMENT.md).
 
 ## 💡 Notes
 
+- The first launch uses the light theme; subsequent launches restore your choice. Hover over the theme icon to see the current theme, next theme, and shortcut. Native file pickers and title bars follow the operating system.
+
 - The default example network is `2026:1015:abcd::/48`.
-- IPv6 has no broadcast address; the displayed end address is the last address in the range.
-- Manual selection applies to the **current page** and clears when changing pages or page size; switching tabs preserves it. Locating selects only the first match, while range highlighting persists across pages. Entire-range and current-page highlight counts are shown separately.
-- Page-size changes use the original page's first subnet as the navigation anchor; the resulting page number changes with the page size.
-- Selected address capacity is a mathematical total, not an assignable host count. Very large values use compact display formatting; hover for full values. Copied statistics always contain exact integers.
-- Use index-range copying for multiple pages and file export for more than 5,000 records.
-- Excel exports support at most 1,048,575 subnet records in one worksheet; use TXT for larger exports.
-- If an Excel export range includes indices longer than 15 digits, the entire index column is stored as text to preserve every digit. Ordinary indices remain numeric.
+- IPv6 has no broadcast address; the end address is the last address in the network. Address capacity is a mathematical total, not an assignable host count.
+- Manual selection applies only to the current page and clears on page or page-size changes. Switching tabs preserves selection. Locator highlighting is counted separately.
+- Changing page size uses the original page's first subnet as the navigation anchor.
+- Index-range copying supports up to 5,000 records per operation; use file export for larger ranges.
+- One Excel worksheet supports up to 1,048,575 subnet records. If the export includes indices longer than 15 digits, the entire index column is stored as text to preserve every digit.
+- Very large statistics use compact display formatting. Hover for full values; copied statistics always contain exact integers.
 - Address classification does not imply allocation authorization or public reachability. See the [IANA IPv6 Special-Purpose Address Registry](https://www.iana.org/assignments/iana-ipv6-special-registry).
+
+## 📄 License
+
+Project-authored code and assets are licensed under the **GNU General Public License v3.0 or any later version** (`GPL-3.0-or-later`). See [NOTICE](NOTICE) for the scope and notice, and [LICENSE](LICENSE) for the full terms. Use, modification, and commercial redistribution are permitted subject to the license. This software comes without any warranty.
+
+Third-party components retain their own copyrights and licenses; this project's license declaration does not change them.
+
+## 🙏 Third-Party Components
+
+The interface uses PyQt6 and Qt 6. Copyright, license information, and upstream links are listed in [Third-Party Notices](THIRD_PARTY_NOTICES.md).

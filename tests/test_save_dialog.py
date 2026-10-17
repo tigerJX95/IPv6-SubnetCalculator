@@ -1,13 +1,26 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2026 IPv6SubnetCalculator contributors
+#
+# This file is part of IPv6SubnetCalculator.
+# IPv6SubnetCalculator is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# IPv6SubnetCalculator is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with IPv6SubnetCalculator. If not, see <https://www.gnu.org/licenses/>.
+
 """导出格式校验回归测试，无需启动图形界面。"""
 import ast
 import unittest
 from pathlib import Path
 
-source = (Path(__file__).resolve().parents[1] / 'main.py').read_text(encoding='utf-8')
-node = next(n for n in ast.parse(source).body if isinstance(n, ast.FunctionDef) and n.name == 'determine_export_format')
-namespace = {'Path': Path}
-exec(compile(ast.Module(body=[node], type_ignores=[]), '<format-check>', 'exec'), namespace)
-validate = namespace['determine_export_format']
+from core.formatting import determine_export_format as validate
 
 class SaveDialogTests(unittest.TestCase):
     def test_normal_excel(self):

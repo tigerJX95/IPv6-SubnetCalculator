@@ -1,0 +1,26 @@
+IPv6SubnetCalculator
+Copyright (C) 2026 IPv6SubnetCalculator contributors
+SPDX-License-Identifier: GPL-3.0-or-later
+
+IPv6SubnetCalculator is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+IPv6SubnetCalculator is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with IPv6SubnetCalculator. If not, see <https://www.gnu.org/licenses/>.
+
+Scope
+-----
+This notice covers project-authored source code, tests, documentation, and
+artwork in this distribution unless a file states otherwise. Existing notices
+and the licenses of bundled third-party components remain in effect; see
+THIRD_PARTY_NOTICES.md and docs/licenses/.
+
+Licensing this project under GPL-3.0-or-later does not relicense PyQt6, Qt,
+PyQt6-sip, or any other third-party component.

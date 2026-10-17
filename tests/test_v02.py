@@ -1,3 +1,20 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2026 IPv6SubnetCalculator contributors
+#
+# This file is part of IPv6SubnetCalculator.
+# IPv6SubnetCalculator is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# IPv6SubnetCalculator is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with IPv6SubnetCalculator. If not, see <https://www.gnu.org/licenses/>.
+
 """V0.2 范围导出与 IPv6 地址定位专项测试。"""
 import tempfile
 import unittest
@@ -5,9 +22,9 @@ import zipfile
 from pathlib import Path
 from ipaddress import IPv6Network
 from threading import Event
-from ipv6_core import InputError, locate_subnet
-from subnet_export import export_all, ExportCancelled, XLSX_MAX_RECORDS
-from export_estimate import estimate_export_range
+from core.ipv6_core import InputError, locate_subnet
+from core.subnet_export import export_all, ExportCancelled, XLSX_MAX_RECORDS
+from core.export_estimate import estimate_export_range
 
 
 class Version02Tests(unittest.TestCase):

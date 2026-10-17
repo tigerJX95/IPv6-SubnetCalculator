@@ -1,7 +1,24 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2026 IPv6SubnetCalculator contributors
+#
+# This file is part of IPv6SubnetCalculator.
+# IPv6SubnetCalculator is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# IPv6SubnetCalculator is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with IPv6SubnetCalculator. If not, see <https://www.gnu.org/licenses/>.
+
 """独立结果窗口与当前页统计的专项测试。"""
 import unittest
 from pathlib import Path
-from subnet_tools import visible_selection_counts
+from core.subnet_tools import visible_selection_counts
 
 
 class TestV05(unittest.TestCase):
@@ -21,15 +38,6 @@ class TestV05(unittest.TestCase):
     def test_one_matching_row(self):
         self.assertEqual(visible_selection_counts([5], range(1, 26), (5, 5)), (1, 1))
 
-    def test_two_tabs_wiring(self):
-        code = (Path(__file__).resolve().parents[1] / 'main.py').read_text(encoding='utf-8')
-        for expected in ('ttk.Notebook(base)', "text='子网计算'", "text='子网结果'",
-                         'self.notebook.select(self.results_tab)',
-                         'self.selection_status', 'self.results_tab'):
-            self.assertIn(expected, code)
-        self.assertNotIn('self.preview_table', code)
-        self.assertNotIn('self.result_window', code)
-        self.assertNotIn('open_results_window', code)
 
 
 if __name__ == '__main__':
