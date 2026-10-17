@@ -58,7 +58,7 @@ IPv6SubnetCalculator 是一款适用于 Windows 的离线 IPv6 子网计算工�
 
 ## 📦 下载与使用
 
-从 GitHub [Releases](../../releases) 下载 `IPv6SubnetCalculator_V1.0_Windows.zip`，解压后运行其中的 `IPv6SubnetCalculator_V1.0.exe`，无需安装 Python。输入 IPv6 网络地址与目标前缀，点击计算图标；完成后自动切换到结果页。
+从 GitHub [Releases](../../releases) 下载 `IPv6SubnetCalculator_V1.0.exe`，无需安装 Python。输入 IPv6 网络地址与目标前缀，点击计算图标；完成后自动切换到结果页。
 
 源码运行与构建方法见 [开发说明](docs/DEVELOPMENT.md)。
 
