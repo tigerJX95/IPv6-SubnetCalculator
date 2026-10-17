@@ -19,6 +19,7 @@
 from __future__ import annotations
 from ipaddress import IPv6Network
 from .subnet_export import subnet_at
+from .ipv6_core import validate_subnet_parameters
 
 GIB = 1024 ** 3
 MIB = 1024 ** 2
@@ -26,7 +27,11 @@ MIB = 1024 ** 2
 
 def estimate_export_range(network: IPv6Network, prefix: int, fmt: str, count: int, start_index: int = 0) -> tuple[int, int]:
     """在子网序号范围内分布采样，返回近似容量区间。"""
-    if count <= 0 or fmt not in ('txt', 'xlsx'):
+    validate_subnet_parameters(network, prefix)
+    total = 1 << (prefix-network.prefixlen)
+    if (isinstance(count, bool) or isinstance(start_index, bool) or
+            not isinstance(count, int) or not isinstance(start_index, int) or
+            count <= 0 or start_index < 0 or start_index+count > total or fmt not in ('txt', 'xlsx')):
         raise ValueError('导出估算参数无效')
     sample_count = min(128, count)
     indices = {(i * (count - 1)) // max(sample_count - 1, 1) for i in range(sample_count)}

@@ -71,7 +71,15 @@ class ExportService(QObject):
         self._thread = thread
         thread.progress.connect(self.progress)
         thread.finished.connect(self._finish)
-        thread.start()
+        try:
+            thread.start()
+            # Qt may report OS thread creation failure without raising Python exceptions.
+            if not thread.isRunning() and not thread.isFinished():
+                raise RuntimeError('无法启动导出线程，请稍后重试。')
+        except Exception:
+            self._thread = None
+            thread.deleteLater()
+            raise
 
     def cancel(self):
         if self._thread is not None:
@@ -81,7 +89,7 @@ class ExportService(QObject):
         thread = self._thread
         if thread is None:
             return
-        outcome = thread.outcome
+        outcome = thread.outcome or ('error', '导出线程未返回结果，请重试。')
         self._thread = None
         thread.deleteLater()
         self.completed.emit(outcome)

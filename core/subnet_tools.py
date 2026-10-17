@@ -18,7 +18,7 @@
 """子网范围复制与详情导航的独立计算逻辑。"""
 from ipaddress import IPv6Network
 from dataclasses import dataclass
-from .ipv6_core import InputError, subnet_at_index, validate_subnet_index
+from .ipv6_core import InputError, subnet_at_index, validate_subnet_index, validate_subnet_parameters
 
 MAX_COPY_RECORDS = 5000
 
@@ -36,8 +36,11 @@ def validate_copy_range(start_text: str, end_text: str, total: int) -> tuple[int
 
 def subnet_range_text(network: IPv6Network, prefix: int, start: int, end: int) -> str:
     """仅生成指定闭区间内的子网文本，不遍历此前的网段。"""
+    validate_subnet_parameters(network, prefix)
     total = 1 << (prefix - network.prefixlen)
-    if not 1 <= start <= end <= total or end - start + 1 > MAX_COPY_RECORDS:
+    if (isinstance(start, bool) or isinstance(end, bool) or
+            not isinstance(start, int) or not isinstance(end, int) or
+            not 1 <= start <= end <= total or end - start + 1 > MAX_COPY_RECORDS):
         raise InputError('子网序号范围无效，或超过单次复制上限。')
     return '\n'.join(f'{i}\t{subnet_at_index(network, prefix, i)}' for i in range(start, end + 1))
 
@@ -56,6 +59,7 @@ LOCATOR_MODES = ('按 IPv6 地址', '按子网序号', '按 IPv6 地址范围', 
 def resolve_locator_range(mode: str, value: str, network: IPv6Network, prefix: int) -> tuple[int, int]:
     """直接计算指定地址或序号所覆盖的子网范围，不逐条遍历。"""
     from .ipv6_core import locate_subnet
+    validate_subnet_parameters(network, prefix)
     total = 1 << (prefix - network.prefixlen)
     value = value.strip()
     if not value:

@@ -19,7 +19,7 @@
 import sys
 from pathlib import Path
 
-APP_VERSION = '0.8'
+APP_VERSION = '0.9'
 APP_NAME = 'IPv6 子网计算器'
 DEFAULT_NETWORK = '2026:1015:abcd::/48'
 

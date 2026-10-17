@@ -101,7 +101,10 @@ class ExportController(QObject):
         self.busy_changed.emit(True)
         self.feedback.emit('正在导出子网…', 'info')
         dialog.open()
-        self.service.start(path, result, fmt, start, end)
+        try:
+            self.service.start(path, result, fmt, start, end)
+        except Exception as exc:
+            self._completed(('error', str(exc)))
 
     def _progress(self, done, total):
         if self.progress_dialog is not None:

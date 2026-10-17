@@ -1,4 +1,4 @@
-# 🌐 IPv6 Subnet Calculator V0.8
+# 🌐 IPv6 Subnet Calculator V0.9
 
 [简体中文](README.md) | **English**
 
@@ -17,16 +17,12 @@ IPv6SubnetCalculator is an offline IPv6 subnet calculator for Windows. It analyz
 - **Subnet details:** Double-click or press Enter to inspect full address ranges and capacity, browse adjacent subnets, and copy details.
 - **File export:** Export all subnets or a range to TXT or Excel (XLSX), with size estimates, progress, and cancellation. The destination is replaced only after its temporary file is written successfully.
 
-## 🆕 What's New in V0.8
+## 🆕 What's New in V0.9
 
-- Migrated the interface to **PyQt6 / Qt Widgets**, with consistent typography, spacing, tabs, tables, dialogs, and feedback.
-- Separated the main window, Calculation page, Results page, table model, and dialogs; core calculations, clipboard access, and background exports are maintained independently.
-- Prioritized icon actions with tooltips, normal/hover/disabled states, and keyboard support.
-- Background exports report progress through Qt signals. Cancellation keeps its cleanup message visible, and closing waits for export cancellation and temporary-file cleanup.
-- Preserved range highlighting, pagination position, exact statistics, and text storage of very large Excel indices.
-- Added light and dark themes across pages, table highlights, inputs, icons, and application dialogs. Switching preserves calculations and selections.
-- Fixed the Calculation page showing a black scroll-area background with a dark Windows system theme.
-- Declared GPL-3.0-or-later licensing and included project and third-party license notices.
+- Improved export recovery: if the worker cannot start, the progress dialog closes, controls are restored, and the export can be retried.
+- Added a clear error message when an export worker ends without returning a result.
+- Unified IPv6 network and prefix validation across calculation, location, pagination, range copying, and export entry points; invalid indices and estimate ranges are rejected.
+- Invalid export parameters are rejected before temporary-file creation, preserving existing destination files.
 
 ## 📸 Screenshots
 

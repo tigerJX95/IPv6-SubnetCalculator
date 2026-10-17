@@ -120,6 +120,7 @@ def calculate(network_text: str, target_text: str, *, preview_limit: int = MAX_P
 
 def locate_subnet(network: IPv6Network, target_prefix: int, address_text: str) -> int:
     """返回指定 IPv6 地址所属子网的一基序号，计算复杂度与子网数量无关。"""
+    validate_subnet_parameters(network, target_prefix)
     text = address_text.strip()
     if not text:
         raise InputError('请输入需要定位的 IPv6 地址。')
@@ -154,10 +155,18 @@ def subnet_count_description(result: SubnetResult) -> str:
     return f'{result.subnet_count:,}'
 
 
+def validate_subnet_parameters(network: IPv6Network, target_prefix: int) -> None:
+    """模块公共入口使用同一套网络及前缀边界校验。"""
+    if not isinstance(network, IPv6Network):
+        raise InputError('请使用有效的 IPv6 网络。')
+    if (isinstance(target_prefix, bool) or not isinstance(target_prefix, int)
+            or not network.prefixlen <= target_prefix <= 128):
+        raise InputError('目标子网前缀必须介于原网络前缀与 128 之间。')
+
+
 def subnet_at_index(network: IPv6Network, target_prefix: int, index: int) -> IPv6Network:
     """通过一基序号直接获取目标子网，不枚举此前的网段。"""
-    if not network.prefixlen <= target_prefix <= 128:
-        raise InputError('目标子网前缀必须介于原网络前缀与 128 之间。')
+    validate_subnet_parameters(network, target_prefix)
     total = 1 << (target_prefix - network.prefixlen)
     if isinstance(index, bool) or not isinstance(index, int) or not 1 <= index <= total:
         raise InputError(f'子网序号必须在 1～{total:,} 之间。')

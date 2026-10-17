@@ -22,7 +22,7 @@ from pathlib import Path
 from time import monotonic
 from unittest.mock import patch
 
-from PyQt6.QtCore import Qt, QItemSelectionModel, QTimer, QCoreApplication, QEvent, QSettings
+from PyQt6.QtCore import Qt, QItemSelectionModel, QTimer, QCoreApplication, QEvent, QSettings, QMimeData
 from PyQt6.QtGui import QColor, QPalette
 from PyQt6.QtTest import QTest
 from PyQt6.QtWidgets import QApplication, QDialog, QScrollArea
@@ -52,9 +52,19 @@ class QtWorkflowTests(unittest.TestCase):
         cls.settings = QSettings(str(Path(cls.settings_dir.name)/'preferences.ini'), QSettings.Format.IniFormat)
         cls.application = create_application([], settings=cls.settings)
         cls.application.setQuitOnLastWindowClosed(False)
+        cls.saved_clipboard = QMimeData()
+        original = QApplication.clipboard().mimeData()
+        if original is not None:
+            for mime_type in original.formats():
+                cls.saved_clipboard.setData(mime_type, original.data(mime_type))
 
     @classmethod
     def tearDownClass(cls):
+        if cls.saved_clipboard.formats():
+            QApplication.clipboard().setMimeData(cls.saved_clipboard)
+        else:
+            QApplication.clipboard().clear()
+        QApplication.processEvents()
         cls.settings_dir.cleanup()
 
     def setUp(self):
@@ -433,6 +443,74 @@ class QtWorkflowTests(unittest.TestCase):
             wait_until(lambda: not self.window.export_service.busy)
             self.assertTrue(self.page.export_button.isEnabled())
             self.assertEqual(self.window.feedback.property('severity'), 'error')
+
+    def test_thread_start_exception_restores_actions_and_allows_retry(self):
+        with tempfile.TemporaryDirectory() as directory, patch('ui.export_controller.QMessageBox.warning') as warning:
+            path = Path(directory)/'retry.txt'
+            with patch.object(_ExportThread, 'start', side_effect=RuntimeError('cannot start thread')):
+                self.window.export_controller.start_export(path, 'txt', self.window.result, 1, 3)
+            warning.assert_called_once()
+            self.assertFalse(self.window.export_service.busy)
+            self.assertIsNone(self.window.export_controller.progress_dialog)
+            self.assertTrue(self.page.export_button.isEnabled())
+            self.assertTrue(self.window.calculation_page.calculate_button.isEnabled())
+            self.assertFalse(path.exists())
+            with patch('ui.export_controller.QMessageBox.information'):
+                self.window.export_controller.start_export(path, 'txt', self.window.result, 1, 3)
+                wait_until(lambda: not self.window.export_service.busy)
+            self.assertEqual(len(path.read_text().splitlines()), 3)
+
+    def test_thread_start_without_running_is_reported_and_released(self):
+        with patch.object(_ExportThread, 'start', return_value=None), \
+                patch('ui.export_controller.QMessageBox.warning') as warning:
+            self.window.export_controller.start_export('unused.txt', 'txt', self.window.result, 1, 3)
+        warning.assert_called_once()
+        self.assertFalse(self.window.export_service.busy)
+        self.assertIsNone(self.window.export_controller.progress_dialog)
+        self.assertTrue(self.page.export_button.isEnabled())
+
+    def test_thread_without_outcome_has_recoverable_error(self):
+        service = self.window.export_service
+        service._thread = _ExportThread('unused.txt', self.window.result, 'txt', 1, 3, service)
+        received = []
+        service.completed.connect(received.append)
+        with patch('ui.export_controller.QMessageBox.warning'):
+            service._finish()
+        self.assertEqual(received[0][0], 'error')
+        self.assertFalse(service.busy)
+
+    def test_repeated_navigation_selection_theme_and_resize(self):
+        for step in range(150):
+            self.page.page_size_combo.setCurrentIndex(step % 4)
+            first = 1 + (step * 313) % 65000
+            self.locate(f'{first}-{first+300}')
+            self.assertEqual(self.page.selected_indices(), [first])
+            self.assertLessEqual(self.page.model.rowCount(), 200)
+            self.application.theme_manager.apply('dark' if step % 2 else 'light', persist=False)
+            self.window.tabs.setCurrentIndex(0)
+            self.window.resize(900 if step % 2 else 1080, 620 if step % 2 else 800)
+            self.window.tabs.setCurrentIndex(1)
+            QApplication.processEvents()
+            self.assertEqual(self.page.selected_indices(), [first])
+            self.assertEqual(self.page.locator_range, (first, first+300))
+            self.page.clear_selection()
+            self.assertEqual(self.page.selected_indices(), [])
+            self.assertEqual(self.page.locator_range, (first, first+300))
+            self.page.show_page(self.page.total_pages)
+            self.assertEqual(self.page.model.records[-1][0], 65536)
+
+    def test_minimize_restore_preserves_scroll_selection_and_range(self):
+        self.locate('80-100')
+        self.page.table.scrollToBottom()
+        QApplication.processEvents()
+        position = self.page.table.verticalScrollBar().value()
+        self.window.showMinimized()
+        QApplication.processEvents()
+        self.window.showNormal()
+        QApplication.processEvents()
+        self.assertEqual(self.page.table.verticalScrollBar().value(), position)
+        self.assertEqual(self.page.selected_indices(), [80])
+        self.assertEqual(self.page.locator_range, (80, 100))
 
     def test_close_waits_for_cancel_cleanup(self):
         with tempfile.TemporaryDirectory() as directory:

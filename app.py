@@ -39,6 +39,13 @@ def create_application(argv=None, settings=None):
 
 
 def run():
+    if '--self-check' in sys.argv[1:]:
+        import argparse
+        parser = argparse.ArgumentParser(description='IPv6SubnetCalculator release check')
+        parser.add_argument('--self-check', metavar='REPORT_JSON', required=True)
+        arguments = parser.parse_args()
+        from services.release_check import run_self_check
+        return run_self_check(arguments.self_check)
     from ui.main_window import MainWindow
     application = create_application()
     window = MainWindow()

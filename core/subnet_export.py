@@ -27,6 +27,7 @@ import tempfile
 import zipfile
 from xml.sax.saxutils import escape
 from ipaddress import IPv6Address, IPv6Network
+from .ipv6_core import validate_subnet_parameters
 
 XLSX_MAX_RECORDS = 1_048_575  # 工作表总行数为 1,048,576，其中一行用于表头。
 BATCH_SIZE = 1024
@@ -41,15 +42,19 @@ class ExportReport:
 
 
 def subnet_at(network: IPv6Network, target_prefix: int, index: int) -> IPv6Network:
+    validate_subnet_parameters(network, target_prefix)
     total = 1 << (target_prefix - network.prefixlen)
-    if not 0 <= index < total:
+    if isinstance(index, bool) or not isinstance(index, int) or not 0 <= index < total:
         raise IndexError('子网序号超出范围')
     step = 1 << (128 - target_prefix)
     return IPv6Network((IPv6Address(int(network.network_address) + index * step), target_prefix))
 
 
 def page_subnets(network: IPv6Network, target_prefix: int, page: int, page_size: int) -> list[tuple[int, str]]:
-    if not isinstance(page, int) or not isinstance(page_size, int) or page < 1 or page_size not in (25, 50, 100, 200):
+    validate_subnet_parameters(network, target_prefix)
+    if (isinstance(page, bool) or isinstance(page_size, bool) or
+            not isinstance(page, int) or not isinstance(page_size, int) or
+            page < 1 or page_size not in (25, 50, 100, 200)):
         raise ValueError('分页参数不正确')
     total = 1 << (target_prefix - network.prefixlen)
     begin = (page - 1) * page_size
@@ -109,6 +114,7 @@ def export_all(destination: str | Path, network: IPv6Network, target_prefix: int
 
     调用前须在界面确认超大导出和覆盖现有文件。
     """
+    validate_subnet_parameters(network, target_prefix)
     full_total = 1 << (target_prefix - network.prefixlen)
     if end is None:
         end = full_total
