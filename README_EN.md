@@ -62,7 +62,7 @@ IPv6SubnetCalculator is an offline IPv6 subnet calculator for Windows. It analyz
 
 ## 📦 Download and Usage
 
-Download `IPv6SubnetCalculator_V1.2.exe` directly from Assets on GitHub [Releases](../../releases). Run the downloaded executable; Python is not required. Enter a network and target prefix, then click the calculation icon; the application switches to Results when complete.
+Download `IPv6SubnetCalculator_V1.2.exe` directly from Assets on GitHub [Releases](../../releases/latest) Run the downloaded executable; Python is not required. Enter a network and target prefix, then click the calculation icon; the application switches to Results when complete.
 
 Press F1 or use the top-bar information icon for built-in help, license texts and legal notices.
 
