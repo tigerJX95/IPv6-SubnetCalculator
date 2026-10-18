@@ -1,0 +1,20 @@
+{
+  "format": "IPv6SubnetCalculator.plan",
+  "version": 1,
+  "name": "办公网络规划示例",
+  "notes": "按 /64 划分，记录楼层与 VLAN 分配约定。",
+  "network": "2026:1015:abcd::/48",
+  "target_prefix": 64,
+  "view": {
+    "page_size": 100,
+    "page": "1",
+    "locator_range": [
+      "1",
+      "16"
+    ],
+    "selected_indices": [
+      "1"
+    ],
+    "tab": 0
+  }
+}

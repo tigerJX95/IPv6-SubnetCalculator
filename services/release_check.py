@@ -152,6 +152,16 @@ class ReleaseCheck(QObject):
         tools.analyze()
         self.require(tools.relation.kind == 'a_contains_b', '包含方向不正确')
         self.checks.append('address_formats_and_network_relations')
+        from services.plan_storage import save_plan, load_plan
+        calculation.target_input.setText('64')
+        plan = self.window.plan_controller.snapshot()
+        path = self.directory/'计算方案.json'
+        save_plan(path, plan)
+        restored = load_plan(path)
+        self.require(restored == plan, '方案 JSON 往返不一致')
+        self.window.plan_controller.apply(restored)
+        self.require(self.window.result.subnet_count == 65536, '方案恢复计算不正确')
+        self.checks.append('plan_save_and_restore_with_unicode_path')
         self.checks.append('default_calculation_and_resources')
         self.window.calculation_page.network_input.setText('::/0')
         self.window.calculation_page.target_input.setText('128')

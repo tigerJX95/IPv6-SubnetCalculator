@@ -26,6 +26,7 @@ from ui.calculation_page import CalculationPage
 from ui.results_page import ResultsPage
 from ui.address_tools_page import AddressToolsPage
 from ui.export_controller import ExportController
+from ui.plan_controller import PlanController
 from ui.widgets import FeedbackLabel, ThemeButton
 
 
@@ -73,6 +74,7 @@ class MainWindow(QMainWindow):
         self.feedback = FeedbackLabel()
         layout.addWidget(self.feedback)
 
+        self.plan_controller = PlanController(self)
         self.export_controller = ExportController(self, self.export_service)
         self.calculation_page.calculate_requested.connect(self.calculate)
         self.calculation_page.summary_copy_requested.connect(self._copy_calculation_summary)
@@ -115,12 +117,18 @@ class MainWindow(QMainWindow):
     def _export_busy_changed(self, busy):
         self.results_page.set_export_enabled(not busy)
         self.calculation_page.calculate_button.setEnabled(not busy)
+        self.calculation_page.save_plan_button.setEnabled(not busy and self.result is not None)
+        self.calculation_page.open_plan_button.setEnabled(not busy)
 
     def closeEvent(self, event):
         if self.export_service.busy:
             self.closing_after_export = True
             self.export_controller.cancel()
             self.feedback.set_message('正在取消导出并清理临时文件，完成后退出…', 'info')
+            event.ignore()
+            return
+        if not self.plan_controller.confirm_discard():
+            self.closing_after_export = False
             event.ignore()
             return
         event.accept()

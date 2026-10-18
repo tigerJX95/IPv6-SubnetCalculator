@@ -56,14 +56,14 @@ QTabBar::tab:hover:!selected {{ background: {hover}; }}
 QGroupBox {{ border: 1px solid {border}; border-radius: 8px; margin-top: 12px;
     padding: 15px 12px 10px; background: {surface}; }}
 QGroupBox::title {{ subcontrol-origin: margin; left: 12px; padding: 0 5px; color: {hint}; }}
-QLineEdit, QComboBox {{ border: 1px solid {input_border}; border-radius: 5px;
+QLineEdit, QComboBox, QPlainTextEdit {{ border: 1px solid {input_border}; border-radius: 5px;
     background: {surface}; padding: 6px 9px; min-height: 22px;
     selection-background-color: {selected}; selection-color: {selected_text}; }}
 QComboBox {{ padding-right: 28px; }}
 QComboBox::drop-down {{ border: 0; width: 25px; background: transparent; }}
 QComboBox::down-arrow {{ image: url("{arrow}"); width: 12px; height: 8px; }}
-QLineEdit:focus, QComboBox:focus {{ border: 1px solid {focus}; }}
-QLineEdit:disabled, QComboBox:disabled {{ background: {disabled}; color: {disabled_text}; }}
+QLineEdit:focus, QComboBox:focus, QPlainTextEdit:focus {{ border: 1px solid {focus}; }}
+QLineEdit:disabled, QComboBox:disabled, QPlainTextEdit:disabled {{ background: {disabled}; color: {disabled_text}; }}
 QLineEdit {{ placeholder-text-color: {muted}; }}
 QComboBox QAbstractItemView {{ background: {surface}; color: {text}; border: 1px solid {border};
     selection-background-color: {selected}; selection-color: {selected_text}; outline: 0; }}

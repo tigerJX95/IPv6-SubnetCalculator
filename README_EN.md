@@ -1,4 +1,4 @@
-# 🌐 IPv6 Subnet Calculator V1.0
+# 🌐 IPv6 Subnet Calculator V1.1
 
 [简体中文](README.md) | **English**
 
@@ -21,22 +21,18 @@ IPv6SubnetCalculator is an offline IPv6 subnet calculator for Windows. It analyz
 - **Subnet details:** Double-click or press Enter to inspect full address ranges and capacity, browse adjacent subnets, and copy details.
 - **File export:** Export all subnets or a range to TXT or Excel (XLSX), with size estimates, progress, and cancellation. The destination is replaced only after its temporary file is written successfully.
 
-## 🆕 V1.0 Core Feature Release
+## 🆕 V1.1 Calculation Plans
 
-- **Larger text:** 12 pt interface text, 12 pt monospaced address/results text, and 11 pt binary text, with taller table rows.
-- **New address format conversion:** Compressed/normalized, expanded and binary representations with individual and copy-all actions.
-- **New two-network relationship analysis:** Equality, directional containment, adjacency and independence, with host-bit normalization.
-- **New since V0.9: calculation summary copying.** Copy the full calculation and deployment guidance with exact integers. The action is disabled until a successful calculation and after invalid recalculation.
+- **Save and restore:** Store the last successful calculation in local JSON. Opening recalculates results and restores page size, page, locator range, current-page selections, and active tab.
+- **Names and notes:** Label plans and record their purpose for different networks.
+- **Quick actions:** Save/open icons with hover tooltips on Calculation, plus Ctrl+S/Ctrl+O and Ctrl+Shift+S for Save As.
+- **Work protection:** Save, discard, or cancel unsaved parameter/name/note changes before opening another plan or closing. Invalid files leave current results intact.
+- **Small files:** Store parameters and view state rather than huge subnet lists. Pages and indices use decimal strings to preserve exact integers.
 
-- Brings together IPv6 subnet calculation, address guidance, pagination and location, selection statistics, copying, details, and TXT/Excel exports into a complete core workflow.
-- Provides a consistent PyQt6 three-tab interface, light/dark themes, icon tooltips, and saved theme preferences.
-- Provides a standalone Windows package containing the application and project/third-party license files.
+### 🐛 Error Handling
 
-### 🐛 Error Handling and Recovery
-
-- Provides clear feedback for invalid networks, prefixes, indices, and ranges.
-- Restores controls and allows retries if an export worker cannot start or ends abnormally.
-- Preserves existing destination files and removes unfinished temporary files after export failure or cancellation.
+- Validates file type, schema version, fields, pages, ranges, and selections with Chinese feedback.
+- Replaces destination files only after successful writing; failures preserve originals and remove temporary files.
 
 ## 📸 Screenshots
 
@@ -58,7 +54,7 @@ IPv6SubnetCalculator is an offline IPv6 subnet calculator for Windows. It analyz
 
 ## 📦 Download and Usage
 
-Download `IPv6SubnetCalculator_V1.0_Windows.zip` from GitHub [Releases](../../releases), extract it, and run `IPv6SubnetCalculator_V1.0.exe`. Python is not required. Enter an IPv6 network and target prefix, then click the calculation icon; the application switches to Results when complete.
+Download `IPv6SubnetCalculator_V1.1.exe` directly from Assets on GitHub [Releases](../../releases). Run the downloaded executable; Python is not required. Enter a network and target prefix, then click the calculation icon; the application switches to Results when complete.
 
 For source execution and building, see [Development Notes](docs/DEVELOPMENT.md).
 
@@ -67,6 +63,8 @@ For source execution and building, see [Development Notes](docs/DEVELOPMENT.md).
 - Editing an Address Tools input clears only that tool's previous results. Click its icon or press Enter to process again; conversion and analysis retain separate states.
 - Conversion accepts one IPv6 address without a prefix or zone ID. Compressed and normalized output share a row using lowercase compressed notation. Binary is displayed in 16-bit groups and copied as 128 consecutive bits.
 - Network relationships use normalized CIDRs. Adjacent means non-overlapping, directly contiguous ranges; it does not guarantee they form one CIDR. The gap count counts addresses between the two ranges.
+- Calculate before saving; edited parameters require recalculation. Plans store calculation state, excluding Address Tools inputs and theme preferences.
+- Names support up to 80 characters and notes up to 2,000. Saved files include view state, but navigation alone does not trigger unsaved-change prompts.
 - The first launch uses the light theme; subsequent launches restore your choice. Hover over the theme icon to see the current theme, next theme, and shortcut. Native file pickers and title bars follow the operating system.
 
 - Summary copying uses the last successful calculation shown on the page. Recalculate after editing inputs to update it.

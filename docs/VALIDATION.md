@@ -1,119 +1,67 @@
-# IPv6SubnetCalculator V1.0 验证记录 / Validation Record
+# IPv6SubnetCalculator V1.1 验证记录 / Validation Record
 
-日期 / Date: 2026-10-17
+日期 / Date: 2026-10-18
 
-V1.0 在 V0.9 基础上新增 IPv6 地址格式转换、双网段关系分析和计算摘要复制；新增独立“地址工具”标签页。本轮同时统一加大界面字体及表格行高。以下结果来自本次更新后实际运行的 Linux 源码与重新构建的同一运行指纹单文件程序。Windows 自动、人工及长时间验收尚未执行。
+V1.1 在最新 V1.0（字体及 Windows 编码修正）基础上增加本地计算方案。此记录来自 Linux 实际运行，Windows 自动、人工及长时间验收仍待本地完成。
 
-V1.0 adds IPv6 address conversion, two-network relationship analysis, calculation summary copying, and an independent Address Tools tab to V0.9. This update also enlarges interface text and table rows. Results below come from the updated Linux source and rebuilt matching-fingerprint onefile executable. Windows automated, manual, and extended-session acceptance remain pending.
-
-## 🐛 Windows 测试编码修正 / Windows Test Encoding Fix
-
-用户上传的 Windows / Python 3.14.6 日志显示：212 项中 211 项通过，源码指纹变化测试因默认 GBK 解码 UTF-8 的临时源码副本而报错。已在本环境强制 GBK 默认编码复现同一异常。修正测试文本读写为显式 UTF-8 后，25 项相关测试在 GBK 默认编码模拟下通过，并新增一项持续回归。先前仅修正 GBK 测试时，运行代码未变；本次字体调整已改变运行源码与构建指纹，因此应在 Windows 覆盖源码后重新运行 `build.cmd` 和 `verify.cmd`，其余 Windows 自动阶段尚待该次运行确认。
-
-The supplied Windows / Python 3.14.6 log shows 211 passes out of 212 tests, with one source-fingerprint test error from decoding a temporary UTF-8 source copy using GBK. The same error was reproduced with a forced GBK default. Explicit UTF-8 test I/O fixes it; 25 related tests pass under GBK-default simulation and a permanent regression was added. The earlier GBK-only fix left runtime code unchanged. This typography update changes runtime source and its fingerprint, so rebuild and rerun `verify.cmd` on Windows after replacing the source. The remaining Windows automated stages await that run.
-
-测试过程中的窗口快速切换来自脚本反复开关窗口、切换主题、调整大小和最小化恢复，不是本次失败原因。表格仍只加载当前页，普通 EXE 启动不执行这些测试操作。
-
-Rapid window changes during testing come from scripted open/close, theme, resize, and minimize/restore actions. They did not cause this failure. Only the current page is loaded, and normal EXE startup does not perform these test actions.
-
-## 字体与布局 / Typography and Layout
-
-- 常规文字 12 pt，等宽地址／结果 12 pt，二进制 11 pt，标题 28 px；统一维护在 `ui/fonts.py`。/ 12 pt interface and monospaced text, 11 pt binary, 28 px title, centralized in `ui/fonts.py`.
-- 表格默认行高 38，序号列按实际字体度量计算；详情／导出弹窗增加空间。/ Row height 38, font-metric index column sizing, and more space in detail/export dialogs.
-- 三个页面在 1080×800 的两种主题下生成实际截图；900×620 下滚动／换行正常，检查四类弹窗。/ Actual screenshots of all three tabs in both themes at 1080×800; scrolling/wrapping checked at 900×620 and four dialog types inspected.
-- Windows 字体渲染、显示缩放及实机可读性仍待本地验收。/ Windows font rendering, display scaling and readability remain subject to local acceptance.
+V1.1 adds local calculation plans to the latest V1.0 typography/encoding baseline. This record comes from actual Linux runs; Windows automated, manual and extended-session acceptance remain pending.
 
 ## 环境 / Environment
 
-| 项目 / Item | 本次环境 / Environment |
+| 项目 / Item | 记录 / Record |
 |---|---|
-| 应用 / Application | V1.0 |
-| 系统 / OS | Linux x86_64, Qt offscreen |
+| 应用 / Application | V1.1 |
+| 系统 / OS | Linux-6.18.55-x86_64-with-glibc2.39, x86_64, Qt offscreen |
 | Python | 3.12.14 |
 | PyQt6 / Qt | 6.11.0 / 6.11.2 |
-| 打包检查 / Packaging | PyInstaller onefile，字体更新后重新构建并实际运行 / rebuilt and executed after typography update |
-| 运行源码与资源 SHA-256 / Runtime source/resource fingerprint | `61abb4518cf979856ed919cc7fa6f4354f5da60648a8dcaf558ffc90467ee54a` |
-| Windows 自动检查 / Automated checks | 未运行 / Not run |
-| Windows 人工及长时间验收 / Manual and extended-session acceptance | 待完成 / Pending |
+| 打包 / Packaging | Linux PyInstaller onefile，实际运行 / built and executed |
+| 运行源码及资源 SHA-256 / Fingerprint | `04820ce80122c2e17f1877509e2021b00e51d781abae157485ff2e825f292dfa` |
+| Windows EXE | 本环境未构建或运行 / not built or run here |
 
 ## 自动检查 / Automated Checks
 
 | 检查 / Check | 结果 / Result |
 |---|---|
-| 全部回归 / Regression | 213 项通过 / passed |
-| 摘要复制新增回归 / New summary-copy regression | 8 项通过：完整内容、规范化、最大整数、不变前缀／单地址、两种主题与快照、非法重算、剪贴板失败重试及初始禁用 / 8 passed, covering content, normalization, precision, boundaries, themes, snapshots, invalid input and clipboard recovery |
-| 地址工具新增回归 / New address-tool regression | 18 项通过：格式与二进制精度、映射地址、非法输入、关系方向、边界、主题、状态独立、复制重试及最小窗口 / 18 passed, covering conversion, precision, mapped notation, invalid inputs, relationships, boundaries, themes, copying, independent state and minimum window |
-| GBK 默认编码模拟 / GBK-default simulation | 25 项相关测试通过，含新增指纹编码回归 / 25 related tests passed, including the new encoding regression |
-| 格式转换随机样本 / Conversion roundtrips | 300 个固定种子随机地址，三种输出均无损 / 300 seeded addresses, lossless outputs |
-| 关系区间交叉验证 / Relationship interval cross-check | 225 对小网段与独立整数区间算法一致 / 225 pairs match an independent integer interval oracle |
-| 合法前缀组合 / Valid prefix combinations | 8,385 组，与 Python ipaddress 交叉验证 / checked against Python ipaddress |
-| 随机网段 / Random networks | 固定种子 300 组 / 300 seeded cases |
-| 连续界面操作 / Continuous UI operations | 回归测试 150 轮，包含定位、选择、主题、标签与窗口大小切换 / 150 regression cycles |
-| 源码程序 / Source application | 100 轮自检通过，包含摘要快照 / self-check cycles passed, including summary snapshots |
-| 单文件打包程序 / Onefile executable | 100 轮自检通过，包含摘要快照 / self-check cycles passed, including summary snapshots |
-| 极大结果 / Maximum result | `::/0 → /128` 的末页及最后序号 `2^128` 正确；摘要完整保留 `2^128`；每页最多 200 条 / correct final page and exact summary count; at most 200 rows loaded |
-| 中文路径导出 / Unicode-path exports | 源码和单文件程序均完成 TXT／XLSX 后台导出 / source and onefile passed |
-| 主题与许可资源 / Theme and license resources | 图标、主题箭头、项目及第三方许可文件正常加载 / loaded successfully |
-| 构建对应 / Build matching | 源码与单文件程序的版本和源码／资源指纹一致 / matching version and fingerprint |
-| Windows 发布 ZIP / Windows ZIP assembly | 4 项结构与失败保护测试通过；此环境未构建 Windows EXE / four assembly tests passed; no Windows EXE built here |
+| 完整回归 / Full regression | 227 项通过 / passed |
+| 方案新增回归 / New plan regression | 14 项：7 项格式／存储 + 7 项界面流程 / 7 schema/storage and 7 UI-flow tests |
+| 最大空间方案 / Maximum-space plan | `::/0 → /128` 末页、最后序号、定位和选择恢复准确；方案小于 2 KiB / exact restoration with a plan under 2 KiB |
+| 源码自检 / Source self-check | 100 轮操作通过，含中文路径方案往返 / 100 cycles passed, including Unicode-path plan roundtrip |
+| 单文件自检 / Onefile self-check | 100 轮操作通过，含中文路径方案往返 / 100 cycles passed, including plan roundtrip |
+| 构建匹配 / Build match | 源码／打包程序版本和指纹一致 / matching version and fingerprint |
+| 计算边界 / Calculation coverage | 8,385 对前缀、300 组随机网段及最大空间末页 / prefix pairs, seeded networks and maximum-space final page |
+| 地址工具 / Address tools | 格式转换、双网段关系及复制回归通过 / conversion, relationships and copying passed |
+| 主题与资源 / Themes/resources | 两种主题、图标和许可资源正常 / both themes, icons and licenses loaded |
+| 后台导出 / Background exports | 中文路径 TXT 100,000 条、XLSX 20,000 条及取消保护通过 / Unicode-path exports and cancellation protection passed |
 
-摘要格式独立维护在 `core/calculation_summary.py`，不依赖 Qt、不枚举子网、不使用浮点数。界面保存最后一次成功计算的快照；编辑输入不会混入摘要，非法重算后清空并禁用复制。自检不写入系统剪贴板；完整回归覆盖剪贴板交互并恢复原数据。格式转换和关系分析复用原有校验，均不枚举地址；两项工具输入分别使结果失效，切换主题或标签不改变计算器状态。三个页面的浅深色实际截图已更新并检查。
+源码与单文件程序使用相同自检入口；自检使用临时偏好和文件，不更改系统剪贴板。完整回归的剪贴板测试会恢复原数据。浅深色实际截图已更新并检查。
 
-Summary formatting is isolated in `core/calculation_summary.py`, independent of Qt, without subnet enumeration or floating-point counts. The UI retains the last successful snapshot, excludes uncalculated edits, and clears/disables copying after invalid recalculation. Self-checks leave the clipboard unchanged; regression covers clipboard interaction and restores original data. Conversion and relationship analysis reuse input validation without enumerating addresses; editing invalidates each tool independently, while theme/tab switches preserve calculator state. Actual light/dark screenshots of all three pages were updated and inspected.
+Source and onefile use the same self-check with temporary preferences/files and no clipboard writes. Full clipboard regression restores original data. Actual light/dark previews were updated and inspected.
 
-Windows 发布 ZIP 测试使用临时数据验证程序和六份许可文件的收集及失败保护，不等同于 Windows EXE 运行验收。
+## 🐛 方案与文件保护 / Plan and File Protection
 
-Windows ZIP tests use temporary fixtures to check executable/license collection and failure protection; they do not constitute Windows executable acceptance.
+- 校验格式标识／版本、必需字段、类型、名称备注限额、页码、定位与当前页选择；拒绝重复 JSON 字段、非法数值、非 UTF-8 或超出 64 KiB 的文件。/ Validates schema, limits and view state; rejects duplicate fields, invalid constants, non-UTF-8 and oversized files.
+- 损坏文件、文件选择取消、未保存提示选择取消时保留当前工作。/ Invalid input and cancelled open/unsaved prompts retain current work.
+- 写入及原子替换失败保留原方案，清理临时文件。/ Failed writing/replacement preserves originals and removes temporary files.
+- 输入参数修改后须重新计算才能保存；已保存方案 Ctrl+S 直接更新，Ctrl+Shift+S 另存为。/ Edited parameters require recalculation; Ctrl+S updates the current file, Ctrl+Shift+S saves a copy.
+- 关闭与打开前仅对参数／名称／备注的未保存更改提示；翻页和选择在下次保存时记录。/ Parameter/name/note edits trigger prompts; navigation is captured on the next save.
 
-## 🐛 异常恢复与文件保护 / Error Recovery and File Protection
+## 性能样本 / Performance Samples
 
-- 修复默认 GBK 环境读取 UTF-8 测试源码失败；测试文本读写显式指定 UTF-8。/ Fixes GBK-default decoding failure for UTF-8 test source; test text I/O explicitly uses UTF-8.
-- 剪贴板失败保留计算结果，恢复后可再次复制；计算失败后禁用摘要复制。/ Clipboard failures retain results and allow retry; failed calculation disables summary copying.
-- 导出线程启动失败、未实际启动或未返回结果时恢复操作。/ Controls recover from startup exceptions, silent failures and missing worker outcomes.
-- 导出写入或替换失败、取消时保留原文件并清理临时文件；覆盖关闭等待与失败重试。/ Failed/cancelled exports preserve originals and clean temporary files; close-and-wait and retry are covered.
-- 发布 ZIP 缺少输入或写入失败时，保留已有 ZIP 并清理未完成文件。/ Missing inputs or write failures preserve existing archives and clean incomplete files.
-
-## 📊 性能样本 / Performance Samples
-
-| 操作 / Operation | 本次测量 / Measurement |
+| 项目 / Item | 本次机器 / This run |
 |---|---:|
-| `::/0 → /128` 计算，无预览 / Calculation without preview | 0.023418 ms |
-| 最大空间末页，每页 200 条 / Final page, 200 rows | 1.240327 ms |
-| 定位最后一个 IPv6 地址 / Locate final address | 0.01153 ms |
-| IPv6 格式转换，最大地址 / Conversion of maximum address | 0.026205 ms |
-| 双网段关系，最大空间包含单地址 / Full-space containment analysis | 0.07318 ms |
-| TXT，100,000 条 / rows | 2.26541 s |
-| XLSX，20,000 条 / rows | 0.46932 s |
-| 首批 1,024 条后取消，场景总耗时 / Cancellation scenario after 1,024 rows | 0.04452 s |
+| 最大空间计算 / Full-space calculation | 0.009696 ms |
+| 最大空间末页 200 条 / Final page, 200 rows | 0.553953 ms |
+| 末地址定位 / Locate final address | 0.005368 ms |
+| TXT 100,000 条 / rows | 0.84453 s |
+| XLSX 20,000 条 / rows | 0.23622 s |
+| 首批后取消场景 / Cancellation scenario | 0.0093 s |
 
-计算、末页和定位为五组重复测量中单次平均耗时的中位数。导出使用最大空间的前 N 条。仅描述本次机器及负载，不包含冷启动／首次字体加载，不设依赖硬件的速度门槛，也不表示相对旧版的性能提升。
+计算／翻页／定位为五组重复测量的单次平均耗时中位数。数据仅描述本次机器和负载，不代表相对旧版提速或 Windows 性能承诺。导出内存以 tracemalloc 测量，TXT 1,000／10,000 条峰值为 [7616, 7617] 字节，XLSX 为 [311361, 340441] 字节，不含 Qt 原生或总进程内存。事件循环采样不足时不能据此宣称没有卡顿；短时自动循环不替代 Windows 实际响应与 30 分钟使用验收。
 
-Calculation, pagination and location are medians of five batch-mean samples. Exports use the first N results of the full address space. Measurements describe this machine/load, exclude cold startup/initial font loading, use no hardware-dependent speed threshold, and imply no speedup over earlier versions.
+Calculation/navigation/location are medians of five batch-mean samples. Results describe this machine/load, not a speedup or Windows performance guarantee. Export memory tracks Python allocations only, excluding Qt/native and process totals. Insufficient event-loop samples cannot establish absence of stalls. Short loops do not replace Windows response checks and a 30-minute use session.
 
-## 导出内存 / Export Memory
+## 本地验证 / Local Verification
 
-| 格式 / Format | 1,000 条峰值 / peak bytes | 10,000 条峰值 / peak bytes |
-|---|---:|---:|
-| TXT | 7,616 | 7,617 |
-| XLSX | 311,361 | 340,441 |
+覆盖项目源码后运行 `build.cmd`，再运行 `verify.cmd`，查看 `verification/`。Windows 用户直接从 Releases 下载 EXE；发布 ZIP 为可选归档。人工项目见 [WINDOWS_ACCEPTANCE.md](WINDOWS_ACCEPTANCE.md)，方案格式见 [PLAN_FORMAT.md](PLAN_FORMAT.md)。
 
-仅记录 tracemalloc 可见的 Python 分配量，不含 Qt 原生内存或进程总内存。短时循环不能替代 Windows 30 分钟实际使用及资源观察。
-
-These are tracemalloc-visible Python allocations, excluding Qt/native memory and total process memory. Short loops do not replace a 30-minute Windows use session and resource observation.
-
-## 后台事件循环采样 / Background Event-loop Samples
-
-| 运行方式 / Mode | TXT 最大观察间隔 / maximum gap | XLSX 最大观察间隔 / maximum gap |
-|---|---:|---:|
-| Source | 215.562 ms | 35.21 ms |
-| Onefile | 168.772 ms | 38.491 ms |
-
-采用 10 ms Qt 定时器记录实际观察间隔，含当前负载与绘制影响，不代表帧率、所有交互的响应上限或 Windows 性能承诺。
-
-A 10 ms Qt timer samples observed intervals, including load and painting effects. These are not frame rates, bounds for every interaction or Windows performance guarantees.
-
-## Windows 复现 / Windows Reproduction
-
-源码目录运行 `build.cmd`，再运行 `verify.cmd`；报告位于 `verification/`。Windows 构建生成 EXE、许可文件目录及 `IPv6SubnetCalculator_V1.0_Windows.zip`。人工项目见 [Windows 验收](WINDOWS_ACCEPTANCE.md)。
-
-Run `build.cmd` then `verify.cmd` from the source folder. Reports appear in `verification/`. Windows builds create the EXE, licenses, and Windows ZIP. See [Windows Acceptance](WINDOWS_ACCEPTANCE.md) for manual checks.
+After replacing source, run `build.cmd` and `verify.cmd`, then review `verification/`. The EXE is the default Releases download; ZIP is optional. See the acceptance and plan-format documents.

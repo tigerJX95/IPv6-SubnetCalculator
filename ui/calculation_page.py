@@ -19,7 +19,7 @@
 from ipaddress import IPv6Address
 from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtWidgets import (QWidget, QScrollArea, QVBoxLayout, QGridLayout,
-                             QHBoxLayout, QGroupBox, QLabel, QLineEdit, QComboBox)
+                             QHBoxLayout, QGroupBox, QLabel, QLineEdit, QComboBox, QPlainTextEdit)
 from app_info import DEFAULT_NETWORK
 from core.ipv6_core import common_target_prefixes, prefix_analysis, subnet_count_description
 from core.address_usage import describe_network
@@ -78,8 +78,36 @@ class CalculationPage(QWidget):
         grid.addLayout(prefix_area, 1, 1)
         self.calculate_button = IconButton('calculate', '开始计算（输入框内按 Enter）')
         self.calculate_button.clicked.connect(self.calculate_requested)
-        grid.addWidget(self.calculate_button, 2, 0, alignment=Qt.AlignmentFlag.AlignLeft)
+        actions = QHBoxLayout()
+        actions.addWidget(self.calculate_button)
+        self.save_plan_button = IconButton('save_plan', '保存计算方案（Ctrl+S）\n保存最后一次计算、名称备注及当前浏览位置。\n另存为：Ctrl+Shift+S。')
+        self.save_plan_button.setEnabled(False)
+        self.open_plan_button = IconButton('open_plan', '打开计算方案（Ctrl+O）\n校验 JSON 后恢复计算及浏览位置。')
+        actions.addWidget(self.save_plan_button)
+        actions.addWidget(self.open_plan_button)
+        actions.addStretch()
+        grid.addLayout(actions, 2, 0, 1, 2)
         body.addWidget(form)
+
+        plan_box = QGroupBox('计算方案')
+        plan_grid = QGridLayout(plan_box)
+        plan_grid.addWidget(QLabel('方案名称：'), 0, 0)
+        self.plan_name_input = QLineEdit()
+        self.plan_name_input.setMaxLength(80)
+        self.plan_name_input.setPlaceholderText('例如：办公网络地址规划')
+        plan_grid.addWidget(self.plan_name_input, 0, 1)
+        plan_grid.addWidget(QLabel('备注：'), 1, 0, alignment=Qt.AlignmentFlag.AlignTop)
+        self.plan_notes_input = QPlainTextEdit()
+        self.plan_notes_input.setPlaceholderText('记录用途、分配约定或后续事项（最多 2,000 字）')
+        self.plan_notes_input.setMaximumHeight(82)
+        self.plan_notes_input.setMinimumHeight(62)
+        plan_grid.addWidget(self.plan_notes_input, 1, 1)
+        self.plan_file_label = QLabel('方案文件：未保存')
+        self.plan_file_label.setTextFormat(Qt.TextFormat.PlainText)
+        self.plan_file_label.setObjectName('Reference')
+        self.plan_file_label.setWordWrap(True)
+        plan_grid.addWidget(self.plan_file_label, 2, 0, 1, 2)
+        body.addWidget(plan_box)
 
         summary = QGroupBox('网络计算摘要')
         summary_grid = QGridLayout(summary)
@@ -169,6 +197,7 @@ class CalculationPage(QWidget):
     def set_result(self, result):
         self._summary_text = format_calculation_summary(result) if result is not None else ''
         self.copy_summary_button.setEnabled(result is not None)
+        self.save_plan_button.setEnabled(result is not None)
         if result is None:
             for label in self.fields.values():
                 label.setText('—')

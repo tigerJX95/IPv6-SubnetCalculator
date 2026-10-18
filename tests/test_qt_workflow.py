@@ -25,7 +25,7 @@ from unittest.mock import patch
 from PyQt6.QtCore import Qt, QItemSelectionModel, QTimer, QCoreApplication, QEvent, QSettings, QMimeData
 from PyQt6.QtGui import QColor, QPalette
 from PyQt6.QtTest import QTest
-from PyQt6.QtWidgets import QApplication, QDialog, QScrollArea
+from PyQt6.QtWidgets import QApplication, QDialog, QScrollArea, QMessageBox
 from app import create_application
 from core.ipv6_core import calculate
 from services.clipboard_service import ClipboardService
@@ -79,6 +79,9 @@ class QtWorkflowTests(unittest.TestCase):
         if self.window.export_service.busy:
             self.window.export_controller.cancel()
             wait_until(lambda: not self.window.export_service.busy)
+        self.window.plan_controller.path = None
+        self.window.calculation_page.plan_name_input.clear()
+        self.window.calculation_page.plan_notes_input.clear()
         self.window.close()
         self.window.deleteLater()
         QCoreApplication.sendPostedEvents(None, QEvent.Type.DeferredDelete)
@@ -97,6 +100,103 @@ class QtWorkflowTests(unittest.TestCase):
         QTest.mouseClick(self.page.table.viewport(), Qt.MouseButton.LeftButton, modifier,
                          self.page.table.visualRect(index).center())
         QApplication.processEvents()
+
+    def test_plan_roundtrip_restores_metadata_paging_range_and_selection(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path=Path(directory)/'办公方案.json'
+            calculation=self.window.calculation_page
+            calculation.plan_name_input.setText('办公网络')
+            calculation.plan_notes_input.setPlainText('办公楼 VLAN 规划')
+            self.locate('190-210')
+            self.window.tabs.setCurrentIndex(1)
+            snapshot=self.window.plan_controller.snapshot()
+            with patch('ui.plan_controller.QFileDialog.getSaveFileName',return_value=(str(path),'')):
+                self.assertTrue(self.window.plan_controller.save())
+            calculation.network_input.setText('::1/128');calculation.target_input.setText('128');self.window.calculate()
+            with patch('ui.plan_controller.QFileDialog.getOpenFileName',return_value=(str(path),'')), \
+                 patch('ui.plan_controller.QMessageBox.question',return_value=QMessageBox.StandardButton.Discard):
+                self.assertTrue(self.window.plan_controller.open())
+            self.assertEqual(self.window.plan_controller.snapshot(),snapshot)
+            self.assertIn(path.name,calculation.plan_file_label.text())
+
+    def test_plan_open_with_unsaved_changes_can_cancel_without_replacing_work(self):
+        from services.plan_storage import save_plan
+        from core.calculation_plan import CalculationPlan
+        self.window.calculation_page.plan_name_input.setText('未保存名称')
+        before=self.window.plan_controller.snapshot()
+        with tempfile.TemporaryDirectory() as directory:
+            path=Path(directory)/'other.json';save_plan(path,CalculationPlan('::1/128',128))
+            with patch('ui.plan_controller.QFileDialog.getOpenFileName',return_value=(str(path),'')), \
+                 patch('ui.plan_controller.QMessageBox.question',return_value=QMessageBox.StandardButton.Cancel):
+                self.assertFalse(self.window.plan_controller.open())
+            self.assertEqual(self.window.plan_controller.snapshot(),before)
+            self.assertIsNone(self.window.plan_controller.path)
+
+    def test_plan_existing_save_is_direct_and_save_as_cancel_preserves_path(self):
+        from services.plan_storage import load_plan
+        controller=self.window.plan_controller
+        with tempfile.TemporaryDirectory() as directory:
+            path=Path(directory)/'new'
+            with patch('ui.plan_controller.QFileDialog.getSaveFileName',return_value=(str(path),'')):
+                self.assertTrue(controller.save())
+            path=path.with_suffix('.json')
+            self.window.calculation_page.plan_notes_input.setPlainText('更新备注')
+            with patch('ui.plan_controller.QFileDialog.getSaveFileName') as dialog:
+                self.assertTrue(controller.save());dialog.assert_not_called()
+            self.assertEqual(load_plan(path).notes,'更新备注')
+            with patch('ui.plan_controller.QFileDialog.getSaveFileName',return_value=('','')):
+                self.assertFalse(controller.save(save_as=True))
+            self.assertEqual(controller.path,path)
+
+    def test_plan_corruption_and_cancel_preserve_current_work(self):
+        self.locate('90-210')
+        before=self.window.plan_controller.snapshot()
+        with tempfile.TemporaryDirectory() as directory:
+            path=Path(directory)/'bad.json';path.write_bytes(b'bad')
+            with patch('ui.plan_controller.QFileDialog.getOpenFileName',return_value=(str(path),'')), \
+                 patch('ui.plan_controller.QMessageBox.warning'):
+                self.assertFalse(self.window.plan_controller.open())
+            self.assertEqual(self.window.plan_controller.snapshot(),before)
+        with patch('ui.plan_controller.QFileDialog.getOpenFileName',return_value=('','')):
+            self.assertFalse(self.window.plan_controller.open())
+        self.assertEqual(self.window.plan_controller.snapshot(),before)
+
+    def test_plan_unsaved_close_can_cancel_or_discard(self):
+        self.window.calculation_page.plan_name_input.setText('未保存方案')
+        with patch('ui.plan_controller.QMessageBox.question',return_value=QMessageBox.StandardButton.Cancel):
+            self.window.close()
+        self.assertTrue(self.window.isVisible())
+        with patch('ui.plan_controller.QMessageBox.question',return_value=QMessageBox.StandardButton.Discard):
+            self.window.close()
+        self.assertFalse(self.window.isVisible())
+        self.window.calculation_page.plan_name_input.clear()
+
+    def test_plan_save_rejects_uncalculated_changes_and_retains_previous_file_on_failure(self):
+        controller=self.window.plan_controller
+        self.window.calculation_page.target_input.setText('128')
+        with patch('ui.plan_controller.QMessageBox.warning'),patch('ui.plan_controller.QFileDialog.getSaveFileName') as dialog:
+            self.assertFalse(controller.save());dialog.assert_not_called()
+        self.window.calculation_page.target_input.setText('64')
+        with tempfile.TemporaryDirectory() as directory:
+            path=Path(directory)/'old.json';path.write_bytes(b'original')
+            with patch('ui.plan_controller.QFileDialog.getSaveFileName',return_value=(str(path),'')), \
+                 patch('ui.plan_controller.QMessageBox.question',return_value=QMessageBox.StandardButton.Yes), \
+                 patch('ui.plan_controller.save_plan',side_effect=OSError('locked')), \
+                 patch('ui.plan_controller.QMessageBox.warning'):
+                self.assertFalse(controller.save())
+            self.assertEqual(path.read_bytes(),b'original')
+            self.assertIsNone(controller.path)
+
+    def test_plan_maximum_space_restore_in_both_themes(self):
+        from core.calculation_plan import CalculationPlan
+        plan=CalculationPlan('::/0',128,page_size=200,page=(2**128+199)//200,
+                             locator_range=(2**128-10,2**128),selected_indices=(2**128,),tab=1)
+        for theme in ('dark','light'):
+            self.application.theme_manager.apply(theme,persist=False)
+            self.window.plan_controller.apply(plan)
+            self.assertEqual(self.window.plan_controller.snapshot(),plan)
+            self.assertEqual(self.page.model.records[-1][0],2**128)
+            self.assertEqual(self.page.selected_indices(),[2**128])
 
     def test_default_calculation_and_tabs(self):
         self.assertEqual(self.window.tabs.count(), 3)
