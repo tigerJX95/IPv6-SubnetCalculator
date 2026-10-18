@@ -65,6 +65,8 @@ QComboBox::down-arrow {{ image: url("{arrow}"); width: 12px; height: 8px; }}
 QLineEdit:focus, QComboBox:focus, QPlainTextEdit:focus {{ border: 1px solid {focus}; }}
 QLineEdit:disabled, QComboBox:disabled, QPlainTextEdit:disabled {{ background: {disabled}; color: {disabled_text}; }}
 QLineEdit {{ placeholder-text-color: {muted}; }}
+QTextBrowser#AboutText {{ background: {surface}; color: {text}; border: 0;
+    padding: 14px; selection-background-color: {selected}; selection-color: {selected_text}; }}
 QComboBox QAbstractItemView {{ background: {surface}; color: {text}; border: 1px solid {border};
     selection-background-color: {selected}; selection-color: {selected_text}; outline: 0; }}
 QToolButton {{ border: 0; background: transparent; padding: 0; border-radius: 7px; }}

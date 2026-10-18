@@ -87,6 +87,109 @@ class QtWorkflowTests(unittest.TestCase):
         QCoreApplication.sendPostedEvents(None, QEvent.Type.DeferredDelete)
         QApplication.processEvents()
 
+    def test_about_icon_f1_and_single_window_preserve_work(self):
+        from app_info import APP_VERSION
+        self.page.show_page(2)
+        self.page.table.selectRow(3)
+        before = self.window.plan_controller.snapshot()
+        self.assertIn('F1', self.window.about_button.toolTip())
+        self.window.about_button.click()
+        QApplication.processEvents()
+        dialog = self.window.about_dialog
+        self.assertTrue(dialog.isVisible())
+        self.assertEqual(dialog.tabs.count(), 4)
+        self.assertIn('V'+APP_VERSION, dialog.information.toPlainText())
+        self.assertFalse(dialog.isModal())
+        dialog.tabs.setCurrentIndex(1)
+        dialog.usage.verticalScrollBar().setValue(100)
+        scroll = dialog.usage.verticalScrollBar().value()
+        dialog.close()
+        self.window.activateWindow()
+        self.window.setFocus()
+        QApplication.processEvents()
+        QTest.keyClick(self.window, Qt.Key.Key_F1)
+        QApplication.processEvents()
+        self.assertIs(self.window.about_dialog, dialog)
+        self.assertTrue(dialog.isVisible())
+        self.assertEqual(dialog.tabs.currentIndex(), 1)
+        self.assertEqual(dialog.usage.verticalScrollBar().value(), scroll)
+        self.assertEqual(before, self.window.plan_controller.snapshot())
+        QTest.keyClick(dialog, Qt.Key.Key_Escape)
+        self.assertFalse(dialog.isVisible())
+
+    def test_closing_main_window_also_closes_about(self):
+        self.window.show_about()
+        self.assertTrue(self.window.about_dialog.isVisible())
+        self.window.close()
+        QApplication.processEvents()
+        self.assertFalse(self.window.about_dialog.isVisible())
+        self.assertFalse(self.window.isVisible())
+
+    def test_about_offline_license_texts_match_bundled_originals(self):
+        from app_info import resource_path
+        from services.about_content import LICENSE_DOCUMENTS
+        self.window.show_about()
+        dialog = self.window.about_dialog
+        self.assertIn('2026:1015:abcd::/48', dialog.usage.toPlainText())
+        self.assertIn('Ctrl+Shift+S', dialog.usage.toPlainText())
+        self.assertIn('第 15～17 条', dialog.legal.toPlainText())
+        self.assertIn('不增加许可限制', dialog.legal.toPlainText())
+        for index, (_, path) in enumerate(LICENSE_DOCUMENTS):
+            dialog.license_selector.setCurrentIndex(index)
+            text = dialog.licenses.toPlainText()
+            with self.subTest(path=path):
+                self.assertNotIn('无法读取', text)
+                if not path.endswith('.md'):
+                    self.assertEqual(text.strip(), resource_path(path).read_text(encoding='utf-8').strip())
+                else:
+                    self.assertIn('PyQt6', text)
+        dialog.close()
+
+    def test_about_minimum_size_and_live_themes(self):
+        self.window.resize(900, 620)
+        self.window.show_about()
+        dialog = self.window.about_dialog
+        dialog.resize(680, 440)
+        for theme in ('dark', 'light'):
+            self.application.theme_manager.apply(theme, persist=False)
+            for index in range(4):
+                dialog.tabs.setCurrentIndex(index)
+                QApplication.processEvents()
+                self.assertLessEqual(dialog.tabs.geometry().right(), dialog.width())
+                self.assertLessEqual(dialog.close_button.geometry().bottom(), dialog.height())
+                self.assertGreater(dialog.tabs.currentWidget().height(), 200)
+            self.assertEqual(self.application.property('themeName'), theme)
+            self.assertFalse(self.window.about_button.icon().isNull())
+            self.assertEqual(dialog.licenses.palette().color(QPalette.ColorRole.Link).name(), THEMES[theme]['accent'])
+        dialog.close()
+
+    def test_about_document_failure_is_visible_and_recoverable(self):
+        self.window.show_about()
+        dialog = self.window.about_dialog
+        with patch('ui.about_dialog.read_document', side_effect=RuntimeError('无法读取内置文档：许可文件缺失')):
+            dialog.license_selector.setCurrentIndex(1)
+        self.assertIn('无法读取内置文档', dialog.licenses.toPlainText())
+        dialog.license_selector.setCurrentIndex(0)
+        self.assertIn('PyQt6', dialog.licenses.toPlainText())
+        self.assertNotIn('无法读取', dialog.licenses.toPlainText())
+        dialog.close()
+
+    def test_about_links_require_user_action_and_https(self):
+        from PyQt6.QtCore import QUrl
+        with patch('ui.about_dialog.QDesktopServices.openUrl', return_value=True) as opened:
+            self.window.show_about()
+            dialog = self.window.about_dialog
+            self.assertFalse(dialog.licenses.openExternalLinks())
+            self.assertFalse(dialog.licenses.openLinks())
+            opened.assert_not_called()
+            for url in ('file:///C:/Windows/test', 'javascript:alert(1)', '../LICENSE', 'http://example.com'):
+                dialog.licenses.open_link(QUrl(url))
+            opened.assert_not_called()
+            url = QUrl('https://www.gnu.org/licenses/gpl-3.0.html')
+            dialog.licenses.anchorClicked.emit(url)
+            opened.assert_called_once_with(url)
+        dialog.close()
+
     def locate(self, text='90-210'):
         self.page.locator_mode_combo.setCurrentIndex(3)
         self.page.locator_input.setText(text)

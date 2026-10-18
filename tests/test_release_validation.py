@@ -62,7 +62,7 @@ class ReleaseValidationTests(unittest.TestCase):
             for name in ('main.py', 'app.py', 'app_info.py', 'app.ico', 'requirements.txt',
                          'build.cmd', 'LICENSE', 'NOTICE', 'THIRD_PARTY_NOTICES.md'):
                 shutil.copyfile(source/name, root/name)
-            for folder in ('core', 'ui', 'services', 'assets', 'docs/licenses'):
+            for folder in ('core', 'ui', 'services', 'assets', 'docs/licenses', 'docs/about'):
                 shutil.copytree(source/folder, root/folder, ignore=shutil.ignore_patterns('__pycache__'))
             baseline = source_digest(root)
             self.assertEqual(baseline, source_digest(source))

@@ -122,6 +122,25 @@ class ReleaseCheck(QObject):
                          'docs/licenses/PyQt6_GPLv3.txt', 'docs/licenses/Qt_LGPLv3.txt',
                          'docs/licenses/PyQt6_sip_LICENSE.txt'):
             self.require(resource_path(filename).is_file(), '缺少许可资源：'+filename)
+        from services.about_content import LICENSE_DOCUMENTS
+        self.window.show_about()
+        about = self.window.about_dialog
+        self.require(about.tabs.count() == 4, '关于窗口页面缺失')
+        self.require(APP_VERSION in about.information.toPlainText(), '关于版本不一致')
+        self.require(DEFAULT_NETWORK in about.usage.toPlainText(), '离线帮助缺失')
+        self.require('无担保' in about.legal.toPlainText(), '法律说明缺失')
+        for index, (_, filename) in enumerate(LICENSE_DOCUMENTS):
+            about.license_selector.setCurrentIndex(index)
+            self.require(len(about.licenses.toPlainText()) > 100, '内置许可内容缺失：'+filename)
+            self.require('无法读取内置文档' not in about.licenses.toPlainText(), '无法读取许可：'+filename)
+        about.license_selector.setCurrentIndex(0)
+        for theme in ('dark', 'light'):
+            self.application.theme_manager.apply(theme, persist=False)
+            for index in range(4):
+                about.tabs.setCurrentIndex(index)
+                self.application.processEvents()
+        about.close()
+        self.checks.append('about_help_licenses_legal_offline')
         calculation = self.window.calculation_page
         self.require(calculation.copy_summary_button.isEnabled(), '摘要复制入口不可用')
         self.require('目标子网前缀：/64' in calculation.summary_text(), '摘要缺少目标前缀')

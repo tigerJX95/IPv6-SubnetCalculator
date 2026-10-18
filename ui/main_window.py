@@ -17,6 +17,7 @@
 
 """主窗口只负责页面和服务的协调；计算、复制、导出均由对应模块维护。"""
 from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QShortcut, QKeySequence
 from PyQt6.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QTabWidget, QApplication
 from app_info import APP_NAME, APP_VERSION
 from core.ipv6_core import calculate, InputError
@@ -27,7 +28,8 @@ from ui.results_page import ResultsPage
 from ui.address_tools_page import AddressToolsPage
 from ui.export_controller import ExportController
 from ui.plan_controller import PlanController
-from ui.widgets import FeedbackLabel, ThemeButton
+from ui.about_dialog import AboutDialog
+from ui.widgets import FeedbackLabel, ThemeButton, IconButton
 
 
 class MainWindow(QMainWindow):
@@ -38,6 +40,7 @@ class MainWindow(QMainWindow):
         self.setMinimumSize(900, 620)
         self.closing_after_export = False
         self.result = None
+        self.about_dialog = None
         central = QWidget()
         central.setObjectName('AppRoot')
         self.setCentralWidget(central)
@@ -52,12 +55,20 @@ class MainWindow(QMainWindow):
         subtitle.setAlignment(Qt.AlignmentFlag.AlignCenter)
         heading = QHBoxLayout()
         heading.setContentsMargins(0, 0, 0, 0)
-        heading.addSpacing(38)
+        heading.addSpacing(80)
         heading.addWidget(title, 1)
         self.theme_manager = QApplication.instance().theme_manager
         self.theme_button = ThemeButton(self.theme_manager)
         self.theme_button.clicked.connect(self._toggle_theme)
-        heading.addWidget(self.theme_button, alignment=Qt.AlignmentFlag.AlignTop)
+        title_actions = QHBoxLayout()
+        title_actions.setSpacing(6)
+        title_actions.addWidget(self.theme_button)
+        self.about_button = IconButton('about_small', '关于程序、使用说明、第三方许可和法律责任（F1）')
+        self.about_button.clicked.connect(self.show_about)
+        self.about_shortcut = QShortcut(QKeySequence('F1'), self)
+        self.about_shortcut.activated.connect(self.show_about)
+        title_actions.addWidget(self.about_button)
+        heading.addLayout(title_actions)
         layout.addLayout(heading)
         layout.addWidget(subtitle)
         layout.addSpacing(5)
@@ -84,6 +95,13 @@ class MainWindow(QMainWindow):
         self.clipboard.feedback.connect(self.feedback.set_message)
         self.export_controller.feedback.connect(self.feedback.set_message)
         self.export_controller.busy_changed.connect(self._export_busy_changed)
+
+    def show_about(self):
+        if self.about_dialog is None:
+            self.about_dialog = AboutDialog(self)
+        self.about_dialog.show()
+        self.about_dialog.raise_()
+        self.about_dialog.activateWindow()
 
     def _copy_calculation_summary(self, text):
         self.clipboard.copy_text(text, '计算摘要已复制到剪贴板。', self.calculation_page)
@@ -131,4 +149,6 @@ class MainWindow(QMainWindow):
             self.closing_after_export = False
             event.ignore()
             return
+        if self.about_dialog is not None:
+            self.about_dialog.close()
         event.accept()

@@ -28,7 +28,7 @@ def source_digest(root=None):
     names = {'main.py', 'app.py', 'app_info.py', 'app.ico', 'requirements.txt',
              'build.cmd', 'LICENSE', 'NOTICE', 'THIRD_PARTY_NOTICES.md'}
     for folder, pattern in (('core', '*.py'), ('ui', '*.py'), ('services', '*.py'),
-                            ('assets', '*'), ('docs/licenses', '*')):
+                            ('assets', '*'), ('docs/licenses', '*'), ('docs/about', '*')):
         names.update(p.relative_to(root).as_posix() for p in (root/folder).rglob(pattern) if p.is_file())
     digest = hashlib.sha256()
     for name in sorted(names):

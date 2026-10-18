@@ -1,47 +1,41 @@
-# IPv6SubnetCalculator V1.1
+# IPv6SubnetCalculator V1.2
 
-## ✨ 计算方案保存与恢复
+## ✨ 关于窗口与离线帮助
 
-- 新增本地 JSON 计算方案，保存网络、目标前缀、方案名称及备注。
-- 打开后重新计算，恢复每页条数、页码、定位范围、当前页选择及标签页。
-- 保存／打开入口使用图标和悬停提示，支持 Ctrl+S／Ctrl+O，另存为 Ctrl+Shift+S；未保存的参数、名称或备注更改支持保存、放弃或取消。
-- 页码和序号以十进制文本保存，支持最大 IPv6 地址空间；不枚举或保存海量子网。
-- 延续 12 pt 界面和数据字体、浅深色主题、地址格式转换及双网段关系分析。
+- 顶部新增关于图标和悬停提示，支持 F1 打开、Esc 关闭。
+- 程序信息页展示版本、主要功能、版权、项目许可与实际运行组件版本。
+- 使用说明页覆盖计算、分页定位、复制、方案保存、地址工具、TXT／Excel 导出及快捷键。
+- 第三方许可页可切换六份说明／许可文档，提供项目 GPL、NOTICE、PyQt6、Qt 6 及 SIP 原文，随程序内置，离线可读。
+- 法律责任页说明用途边界、部署责任、开源许可、无担保与责任限制。
+- 窗口支持调整大小、选择复制文本和浅深色主题同步，重复打开保留阅读位置。
 
-## 🐛 文件与工作保护
+## 🐛 资源与状态保护
 
-- 拒绝损坏 JSON、不支持的版本、重复字段、超限文件及越界浏览位置，保留当前工作。
-- 写入成功后才替换目标文件，失败保留原方案并清理临时文件。
-- 修改计算输入后须重新计算再保存，避免保存不一致的参数和结果。
+- 关于窗口不修改计算参数、方案、分页、定位或选择状态。
+- 文档缺失／损坏时显示明确提示，切换其他文档后可继续阅读。
+- 帮助与法律文本纳入构建指纹及源码／打包程序自检。
 
 ## 📦 下载与使用
 
-在 Releases 的 Assets 中直接下载 `IPv6SubnetCalculator_V1.1.exe`，下载后运行，无需安装 Python。默认示例网络为 `2026:1015:abcd::/48`。
-
-## 📄 许可
-
-项目自有代码和资源使用 GPL-3.0-or-later，第三方组件保留各自许可。
+从 Releases 的 Assets 直接下载 `IPv6SubnetCalculator_V1.2.exe`，下载后运行，无需安装 Python。继续支持计算方案保存与恢复，默认网络为 `2026:1015:abcd::/48`。
 
 ---
 
-## ✨ Save and Restore Calculation Plans
+## ✨ About Window and Offline Help
 
-- Adds local JSON plans with a network, target prefix, name, and notes.
-- Recalculates on opening and restores page size, page, locator range, current-page selection, and active tab.
-- Uses save/open icons and hover tooltips, with Ctrl+S/Ctrl+O and Ctrl+Shift+S for Save As. Unsaved parameter/name/note changes support save, discard, or cancel.
-- Stores pages and indices as decimal strings for exact full-space IPv6 support, without enumerating or saving huge subnet lists.
-- Retains 12 pt interface/data fonts, both themes, address conversion, and two-network analysis.
+- Adds a top-bar About icon with a tooltip; F1 opens it and Esc closes it.
+- Shows the application version, capabilities, copyright, project license and actual runtime component versions.
+- Includes guidance for calculation, navigation, copying, plans, address tools, TXT/Excel exports and shortcuts.
+- Provides six selectable notice/license documents, including the project GPL/NOTICE and original PyQt6, Qt and SIP terms, embedded for offline reading.
+- Explains purpose, deployment responsibilities, licensing, warranty and liability.
+- Supports resizing, selectable text, synchronized light/dark themes and retained reading position on reopening.
 
-## 🐛 File and Work Protection
+## 🐛 Resource and State Protection
 
-- Rejects malformed JSON, unsupported versions, duplicate fields, oversized files, and invalid view state while retaining current work.
-- Replaces files only after successful writing; failures preserve originals and clean temporary files.
-- Requires recalculation after parameter edits to prevent inconsistent saved state.
+- Opening About preserves current calculation, plan, navigation and selection state.
+- Missing/unreadable documents show a clear error; selecting another document allows continued reading.
+- Help and legal documents are included in the build fingerprint and source/frozen self-checks.
 
 ## 📦 Download and Usage
 
-Download `IPv6SubnetCalculator_V1.1.exe` directly from Releases Assets and run it. Python is not required. Default network: `2026:1015:abcd::/48`.
-
-## 📄 License
-
-Project-authored code/assets use GPL-3.0-or-later; third-party components retain their licenses.
+Download `IPv6SubnetCalculator_V1.2.exe` directly from Releases Assets and run it without installing Python. Calculation-plan persistence is retained. Default network: `2026:1015:abcd::/48`.

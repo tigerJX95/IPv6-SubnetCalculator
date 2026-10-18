@@ -1,4 +1,4 @@
-# 🌐 IPv6 Subnet Calculator V1.1
+# 🌐 IPv6 Subnet Calculator V1.2
 
 [简体中文](README.md) | **English**
 
@@ -21,7 +21,7 @@ IPv6SubnetCalculator is an offline IPv6 subnet calculator for Windows. It analyz
 - **Subnet details:** Double-click or press Enter to inspect full address ranges and capacity, browse adjacent subnets, and copy details.
 - **File export:** Export all subnets or a range to TXT or Excel (XLSX), with size estimates, progress, and cancellation. The destination is replaced only after its temporary file is written successfully.
 
-## 🆕 V1.1 Calculation Plans
+## 💾 Calculation Plans
 
 - **Save and restore:** Store the last successful calculation in local JSON. Opening recalculates results and restores page size, page, locator range, current-page selections, and active tab.
 - **Names and notes:** Label plans and record their purpose for different networks.
@@ -29,10 +29,14 @@ IPv6SubnetCalculator is an offline IPv6 subnet calculator for Windows. It analyz
 - **Work protection:** Save, discard, or cancel unsaved parameter/name/note changes before opening another plan or closing. Invalid files leave current results intact.
 - **Small files:** Store parameters and view state rather than huge subnet lists. Pages and indices use decimal strings to preserve exact integers.
 
-### 🐛 Error Handling
+## 🆕 V1.2 About and Offline Help
 
-- Validates file type, schema version, fields, pages, ranges, and selections with Chinese feedback.
-- Replaces destination files only after successful writing; failures preserve originals and remove temporary files.
+- **About entry**: a top-bar information icon with a hover tooltip, also opened with F1. Reopening reuses the same window and reading position.
+- **Program information**: current application version, capabilities, project license, copyright, acknowledgements and actual runtime component versions.
+- **Usage guide**: built-in help for calculation, navigation, selection/copying, plans, address tools, exports and shortcuts.
+- **Licenses**: a selector for component notices, project GPL/NOTICE, and original PyQt6, Qt and SIP license texts, available offline.
+- **Legal notice**: purpose, deployment responsibility, open-source rights, warranty and liability information consistent with applicable licenses.
+- **Reading**: selectable text, a resizable window, synchronized light/dark appearance, and help/license documents embedded in the executable.
 
 ## 📸 Screenshots
 
@@ -44,6 +48,8 @@ IPv6SubnetCalculator is an offline IPv6 subnet calculator for Windows. It analyz
 
 ![Light Address Tools page](docs/screenshots/tools_light.png)
 
+![Light About window](docs/screenshots/about_light.png)
+
 ### Dark Theme
 
 ![Dark Calculation page](docs/screenshots/calculation_dark.png)
@@ -52,9 +58,13 @@ IPv6SubnetCalculator is an offline IPv6 subnet calculator for Windows. It analyz
 
 ![Dark Address Tools page](docs/screenshots/tools_dark.png)
 
+![Dark About window](docs/screenshots/about_dark.png)
+
 ## 📦 Download and Usage
 
-Download `IPv6SubnetCalculator_V1.1.exe` directly from Assets on GitHub [Releases](../../releases). Run the downloaded executable; Python is not required. Enter a network and target prefix, then click the calculation icon; the application switches to Results when complete.
+Download `IPv6SubnetCalculator_V1.2.exe` directly from Assets on GitHub [Releases](../../releases). Run the downloaded executable; Python is not required. Enter a network and target prefix, then click the calculation icon; the application switches to Results when complete.
+
+Press F1 or use the top-bar information icon for built-in help, license texts and legal notices.
 
 For source execution and building, see [Development Notes](docs/DEVELOPMENT.md).
 
