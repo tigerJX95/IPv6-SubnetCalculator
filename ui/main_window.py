@@ -16,7 +16,7 @@
 # along with IPv6SubnetCalculator. If not, see <https://www.gnu.org/licenses/>.
 
 """主窗口只负责页面和服务的协调；计算、复制、导出均由对应模块维护。"""
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtGui import QShortcut, QKeySequence
 from PyQt6.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QTabWidget, QApplication
 from app_info import APP_NAME, APP_VERSION
@@ -26,6 +26,7 @@ from services.export_service import ExportService
 from ui.calculation_page import CalculationPage
 from ui.results_page import ResultsPage
 from ui.address_tools_page import AddressToolsPage
+from ui.subnet_list_page import SubnetListPage
 from ui.export_controller import ExportController
 from ui.plan_controller import PlanController
 from ui.about_dialog import AboutDialog
@@ -39,6 +40,7 @@ class MainWindow(QMainWindow):
         self.resize(1080, 800)
         self.setMinimumSize(900, 620)
         self.closing_after_export = False
+        self.closing_after_list_check = False
         self.result = None
         self.about_dialog = None
         central = QWidget()
@@ -78,9 +80,11 @@ class MainWindow(QMainWindow):
         self.calculation_page = CalculationPage()
         self.results_page = ResultsPage(self.clipboard)
         self.address_tools_page = AddressToolsPage(self.clipboard)
+        self.subnet_list_page = SubnetListPage(self.clipboard)
         self.tabs.addTab(self.calculation_page, '子网计算')
         self.tabs.addTab(self.results_page, '子网结果')
         self.tabs.addTab(self.address_tools_page, '地址工具')
+        self.tabs.addTab(self.subnet_list_page, '子网清单')
         layout.addWidget(self.tabs, 1)
         self.feedback = FeedbackLabel()
         layout.addWidget(self.feedback)
@@ -92,6 +96,8 @@ class MainWindow(QMainWindow):
         self.results_page.export_requested.connect(lambda: self.export_controller.request_export(self.result))
         self.results_page.feedback.connect(self.feedback.set_message)
         self.address_tools_page.feedback.connect(self.feedback.set_message)
+        self.subnet_list_page.feedback.connect(self.feedback.set_message)
+        self.subnet_list_page.busy_changed.connect(self._list_busy_changed)
         self.clipboard.feedback.connect(self.feedback.set_message)
         self.export_controller.feedback.connect(self.feedback.set_message)
         self.export_controller.busy_changed.connect(self._export_busy_changed)
@@ -138,11 +144,22 @@ class MainWindow(QMainWindow):
         self.calculation_page.save_plan_button.setEnabled(not busy and self.result is not None)
         self.calculation_page.open_plan_button.setEnabled(not busy)
 
+    def _list_busy_changed(self, busy):
+        if not busy and self.closing_after_list_check:
+            self.closing_after_list_check = False
+            QTimer.singleShot(0, self.close)
+
     def closeEvent(self, event):
         if self.export_service.busy:
             self.closing_after_export = True
             self.export_controller.cancel()
             self.feedback.set_message('正在取消导出并清理临时文件，完成后退出…', 'info')
+            event.ignore()
+            return
+        if self.subnet_list_page.service.busy:
+            self.closing_after_list_check = True
+            self.subnet_list_page.cancel()
+            self.feedback.set_message('正在取消清单检查，完成后退出…', 'info')
             event.ignore()
             return
         if not self.plan_controller.confirm_discard():

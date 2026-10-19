@@ -59,7 +59,8 @@ class PlanController:
         page = window.results_page
         plan = CalculationPlan(str(window.result.network), window.result.target_prefix,
             calculation.plan_name_input.text(), calculation.plan_notes_input.toPlainText(),
-            page.page_size, page.page, page.locator_range, tuple(page.selected_indices()), window.tabs.currentIndex())
+            page.page_size, page.page, page.locator_range, tuple(page.selected_indices()),
+            window.tabs.currentIndex() if window.tabs.currentIndex()<3 else 0)
         plan_to_payload(plan)
         return plan
 

@@ -106,7 +106,7 @@ class ReleaseCheck(QObject):
     def check_resources_and_boundaries(self):
         from ui.widgets import IconButton
         self.window.show()
-        self.require(self.window.tabs.count() == 3, '工具标签页缺失')
+        self.require(self.window.tabs.count() == 4, '工具标签页缺失')
         self.window.calculate()
         page = self.window.results_page
         self.require(page.model.rowCount() == 100, '默认结果行数不正确')
@@ -194,7 +194,47 @@ class ReleaseCheck(QObject):
         self.window.calculation_page.network_input.setText(DEFAULT_NETWORK)
         self.window.calculation_page.target_input.setText('64')
         self.window.calculate()
-        self.schedule(self.navigation_cycle)
+        self.schedule(self.start_list_check)
+
+    def start_list_check(self):
+        from services.subnet_list_service import load_subnet_list
+        path = self.directory/'已有子网清单.txt'
+        path.write_text('# 示例\n2026:1015:abcd::/48\n2026:1015:abcd:1::/64\n'
+                        '2026:1015:abcd:1::1/64\n2026:1015:abcd:2::/64\nbad', encoding='utf-8-sig')
+        page = self.window.subnet_list_page
+        page.editor.setPlainText(load_subnet_list(path))
+        page.service.completed.connect(self.completed_list_check)
+        self.phase = 'list_check'
+        page.analyze()
+
+    def completed_list_check(self, outcome):
+        if self.error:
+            self.finish()
+            return
+        try:
+            kind, result = outcome
+            page = self.window.subnet_list_page
+            if self.phase == 'list_check':
+                self.require(kind == 'ok', '清单后台检查失败：'+str(result))
+                self.require((result.valid_count, result.error_count) == (4, 1), '清单逐行校验不正确')
+                self.require((result.duplicate_pairs, result.containment_pairs, result.adjacent_pairs) == (1,3,2),
+                             '清单关系统计不正确')
+                self.require(page.record_model.rowCount() == 5, '清单结果模型不完整')
+                self.require(len(result.normalized_text().splitlines()) == 3, '清单去重不正确')
+                self.checks.append('subnet_list_unicode_import_and_background_relations')
+                self.phase = 'list_cancel'
+                page.editor.setPlainText('\n'.join(['::/0']*5000))
+                page.analyze()
+                page.cancel()
+            else:
+                self.require(kind == 'cancel', '清单取消未返回取消状态')
+                self.require(page.analysis is None, '清单取消后显示了未完成结果')
+                self.require(len(page.editor.toPlainText().splitlines()) == 5000, '清单取消丢失输入')
+                page.editor.clear()
+                self.checks.append('subnet_list_cancel_preserves_input')
+                self.schedule(self.navigation_cycle)
+        except Exception as exc:
+            self.fail(str(exc) or type(exc).__name__)
 
     def navigation_cycle(self):
         page = self.window.results_page
@@ -275,13 +315,15 @@ class ReleaseCheck(QObject):
         if self.finished:
             return
         self.error = message
+        if self.window.subnet_list_page.service.busy:
+            self.window.subnet_list_page.cancel()
         if self.service.busy:
             self.service.cancel()
         else:
             self.finish()
 
     def finish(self):
-        if self.finished or self.service.busy:
+        if self.finished or self.service.busy or self.window.subnet_list_page.service.busy:
             return
         self.finished = True
         self.timeout.stop()

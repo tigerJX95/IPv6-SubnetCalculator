@@ -1,41 +1,43 @@
-# IPv6SubnetCalculator V1.2
+# IPv6SubnetCalculator V1.3
 
-## ✨ 关于窗口与离线帮助
+## ✨ 子网清单导入与关系检查
 
-- 顶部新增关于图标和悬停提示，支持 F1 打开、Esc 关闭。
-- 程序信息页展示版本、主要功能、版权、项目许可与实际运行组件版本。
-- 使用说明页覆盖计算、分页定位、复制、方案保存、地址工具、TXT／Excel 导出及快捷键。
-- 第三方许可页可切换六份说明／许可文档，提供项目 GPL、NOTICE、PyQt6、Qt 6 及 SIP 原文，随程序内置，离线可读。
-- 法律责任页说明用途边界、部署责任、开源许可、无担保与责任限制。
-- 窗口支持调整大小、选择复制文本和浅深色主题同步，重复打开保留阅读位置。
+- 新增“子网清单”页，支持粘贴或导入 UTF-8 TXT／CIDR，保留原始行号，逐行显示规范化和错误。
+- 精确统计重复、包含及相邻关系；重复和包含均属于重叠，相邻不代表一定能够合并。
+- 支持复制有效、规范化、去重后的 CIDR，以及包含错误记录、精确总数与有限关系明细的报告。
+- 后台检查可取消；支持最多 5,000 条、1 MiB、20,000 个物理行。关系明细最多 1,000 对，总数不截断。
 
-## 🐛 资源与状态保护
+## 🐛 状态与异常处理
 
-- 关于窗口不修改计算参数、方案、分页、定位或选择状态。
-- 文档缺失／损坏时显示明确提示，切换其他文档后可继续阅读。
-- 帮助与法律文本纳入构建指纹及源码／打包程序自检。
+- 错误行不参与关系分析，并明确提示结果仅覆盖有效项。
+- 输入修改后清空旧结果并禁用复制；取消、读取失败或线程异常可恢复操作。
+- 主程序退出时等待清单检查取消完成，保留现有计算与导出退出保护。
+- 保持计算方案格式兼容，清单内容不写入方案 JSON。
 
-## 📦 下载与使用
+## 📸 文档与下载
 
-从 Releases 的 Assets 直接下载 `IPv6SubnetCalculator_V1.2.exe`，下载后运行，无需安装 Python。继续支持计算方案保存与恢复，默认网络为 `2026:1015:abcd::/48`。
+- 使用 V1.3 实际运行界面更新浅色与深色截图，并标明截图版本。
+- 更新中英文说明与内置帮助，下载链接统一使用 Releases 最新版入口。
+- 直接下载 `IPv6SubnetCalculator_V1.3.exe` 后运行；Git 标签使用 `v1.3`。
 
 ---
 
-## ✨ About Window and Offline Help
+## ✨ Subnet List Import and Relationship Checks
 
-- Adds a top-bar About icon with a tooltip; F1 opens it and Esc closes it.
-- Shows the application version, capabilities, copyright, project license and actual runtime component versions.
-- Includes guidance for calculation, navigation, copying, plans, address tools, TXT/Excel exports and shortcuts.
-- Provides six selectable notice/license documents, including the project GPL/NOTICE and original PyQt6, Qt and SIP terms, embedded for offline reading.
-- Explains purpose, deployment responsibilities, licensing, warranty and liability.
-- Supports resizing, selectable text, synchronized light/dark themes and retained reading position on reopening.
+- Adds Subnet List: paste or import UTF-8 TXT/CIDR files, retaining original line numbers, normalized CIDRs and validation errors.
+- Counts duplicate, containment and adjacency pairs exactly. Equality and containment represent overlap; adjacency does not guarantee aggregation.
+- Copies valid normalized/deduplicated CIDRs or reports with errors, exact totals and bounded relationship details.
+- Runs cancellable background checks for up to 5,000 entries, 1 MiB and 20,000 physical lines. Details are capped at 1,000 pairs without truncating totals.
 
-## 🐛 Resource and State Protection
+## 🐛 State and Error Handling
 
-- Opening About preserves current calculation, plan, navigation and selection state.
-- Missing/unreadable documents show a clear error; selecting another document allows continued reading.
-- Help and legal documents are included in the build fingerprint and source/frozen self-checks.
+- Excludes invalid lines from relationships and states that results cover valid entries only.
+- Clears stale results after input changes; supports recovery after cancellation, read errors and worker failures.
+- Waits for list-check cancellation before closing, retaining existing export/plan protections.
+- Keeps the existing plan format compatible; list data is not saved in plan JSON.
 
-## 📦 Download and Usage
+## 📸 Documentation and Downloads
 
-Download `IPv6SubnetCalculator_V1.2.exe` directly from Releases Assets and run it without installing Python. Calculation-plan persistence is retained. Default network: `2026:1015:abcd::/48`.
+- Replaces light/dark previews with actual V1.3 interfaces and labels the screenshot version.
+- Updates bilingual documentation/offline help and uses the latest Releases download entry.
+- Download and run `IPv6SubnetCalculator_V1.3.exe` directly. Use the tag `v1.3`.

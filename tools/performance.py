@@ -27,6 +27,7 @@ from ipaddress import IPv6Network
 from core.ipv6_core import calculate, locate_subnet
 from core.address_conversion import convert_address
 from core.network_relations import analyze_networks
+from core.subnet_list import analyze_subnet_list
 from core.subnet_export import export_all, page_subnets, ExportCancelled
 
 
@@ -53,6 +54,10 @@ def measure_performance():
         network_relation=timing(lambda: analyze_networks('::/0', 'ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff/128'), 1000),
         memory_scope='Python allocations tracked by tracemalloc; excludes native Qt allocations and process RSS',
         speed_threshold='Informational measurements; no hardware-dependent pass/fail limit')
+    unique_list = '\n'.join(f'2026:1015:abcd:{index:x}::/64' for index in range(5000))
+    dense_list = '\n'.join(['::/0']*5000)
+    metrics['subnet_list_5000_unique'] = timing(lambda: analyze_subnet_list(unique_list), 1)
+    metrics['subnet_list_5000_duplicates'] = timing(lambda: analyze_subnet_list(dense_list), 1)
     with tempfile.TemporaryDirectory(prefix='IPv6性能-') as directory:
         exports, memory = {}, {}
         for fmt, count in (('txt', 100000), ('xlsx', 20000)):

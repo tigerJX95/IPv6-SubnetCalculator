@@ -45,7 +45,7 @@ def stylesheet(name):
     return '''
 QWidget {{ color: {text}; background: transparent; }}
 QMainWindow, QDialog, QWidget#AppRoot {{ background: {window}; }}
-QWidget#CalculationPage, QWidget#ResultsPage, QWidget#AddressToolsPage {{ background: {surface}; }}
+QWidget#CalculationPage, QWidget#ResultsPage, QWidget#AddressToolsPage, QWidget#SubnetListPage {{ background: {surface}; }}
 QLabel#AppTitle {{ color: {title}; font-size: {title_px}px; font-weight: 700; }}
 QLabel#AppSubtitle {{ color: {muted}; }}
 QTabWidget::pane {{ border: 1px solid {border}; background: {surface}; border-radius: 8px; }}

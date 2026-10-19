@@ -1,8 +1,8 @@
-# V1.2 Windows 验收 / Windows Acceptance
+# V1.3 Windows 验收 / Windows Acceptance
 
-V1.2 增加关于窗口、离线帮助、许可阅读与法律责任说明。验证范围包括核心功能、Windows 实机稳定性、性能和打包程序；实际 Windows 验收结果由本机运行和人工确认记录。IPv6 子网导入及规划仍属于 V1.x。
+V1.3 增加 CIDR 清单导入、逐行校验、批量关系检查与报告复制。验证范围包括核心功能、Windows 实机稳定性、性能和打包程序；实际 Windows 验收结果由本机运行和人工确认记录。多级分配规划仍待后续实现。
 
-V1.2 adds the About window, offline help, license reading and legal notices. Validation covers core functionality, Windows stability, performance, and packaged applications. Actual Windows acceptance is recorded after running the checks on Windows and completing the manual checks. Subnet import and planning remain V1.x work.
+V1.3 adds CIDR-list import, line validation, batch relationships and report copying. Validation covers core functionality, Windows stability, performance, and packaged applications. Actual Windows acceptance is recorded after running the checks on Windows and completing the manual checks. Multi-level allocation remains future work.
 
 ## 自动检查 / Automated Checks
 
@@ -24,11 +24,12 @@ Automated checks open/close windows, switch themes, resize and minimize/restore.
 |---|---|---|
 | Windows 环境 / Environment | 记录 Windows 版本、Python 架构、显示缩放比例 / Record Windows version, Python architecture and display scaling | 待验收 / Pending |
 | 独立启动 / Portable startup | EXE 在未安装 Python 的 Windows 机器上启动；路径含空格或中文时资源完整 / Launch on Windows without Python, including paths with spaces or Unicode | 待验收 / Pending |
-| 显示与主题 / Display and themes | 在常用缩放比例及最小窗口下查看三个页面、详情和导出弹窗；内容可读、无异常黑底、提示完整 / Check all three pages and dialogs at normal scaling and minimum size | 待验收 / Pending |
+| 显示与主题 / Display and themes | 在常用缩放比例及最小窗口下查看四个页面、详情和导出弹窗；内容可读、无异常黑底、提示完整 / Check all four pages and dialogs at normal scaling and minimum size | 待验收 / Pending |
 | 状态保留 / State retention | 定位、选择后切换主题／标签及最小化恢复，页码、范围和滚动位置符合预期；重启记住主题 / Verify navigation, selections, scrolling and saved theme | 待验收 / Pending |
 | 计算边界 / Calculation boundaries | 默认示例、原前缀等于目标前缀、`::/0 → /128`、单地址 `/128` 及非法输入均正确 / Check default, equal prefixes, full space, single address and invalid input | 待验收 / Pending |
 | 摘要复制 / Summary copying | 两种主题复制到记事本，检查网络、目标前缀、范围、精确容量和用途提示；编辑输入后复制旧摘要，重算后更新；非法重算禁用 / Paste in Notepad in both themes, verify exact data and guidance, edited-input snapshot behavior, valid update and invalid-input disabling | 待验收 / Pending |
 | 计算方案 / Calculation plans | 中文名称备注、最大空间末页、多选和范围高亮往返；损坏文件保留当前工作；文件锁定保存失败保留原文件；关闭和打开前保存／放弃／取消均正确 / Unicode metadata, maximum-space views, selections, corruption, locked files and unsaved prompts | 待验收 / Pending |
+| 子网清单 / Subnet lists | UTF-8／BOM 中文文件路径、错误行号、规范化与去重复制、重复／包含／相邻计数；5,000 条与海量关系明细上限；取消和退出安全；两种主题及最小窗口正常 / Check Unicode import, exact counts, bounded details, clipboard, cancellation, closing and themes | 待验收 / Pending |
 | 关于与许可 / About and licenses | 顶部图标／F1 打开；四页完整；六份许可文档离线可读；版本正确；两种主题与缩放正常；Esc 关闭；不改变当前计算与方案 / Verify entry, pages, six offline documents, version, themes/scaling, Esc and retained calculation/plan | 待验收 / Pending |
 | 地址格式 / Address formats | 转换大写、展开、全零、全一和 IPv4 映射地址；逐项及全部粘贴到记事本，二进制完整 128 位 / Verify case, expansion, zero/max/mapped addresses, individual/all copy and exact 128-bit binary | 待验收 / Pending |
 | 双网段关系 / Network relationships | 检查相同、双向包含、相邻、独立、主机位规范化与非法输入；复制报告包含双方范围、精确重叠和间隔数 / Check all relationships, normalization, invalid inputs and complete report copying | 待验收 / Pending |

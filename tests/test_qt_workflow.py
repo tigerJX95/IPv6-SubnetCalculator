@@ -76,6 +76,9 @@ class QtWorkflowTests(unittest.TestCase):
         QApplication.processEvents()
 
     def tearDown(self):
+        if self.window.subnet_list_page.service.busy:
+            self.window.subnet_list_page.cancel()
+            wait_until(lambda: not self.window.subnet_list_page.service.busy)
         if self.window.export_service.busy:
             self.window.export_controller.cancel()
             wait_until(lambda: not self.window.export_service.busy)
@@ -190,6 +193,116 @@ class QtWorkflowTests(unittest.TestCase):
             opened.assert_called_once_with(url)
         dialog.close()
 
+    def check_list(self, text):
+        page=self.window.subnet_list_page
+        page.editor.setPlainText(text)
+        page.analyze()
+        wait_until(lambda: not page.service.busy)
+        return page
+
+    def test_subnet_list_ui_counts_copy_and_input_invalidation(self):
+        page=self.check_list('::/0\n::1/128\n::1/128\nbad')
+        self.assertEqual(page.record_model.rowCount(),4)
+        self.assertEqual(page.analysis.duplicate_pairs,1)
+        self.assertEqual(page.analysis.containment_pairs,2)
+        self.assertTrue(page.copy_report_button.isEnabled())
+        self.assertIn('已检查',page.source_label.text())
+        with patch.object(page.clipboard,'copy_text',return_value=True) as copied:
+            page.copy_networks()
+            self.assertEqual(copied.call_args.args[0],'::/0\n::1/128')
+            page.copy_report()
+            self.assertIn('错误行：1',copied.call_args.args[0])
+        page.editor.insertPlainText('changed')
+        self.assertIsNone(page.analysis)
+        self.assertEqual(page.record_model.rowCount(),0)
+        self.assertFalse(page.copy_networks_button.isEnabled())
+        self.assertFalse(page.copy_report_button.isEnabled())
+
+    def test_subnet_list_import_bom_cancel_and_failed_file_preserve_input(self):
+        page=self.window.subnet_list_page
+        page.editor.setPlainText('::/0')
+        with patch('ui.subnet_list_page.QFileDialog.getOpenFileName',return_value=('','')):
+            page.import_file()
+        self.assertEqual(page.editor.toPlainText(),'::/0')
+        with tempfile.TemporaryDirectory() as directory:
+            path=Path(directory)/'清单.txt';path.write_bytes(b'\xef\xbb\xbf::1/128\r\n::2/128')
+            with patch('ui.subnet_list_page.QFileDialog.getOpenFileName',return_value=(str(path),'')):
+                page.import_file()
+            wait_until(lambda: not page.service.busy)
+            self.assertEqual(page.analysis.valid_count,2)
+            self.assertIn('清单.txt',page.source_label.text())
+            snapshot=page.editor.toPlainText();result=page.analysis
+            path.write_bytes(b'\xff')
+            with patch('ui.subnet_list_page.QFileDialog.getOpenFileName',return_value=(str(path),'')):
+                page.import_file()
+            self.assertEqual(page.editor.toPlainText(),snapshot)
+            self.assertIs(page.analysis,result)
+            self.assertIn('导入失败',self.window.feedback.text())
+
+    def test_subnet_list_themes_and_minimum_window(self):
+        page=self.check_list('::/128\nbad')
+        self.window.tabs.setCurrentWidget(page)
+        self.window.resize(900,620)
+        for theme in ('dark','light'):
+            self.application.theme_manager.apply(theme,persist=False)
+            QApplication.processEvents()
+            self.assertEqual(page.record_model.data(page.record_model.index(1,3),Qt.ItemDataRole.ForegroundRole),QColor(THEMES[theme]['error']))
+            self.assertLessEqual(page.result_tabs.geometry().bottom(),page.height())
+            self.assertFalse(page.analyze_button.icon().isNull())
+        self.assertEqual(page.analysis.error_count,1)
+
+    def test_subnet_list_worker_error_then_retry(self):
+        page=self.window.subnet_list_page
+        with patch('services.subnet_list_service.analyze_subnet_list',side_effect=RuntimeError('模拟失败')):
+            self.check_list('::/0')
+        self.assertIn('模拟失败',page.summary.text())
+        self.assertFalse(page.editor.isReadOnly())
+        self.check_list('::/128')
+        self.assertEqual(page.analysis.valid_count,1)
+
+    def test_subnet_list_cancel_and_close_wait_for_worker(self):
+        from core.subnet_list import ListCheckCancelled
+        def blocked(text,stop):
+            stop.wait(2)
+            raise ListCheckCancelled()
+        page=self.window.subnet_list_page
+        page.editor.setPlainText('::/0')
+        with patch('services.subnet_list_service.analyze_subnet_list',side_effect=blocked):
+            page.analyze()
+            self.assertTrue(page.service.busy)
+            self.assertTrue(page.editor.isReadOnly())
+            self.window.close()
+            wait_until(lambda: not page.service.busy and not self.window.isVisible())
+        self.assertIsNone(page.analysis)
+        self.assertEqual(page.editor.toPlainText(),'::/0')
+
+    def test_subnet_list_thread_creation_failure_is_recoverable(self):
+        page=self.window.subnet_list_page
+        page.editor.setPlainText('::/0')
+        with patch('services.subnet_list_service._ListThread.start',side_effect=RuntimeError('无法创建线程')):
+            page.analyze()
+        self.assertFalse(page.service.busy)
+        self.assertFalse(page.editor.isReadOnly())
+        self.assertIn('无法创建线程',self.window.feedback.text())
+
+    def test_subnet_list_keeps_calculation_plan_format_compatible(self):
+        before=self.window.plan_controller.snapshot()
+        page=self.check_list('::/0\n::1/128')
+        self.window.tabs.setCurrentWidget(page)
+        after=self.window.plan_controller.snapshot()
+        self.assertEqual(after.tab,0)
+        self.assertEqual(after.network,before.network)
+        self.assertEqual(after.target_prefix,before.target_prefix)
+        from core.calculation_plan import plan_to_payload,plan_from_payload
+        self.assertEqual(plan_from_payload(plan_to_payload(after)),after)
+
+    def test_subnet_list_all_invalid_keeps_report_and_disables_cidr_copy(self):
+        page=self.check_list('bad\n192.0.2.0/24')
+        self.assertEqual(page.analysis.error_count,2)
+        self.assertFalse(page.copy_networks_button.isEnabled())
+        self.assertTrue(page.copy_report_button.isEnabled())
+        self.assertIn('不代表整份清单通过',page.summary.text())
+
     def locate(self, text='90-210'):
         self.page.locator_mode_combo.setCurrentIndex(3)
         self.page.locator_input.setText(text)
@@ -302,7 +415,7 @@ class QtWorkflowTests(unittest.TestCase):
             self.assertEqual(self.page.selected_indices(),[2**128])
 
     def test_default_calculation_and_tabs(self):
-        self.assertEqual(self.window.tabs.count(), 3)
+        self.assertEqual(self.window.tabs.count(), 4)
         self.assertEqual(self.window.tabs.currentWidget(), self.page)
         self.assertEqual(self.page.model.rowCount(), 100)
         self.assertEqual(self.page.model.records[0], (1, '2026:1015:abcd::/64'))

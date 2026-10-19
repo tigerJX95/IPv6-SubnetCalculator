@@ -1,58 +1,68 @@
-# IPv6SubnetCalculator V1.2 验证记录 / Validation Record
+# IPv6SubnetCalculator V1.3 验证记录 / Validation Record
 
-日期 / Date: 2026-10-18
+日期 / Date: 2026-10-19
 
-V1.2 基于 V1.1 增加关于窗口、离线帮助、许可文本阅读及法律责任说明。以下为本次 Linux 实际运行结果；Windows 自动、人工与长时间使用验收仍需本机完成。
+V1.3 基于 V1.2 增加已有 CIDR 清单导入、逐行校验、批量关系检查和结果复制。以下为本次 Linux 实际结果；Windows 自动、人工及长时间验收仍需本机完成。
 
-V1.2 adds About, offline help, license reading and legal notices to V1.1. The results below are from actual Linux runs. Windows automated, manual and extended-session acceptance remain pending.
+V1.3 adds existing-CIDR import, line validation, batch relationships and copying to V1.2. Results below come from actual Linux runs. Windows automated/manual/extended-session acceptance remains pending.
 
 ## 环境 / Environment
 
 | 项目 / Item | 记录 / Record |
 |---|---|
-| 程序 / Application | V1.2 |
+| 应用 / Application | V1.3 |
 | 系统 / OS | Linux-6.18.55-x86_64-with-glibc2.39, x86_64, Qt offscreen |
 | Python | 3.12.14 |
 | PyQt6 / Qt | 6.11.0 / 6.11.2 |
-| Linux 单文件产物 / Onefile | PyInstaller 实际构建并运行 / built and executed |
-| 运行源码与资源指纹 / Fingerprint | `5cedaa2a94a8d535cc3c70ff86d6e0c02b97b2052c37946b42633251dd394df8` |
+| 打包 / Packaging | Linux PyInstaller onefile，实际构建并运行 / built and executed |
+| 运行源码及资源 SHA-256 / Fingerprint | `ac9f1cccfeaab6c8d02d845a7f1711885ffe8e2172e2933616f290a91fe60509` |
 | Windows EXE | 本环境未构建或运行 / not built or run here |
 
-## 自动检查 / Automated Checks
+## 自动验证 / Automated Checks
 
-| 项目 / Check | 结果 / Result |
+| 检查 / Check | 结果 / Result |
 |---|---|
-| 完整回归 / Full regression | 238 项通过 / passed |
-| 新增回归 / Added regression | 11 项：5 项文档／版本／指纹 + 6 项界面流程 / 5 content/version/fingerprint and 6 UI-flow tests |
-| 关于入口 / Entry | 图标、F1、Esc、单窗口复用、阅读位置保留 / icon, shortcuts, reuse and retained reading position |
-| 计算状态 / Work state | 打开关于不改变方案／分页／选择；关闭主程序同时关闭关于 / work state retained; child dialog closes with main window |
-| 离线文档 / Offline documents | 四页及六份组件／许可文档正常读取，许可原文一致 / four pages and six documents loaded; original license text preserved |
-| 主题与链接 / Themes and links | 浅深色、最小窗口、链接颜色及仅主动 HTTPS 跳转通过 / themes, minimum size, link colors and user-activated HTTPS links |
-| 异常恢复 / Recovery | 缺失／空白／非 UTF-8 文档给出提示，其他文档可继续读取 / missing, empty and invalid UTF-8 text handled |
-| 源码自检 / Source self-check | 100 轮通过，含关于四页、全部许可、方案往返、最大地址空间和后台导出 / 100 cycles passed |
-| 单文件自检 / Onefile self-check | 相同检查通过，版本及指纹与源码一致 / same checks passed, matching version and fingerprint |
-| 既有核心 / Existing core | 前缀组合、最大空间、定位、复制、方案保存、地址工具、TXT／XLSX、取消保护均通过 / core and file workflows passed |
+| 完整回归 / Full regression | 257 项通过 / passed |
+| 新增回归 / Added tests | 19 项：11 项核心／文件 + 8 项界面流程 / 11 core/file and 8 UI tests |
+| 关系正确性 / Relations | 60 组随机清单与逐对区间判定比对；原始行号、重复、包含、相邻及最大地址空间通过 / 60 seeded list comparisons with an exhaustive interval oracle |
+| 密集清单 / Dense list | 5,000 条重复输入精确统计 12,497,500 对，明细最多 1,000 对 / exact total with bounded details |
+| 文件与上限 / File bounds | UTF-8／BOM／CRLF、中文路径、1 MiB／5,000 条／20,000 行上限、坏编码和空文件通过 / encoding, Unicode paths, limits and bad-file checks |
+| 界面状态 / UI state | 修改输入禁用过期复制；导入失败保留已有输入与结果；失败可重试 / stale-copy prevention, failed-import preservation and retry |
+| 取消与退出 / Cancel and close | 后台检查取消保留输入，关闭主窗口等待线程完成 / input retained and orderly worker completion |
+| 方案兼容 / Plan compatibility | 不改变计算结果；清单独立于方案；旧方案格式 v1 继续使用 / independent list workspace and compatible plan format |
+| 主题与截图 / Themes/previews | 浅深色、最小窗口、图标和实际截图已检查 / both themes, minimum size, icons and actual previews checked |
+| 源码自检 / Source check | 100 轮通过，含清单后台检查与取消 / 100 cycles passed with list checks/cancellation |
+| 单文件自检 / Onefile check | 相同检查通过，版本及指纹与源码一致 / same checks passed, matching version and fingerprint |
+| 既有功能 / Existing functions | 关于、许可、摘要、格式转换、双网段、方案、最大空间、TXT／XLSX 及取消保护通过 / existing core/file workflows passed |
 
-源码和打包程序均通过 `about_help_licenses_legal_offline` 检查。自检使用临时设置与文件，不写系统剪贴板；完整回归中的剪贴板测试会恢复原数据。浅深色真实 Qt 截图已生成并检查。
+源码和打包产物均通过 `subnet_list_unicode_import_and_background_relations` 与 `subnet_list_cancel_preserves_input`。自检使用临时偏好和文件，不写系统剪贴板；完整剪贴板回归结束时恢复原数据。
 
-Both source and onefile passed the offline About/help/license/legal check. Self-checks use temporary settings/files and do not write the clipboard; full clipboard tests restore original data. Actual Qt previews were generated and inspected.
+Both source and onefile passed Unicode list import/background relationship analysis and cancellation/input-preservation checks. Self-checks use temporary preferences/files without clipboard writes; full clipboard tests restore the original data.
 
 ## 性能样本 / Performance Samples
 
-| 项目 / Item | 本次测量 / This run |
+| 项目 / Item | 本次机器 / This run |
 |---|---:|
-| 最大地址空间计算 / Full-space calculation | 0.009699 ms |
-| 最大空间末页 200 条 / Final page | 0.547538 ms |
-| 末地址定位 / Final-address lookup | 0.005362 ms |
-| TXT 100,000 条 / rows | 0.88199 s |
-| XLSX 20,000 条 / rows | 0.23837 s |
+| 5,000 条不同 CIDR / distinct CIDRs | 123.445352 ms |
+| 5,000 条重复 CIDR / duplicate CIDRs | 78.293578 ms |
+| 最大地址空间计算 / Full-space calculation | 0.010526 ms |
+| 最大空间末页 200 条 / Final page | 0.675131 ms |
+| TXT 100,000 条 / rows | 1.16707 s |
+| XLSX 20,000 条 / rows | 0.27653 s |
 
-性能数据只描述本次机器和负载，不代表相对旧版提速或 Windows 性能承诺。计算／分页／定位为重复测量中位数。内存测量只覆盖 Python 分配，不含 Qt 原生或完整进程内存。事件循环采样包含窗口创建和主动主题切换，样本不足不能证明无卡顿；短时循环不替代 Windows 显示缩放和至少 30 分钟日常使用验收。
+清单数据为五次核心检查耗时中位数，不包含文本粘贴、文件选择或表格绘制；不代表相对旧版提速或 Windows 响应承诺。其余计算／分页同样为重复测量。内存测量仅统计 Python 分配，不包含 Qt 原生或完整进程；事件循环样本不足不能证明没有卡顿，短时循环不替代 Windows 缩放与至少 30 分钟日常使用验收。
 
-Measurements describe this host/load, not a speedup or Windows guarantee. Memory covers Python allocations only. Event-loop samples include setup and scripted theme changes; insufficient samples do not prove absence of stalls. Short loops do not replace Windows scaling and a 30-minute normal-use check.
+List timings are medians of five core checks, excluding paste/dialog/table rendering. They are host/load measurements, not a speedup or Windows response guarantee. Memory covers Python allocations only. Insufficient event-loop samples do not prove absence of stalls; short loops do not replace Windows scaling and a 30-minute normal-use check.
 
-## Windows 本地验证 / Local Verification
+## 使用范围 / Scope
 
-覆盖源码后运行 `build.cmd`，生成 `dist/IPv6SubnetCalculator_V1.2.exe`；再运行 `verify.cmd`，查看 `verification/SUMMARY.md` 和 `summary.json`。人工项目见 [Windows 验收清单](WINDOWS_ACCEPTANCE.md)。
+- 输入：每行一个 IPv6 CIDR；整行 # 注释与空行忽略，不支持 CSV、Excel 或行尾注释。/ One CIDR per line, ignoring blank lines and whole-line # comments; no CSV/Excel/inline comments.
+- 错误行不参与关系分析，统计基于原始有效条目配对；重复输入增加关系对数。/ Invalid lines are excluded; pair counts refer to original valid entries.
+- 只保留最多 1,000 对明细，总数仍精确。去重不移除被包含子网，也不合并相邻网段。/ Details are bounded; counts are exact. Deduplication does not remove contained networks or aggregate adjacent ranges.
+- 清单不写入计算方案，需要保留时复制内容或报告。空闲分配、网段聚合与多级规划尚未实现。/ Lists are not stored in calculation plans. Copy them to retain work. Allocation, aggregation and multi-level planning are not implemented.
 
-After replacing source, run `build.cmd`, followed by `verify.cmd`, and review the reports and Windows acceptance checklist. Releases users download the EXE directly; no ZIP is required to run it.
+## Windows 验证 / Windows Verification
+
+覆盖源码后运行 `build.cmd`，再运行 `verify.cmd`，查看 `verification/SUMMARY.md` 和 `summary.json`。人工验收见 [WINDOWS_ACCEPTANCE.md](WINDOWS_ACCEPTANCE.md)。发布标签使用 `v1.3`，Releases 用户直接下载 `IPv6SubnetCalculator_V1.3.exe`。
+
+After replacing source, run build.cmd and verify.cmd and review the reports/acceptance checklist. Use the tag v1.3; Releases users download the EXE directly.

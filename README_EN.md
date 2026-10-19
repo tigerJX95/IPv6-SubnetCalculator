@@ -1,10 +1,10 @@
-# 🌐 IPv6 Subnet Calculator V1.2
+# 🌐 IPv6 Subnet Calculator V1.3
 
 [简体中文](README.md) | **English**
 
 ## 📖 Overview
 
-IPv6SubnetCalculator is an offline IPv6 subnet calculator for Windows. It analyzes network ranges, divides subnets, identifies address usage, and provides Calculation, Results, and Address Tools tabs for subnet operations and address/network analysis.
+IPv6SubnetCalculator is an offline IPv6 subnet calculator for Windows. It analyzes network ranges, divides subnets, identifies address usage, and provides Calculation, Results, Address Tools, and Subnet List tabs for subnet operations and address/network analysis.
 
 ## ✨ Features
 
@@ -13,7 +13,7 @@ IPv6SubnetCalculator is an offline IPv6 subnet calculator for Windows. It analyz
 - **Address guidance:** Classifies ULA, 6to4, multicast, link-local, and other address types, with usage, deployment limitations, and standards references. Mathematical subnetting remains available for special-purpose addresses.
 - **Readability:** Larger interface, input, table, detail, and tooltip text, with adjusted table row heights and dialog space.
 - **Appearance:** Light and dark themes, switched with the moon/sun icon at the top right or Ctrl+Shift+T. Your preference is remembered.
-- **Three tabs:** Calculation contains inputs, summaries, and usage guidance; Results contains the table and actions; Address Tools contains conversion and network relationship analysis. Each tab retains its state.
+- **Four tabs:** Calculation contains inputs, summaries, and usage guidance; Results contains the table and actions; Address Tools contains conversion and network relationship analysis; Subnet List validates existing CIDRs and checks batch relationships. Each tab retains its state.
 - **Address format conversion:** Compressed/lowercase normalized form, eight-group expanded hexadecimal form, and 128-bit binary, with individual and copy-all actions. Accepts IPv4-mapped IPv6 notation.
 - **Two-network analysis:** Classifies two IPv6 CIDRs as equal, A containing B, B containing A, adjacent, or independent. Shows exact overlap and gap address counts and copies a complete report.
 - **Pagination and location:** 25, 50, 100, or 200 rows per page; page navigation and lookup by IPv6 address, subnet index, or corresponding ranges. Only the current page is loaded, and locator highlighting persists across pages.
@@ -29,7 +29,7 @@ IPv6SubnetCalculator is an offline IPv6 subnet calculator for Windows. It analyz
 - **Work protection:** Save, discard, or cancel unsaved parameter/name/note changes before opening another plan or closing. Invalid files leave current results intact.
 - **Small files:** Store parameters and view state rather than huge subnet lists. Pages and indices use decimal strings to preserve exact integers.
 
-## 🆕 V1.2 About and Offline Help
+## 📖 About and Offline Help
 
 - **About entry**: a top-bar information icon with a hover tooltip, also opened with F1. Reopening reuses the same window and reading position.
 - **Program information**: current application version, capabilities, project license, copyright, acknowledgements and actual runtime component versions.
@@ -38,7 +38,18 @@ IPv6SubnetCalculator is an offline IPv6 subnet calculator for Windows. It analyz
 - **Legal notice**: purpose, deployment responsibility, open-source rights, warranty and liability information consistent with applicable licenses.
 - **Reading**: selectable text, a resizable window, synchronized light/dark appearance, and help/license documents embedded in the executable.
 
+## 🆕 V1.3 Subnet List Import and Checks
+
+- **Existing networks**: paste text or import UTF-8 TXT/CIDR files (BOM accepted), one IPv6 CIDR per line. Blank lines and whole-line # comments are ignored.
+- **Line validation**: retains original line numbers/input and shows normalized CIDRs, host-bit adjustments and specific errors. Invalid lines are excluded from relationship analysis.
+- **Relationships**: exact duplicate, containment and adjacency pair counts. IPv6 CIDR overlap is either equality or containment; adjacency does not guarantee aggregation into one CIDR.
+- **Copying**: copy valid normalized CIDRs with duplicates removed in first-occurrence order, or copy a report with errors, exact totals and bounded relationship details. Deduplication neither removes contained subnets nor merges adjacent networks.
+- **Bounded processing**: up to 5,000 entries, 1 MiB and 20,000 physical lines per check. Background work can be cancelled. Details are limited to 1,000 pairs while totals remain exact.
+- **Separate workspace**: list checks preserve calculator results/plans. List input, errors and reports are not stored in calculation plans; copy them to retain the work.
+
 ## 📸 Screenshots
+
+Screenshot version: **V1.3**.
 
 ### Light Theme
 
@@ -50,6 +61,10 @@ IPv6SubnetCalculator is an offline IPv6 subnet calculator for Windows. It analyz
 
 ![Light About window](docs/screenshots/about_light.png)
 
+![Light Subnet List](docs/screenshots/list_light.png)
+
+![Light List Relationships](docs/screenshots/list_relations_light.png)
+
 ### Dark Theme
 
 ![Dark Calculation page](docs/screenshots/calculation_dark.png)
@@ -60,9 +75,13 @@ IPv6SubnetCalculator is an offline IPv6 subnet calculator for Windows. It analyz
 
 ![Dark About window](docs/screenshots/about_dark.png)
 
+![Dark Subnet List](docs/screenshots/list_dark.png)
+
+![Dark List Relationships](docs/screenshots/list_relations_dark.png)
+
 ## 📦 Download and Usage
 
-Download `IPv6SubnetCalculator_V1.2.exe` directly from Assets on GitHub [Releases](../../releases/latest) Run the downloaded executable; Python is not required. Enter a network and target prefix, then click the calculation icon; the application switches to Results when complete.
+Download `IPv6SubnetCalculator_V1.3.exe` directly from Assets on GitHub [Releases](../../releases/latest). Run the downloaded executable; No additional runtime setup is required. Enter a network and target prefix, then click the calculation icon; the application switches to Results when complete.
 
 Press F1 or use the top-bar information icon for built-in help, license texts and legal notices.
 
@@ -73,7 +92,7 @@ For source execution and building, see [Development Notes](docs/DEVELOPMENT.md).
 - Editing an Address Tools input clears only that tool's previous results. Click its icon or press Enter to process again; conversion and analysis retain separate states.
 - Conversion accepts one IPv6 address without a prefix or zone ID. Compressed and normalized output share a row using lowercase compressed notation. Binary is displayed in 16-bit groups and copied as 128 consecutive bits.
 - Network relationships use normalized CIDRs. Adjacent means non-overlapping, directly contiguous ranges; it does not guarantee they form one CIDR. The gap count counts addresses between the two ranges.
-- Calculate before saving; edited parameters require recalculation. Plans store calculation state, excluding Address Tools inputs and theme preferences.
+- Calculate before saving; edited parameters require recalculation. Plans store calculation state, excluding Address Tools and Subnet List contents and theme preferences.
 - Names support up to 80 characters and notes up to 2,000. Saved files include view state, but navigation alone does not trigger unsaved-change prompts.
 - The first launch uses the light theme; subsequent launches restore your choice. Hover over the theme icon to see the current theme, next theme, and shortcut. Native file pickers and title bars follow the operating system.
 
