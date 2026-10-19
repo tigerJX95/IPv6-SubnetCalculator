@@ -3,7 +3,7 @@ name: 问题反馈 / Bug Report
 about: 报告软件错误或异常 / Report a bug or unexpected behavior
 title: "[BUG]"
 labels: bug
-assignees: ''
+assignees: tigerJX95
 type: Bug
 
 ---
