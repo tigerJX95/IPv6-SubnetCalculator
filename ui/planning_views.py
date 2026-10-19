@@ -19,6 +19,7 @@
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QWidget,QVBoxLayout,QHBoxLayout,QLabel,QLineEdit
 from app_info import DEFAULT_NETWORK
+from ui.input_feedback import bind_input, mark_invalid
 from ui.fonts import data_font
 from ui.widgets import IconButton
 
@@ -34,6 +35,7 @@ class PlanningViews:
         controls=QHBoxLayout()
         controls.addWidget(QLabel('父网段：'))
         self.parent_input=QLineEdit(DEFAULT_NETWORK)
+        bind_input(self.parent_input)
         self.parent_input.setFont(data_font())
         self.parent_input.setMaxLength(200)
         self.parent_input.setToolTip('占用清单必须全部位于此父网段内；空清单表示父网段尚无占用。')
@@ -120,6 +122,8 @@ class PlanningViews:
     def completed(self, task, outcome):
         kind,result=outcome
         if kind!='ok':
+            if kind!='cancel':
+                mark_invalid(self.owner.editor,str(result))
             self.status(task).setText('已取消规划，原始输入已保留。' if kind=='cancel' else '无法规划：'+result)
             self.owner.feedback.emit(self.status(task).text(),'info' if kind=='cancel' else 'error')
             return

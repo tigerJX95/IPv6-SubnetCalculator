@@ -1,4 +1,4 @@
-# 🌐 IPv6 Subnet Calculator V1.4
+# 🌐 IPv6 Subnet Calculator V1.5
 
 [简体中文](README.md) | **English**
 
@@ -47,7 +47,14 @@ IPv6SubnetCalculator is an offline IPv6 subnet calculator for Windows. It analyz
 - **Bounded processing**: up to 5,000 validation entries, 1 MiB (1,048,576 bytes) and 20,000 physical lines including blanks/comments per check. Background work can be cancelled. Details are limited to 1,000 pairs while totals remain exact.
 - **Separate workspace**: list checks preserve calculator results/plans. List input, errors and reports are not stored in calculation plans; copy them to retain the work.
 
-## 🆕 V1.4 Free Space and Equivalent CIDR Aggregation
+## ✨ V1.5: Import and Input Experience
+
+- **Drop a calculation plan**: drop one local JSON plan anywhere in the main window, including input fields and tables. Validation precedes replacement confirmation; multiple files, folders, remote links and unsupported formats show clear feedback. Import waits while background work is active.
+- **Protect current work**: corrupt files leave parameters, results and selection unchanged. Unsaved work supports Save, Discard and Cancel. Import restores saved calculation/view state without additional calculations, exports or network changes.
+- **Visible input errors**: calculation, address tools, location, copy/export ranges and list validation use red borders, warning indicators and specific explanations. Bottom errors are bold; editing clears the relevant border.
+- **Chinese dialogs**: confirmations, warnings, file browsers and standard Qt menus include Chinese resources independently of Windows display language.
+
+## 🧮 Free Space and Equivalent CIDR Aggregation
 
 - **Parent-network free space**: treat the list as occupied space within a parent CIDR. Show the occupied union, exact free address count and free CIDRs, without double-counting duplicates or containment.
 - **Strict validation**: all occupied entries must be valid and wholly inside the parent. An empty list represents no occupied space.
@@ -57,7 +64,7 @@ IPv6SubnetCalculator is an offline IPv6 subnet calculator for Windows. It analyz
 
 ## 📸 Screenshots
 
-Screenshot version: **V1.4**.
+Screenshot version: **V1.5**.
 
 ### Light Theme
 
@@ -77,7 +84,13 @@ Screenshot version: **V1.4**.
 
 ![Light CIDR Aggregation](docs/screenshots/aggregate_light.png)
 
+![Light input validation](docs/screenshots/input_error_light.png)
+
+![Chinese plan replacement confirmation](docs/screenshots/plan_drop_light.png)
+
 ### Dark Theme
+
+![Dark input validation](docs/screenshots/input_error_dark.png)
 
 ![Dark Calculation page](docs/screenshots/calculation_dark.png)
 
@@ -97,7 +110,7 @@ Screenshot version: **V1.4**.
 
 ## 📦 Download and Usage
 
-Download `IPv6SubnetCalculator_V1.4.exe` directly from Assets on GitHub [Releases](../../releases/latest). Run the downloaded executable; No additional runtime setup is required. Enter a network and target prefix, then click the calculation icon; the application switches to Results when complete.
+Download `IPv6SubnetCalculator_V1.5.exe` directly from Assets on GitHub [Releases](../../releases/latest). Run the downloaded executable; No additional runtime setup is required. Enter a network and target prefix, then click the calculation icon; the application switches to Results when complete.
 
 Press F1 or use the top-bar information icon for built-in help, license texts and legal notices.
 

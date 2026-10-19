@@ -16,10 +16,12 @@
 # along with IPv6SubnetCalculator. If not, see <https://www.gnu.org/licenses/>.
 
 """结果页负责表格、分页、定位与选择；导出任务由外部协调。"""
+from ui.standard_dialogs import QMessageBox
+from ui.input_feedback import bind_input, mark_invalid, clear_invalid
 from PyQt6.QtCore import Qt, pyqtSignal, QItemSelectionModel
 from PyQt6.QtGui import QKeySequence, QShortcut, QFontMetrics
 from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QTableView,
-                             QAbstractItemView, QHeaderView, QLineEdit, QComboBox, QMessageBox)
+                             QAbstractItemView, QHeaderView, QLineEdit, QComboBox)
 from core.ipv6_core import InputError
 from core.subnet_export import page_subnets
 from core.subnet_tools import LOCATOR_MODES, resolve_locator_range, summarize_selection, MAX_COPY_RECORDS
@@ -105,6 +107,7 @@ class ResultsPage(QWidget):
         paging.addSpacing(9)
         paging.addWidget(QLabel('页码：'))
         self.page_input = QLineEdit('1')
+        bind_input(self.page_input)
         self.page_input.setMaxLength(42)
         self.page_input.setMinimumWidth(90)
         self.page_input.setMaximumWidth(220)
@@ -137,6 +140,7 @@ class ResultsPage(QWidget):
         self.locator_mode_combo.setToolTip('按 IPv6 地址、序号或对应范围定位。')
         locator.addWidget(self.locator_mode_combo)
         self.locator_input = QLineEdit()
+        bind_input(self.locator_input)
         self.locator_input.setMaxLength(250)
         locator.addWidget(self.locator_input, 1)
         self.locator_button = IconButton('locate_small', '定位（Enter）\n范围高亮跨页保留，定位时只选中首条。')
@@ -281,9 +285,13 @@ class ResultsPage(QWidget):
             return
         text = self.page_input.text().strip()
         if not text.isascii() or not text.isdecimal() or len(text) > 42 or not 1 <= int(text) <= self.total_pages:
-            QMessageBox.warning(self, '页码错误', f'请输入 1 至 {self.total_pages:,} 之间的页码。')
+            message=f'请输入 1 至 {self.total_pages:,} 之间的页码。'
             self.page_input.setText(str(self.page))
+            mark_invalid(self.page_input,message)
+            self.feedback.emit('页码错误：'+message,'error')
+            QMessageBox.warning(self, '页码错误', message)
             return
+        clear_invalid(self.page_input)
         self.show_page(int(text))
 
     def normalize_locator(self):
@@ -303,10 +311,12 @@ class ResultsPage(QWidget):
         if not self.result:
             return
         self.normalize_locator()
+        clear_invalid(self.locator_input)
         try:
             first, last = resolve_locator_range(self.locator_mode_combo.currentText(), self.locator_input.text(),
                                                 self.result.network, self.result.target_prefix)
         except InputError as exc:
+            mark_invalid(self.locator_input,str(exc))
             self.feedback.emit('定位失败：'+str(exc), 'error')
             QMessageBox.warning(self, '定位失败', str(exc))
             return

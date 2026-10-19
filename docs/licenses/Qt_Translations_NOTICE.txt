@@ -1,0 +1,30 @@
+Qt Chinese Standard-Widget Translations
+=======================================
+
+The bundled assets/qtbase_zh_CN.qm is supplied by PyQt6-Qt6 6.11.2.
+Qt translations are contributed by the Qt community and retain their
+upstream copyright and licensing. They are not project-authored artwork.
+
+Upstream module: https://code.qt.io/cgit/qt/qttranslations.git/
+Matching source reference: Qt 6.11.2, translations/qtbase_zh_CN.ts
+https://github.com/qt/qttranslations/tree/v6.11.2
+
+The module licenseRule.json lists its module/plugin files as:
+LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only.
+This distribution uses the LGPL-3.0-only option for this Qt resource.
+The LGPL v3 text is provided in Qt_LGPLv3.txt and incorporates GPL v3,
+provided in the project LICENSE and PyQt6_GPLv3.txt.
+
+The source package retains the Qt translation source, upstream license rule
+and translations README in docs/qttranslations/. The binary is unmodified
+from the installed Qt wheel. Qt translation catalogs can be loaded from
+source or repackaged with a replacement catalog as part of a source build.
+
+Upstream translations/README:
+
+All translations are contributed by the Qt community.
+They are provided without guarantees, will often be stale, and may even
+disappear entirely from future Qt releases.
+
+See http://wiki.qt.io/Qt_Localization for information on how to
+contribute translations.

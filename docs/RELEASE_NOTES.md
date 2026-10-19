@@ -1,43 +1,42 @@
-# IPv6SubnetCalculator V1.4
+# IPv6SubnetCalculator V1.5
 
-## ✨ 两项规划功能
+## ✨ 导入与输入体验
 
-- 新增父网段空闲空间：根据已有占用清单计算占用并集、空闲地址数量及最简空闲 CIDR，避免重复扣减。
-- 新增等价 CIDR 整理：移除重复／已覆盖网段并精确合并，地址覆盖集合保持不变。
-- 两项功能共用清单输入，后台执行、支持取消，提供完整结果及报告复制，不修改原始输入。
+- 新增单个本地 JSON 计算方案拖放，主窗口输入框、编辑区和结果表格均可接收；复用打开方案的完整校验与恢复。
+- 校验通过后确认替换，保留未保存工作的保存／不保存／取消流程；不修改源文件，不额外触发计算或导出。
+- 输入错误显示红框、警示图标和加粗具体原因；编辑后清除对应标记，重试重新校验。
+- 计算、地址工具、定位、范围复制、导出范围、父网段和清单校验统一提示。
 
-## 🐛 规划与复制保护
+## 🐛 保护与中文一致性
 
-- 非法记录阻止整次规划；空闲计算同时拒绝不完全位于父网段内的记录。
-- 空闲 CIDR 明细最多 5,000 条，总数及全部连续空闲范围不截断；明细截断时禁用完整 CIDR 复制。
-- 修改输入使旧结果失效；修改父网段只清空对应空闲结果。
-- 继续保持原方案格式兼容及后台任务退出保护。
+- 拒绝多文件、文件夹、远程链接、错误扩展名及损坏方案；失败或取消保留当前工作，后台任务期间暂缓拖放导入。
+- 确认、错误、警告及文件选择窗口完整中文化；内置 Qt 中文翻译，避免英文 Windows 导致标准按钮或菜单出现英文。
+- 常见文件访问错误提供中文说明、路径与系统错误码。
+- 确认后再次校验文件，防止同路径保存或外部修改导致恢复旧内容。
+- 保持现有计算逻辑与方案格式 v1 兼容。
 
-## 🎨 图标、说明与下载
+## 📖 文档
 
-- 关于图标去掉浅蓝底纹，改为透明、随主题调整颜色的线条图标，保留悬停提示与 F1。
-- 明确条数、总行数与字节大小的区别：1 MiB 为 1,048,576 字节。
-- 更新双语文档、离线帮助及 V1.4 实际浅深色界面截图。
-- 从 Releases 直接下载 `IPv6SubnetCalculator_V1.4.exe`；标签使用 `v1.4`。
+- 更新双语说明、离线帮助、实际运行截图与 Windows 验收项。
+- 记录已确认 i18n 路线：V1.5 实机验收后进入 V1.6，同一 EXE 支持简体中文和 English 即时切换。V1.5 不包含语言切换。
+- Releases 直接下载 IPv6SubnetCalculator_V1.5.exe，标签使用 v1.5。
 
 ---
 
-## ✨ Two Planning Features
+## ✨ Import and Input Experience
 
-- Adds parent-network free space: exact occupied union, free address counts and minimal free CIDRs without double-counting overlaps.
-- Adds equivalent CIDR aggregation: removes duplicate/covered networks and merges precisely without changing coverage.
-- Both share list input, run in a cancellable worker and provide result/report copying without rewriting input.
+- Adds single local JSON plan drops throughout the main window, sharing validated restoration with Open Plan.
+- Confirms replacement and preserves Save/Discard/Cancel for unsaved work; no source-file changes or additional calculations/exports.
+- Adds red input borders, warning indicators and bold explanations with edit/retry recovery across input workflows.
 
-## 🐛 Planning and Copy Protection
+## 🐛 Protection and Chinese Consistency
 
-- Invalid entries reject planning; free-space checks also reject entries outside or broader than the parent.
-- Free CIDR details are capped at 5,000 while totals/all free intervals stay exact. Complete-CIDR copying is disabled when details are truncated.
-- Editing input invalidates old results; editing the parent clears only free-space results.
-- Retains plan-format compatibility and orderly worker shutdown.
+- Rejects multiple files, folders, remote links, unsupported extensions and corrupt plans; cancellation/failure preserves work and active background tasks defer drops.
+- Bundles Chinese Qt translations and centralizes Chinese confirmations, warnings and file browsers independently of Windows display language.
+- Provides Chinese filesystem errors with original paths and system error codes; retains calculation and plan-format compatibility.
 
-## 🎨 Appearance, Guidance and Downloads
+## 📖 Documentation
 
-- Replaces the tinted About tile with a transparent theme-aware line icon, retaining its tooltip and F1.
-- Clarifies entries, physical lines and byte size: 1 MiB is 1,048,576 bytes.
-- Updates bilingual/offline guidance and actual V1.4 light/dark previews.
-- Download `IPv6SubnetCalculator_V1.4.exe` from Releases directly; use tag `v1.4`.
+- Updates bilingual/offline help, actual previews and Windows acceptance.
+- Records the confirmed i18n roadmap: V1.6 bilingual switching follows V1.5 Windows acceptance. V1.5 has no language switch.
+- Download IPv6SubnetCalculator_V1.5.exe directly from Releases; use tag v1.5.

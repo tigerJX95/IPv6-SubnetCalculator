@@ -17,12 +17,14 @@
 
 """方案文件对话框、快照与恢复协调；损坏文件不改变当前工作。"""
 from pathlib import Path
+from ui.standard_dialogs import QFileDialog, QMessageBox
 from PyQt6.QtCore import QSignalBlocker, QItemSelectionModel
 from PyQt6.QtGui import QShortcut, QKeySequence
-from PyQt6.QtWidgets import QFileDialog, QMessageBox
+from services.error_messages import describe_error
 from core.ipv6_core import InputError, calculate
 from core.calculation_plan import CalculationPlan, plan_to_payload
 from services.plan_storage import load_plan, save_plan
+from ui.input_feedback import mark_invalid, clear_invalid
 
 
 class PlanController:
@@ -65,7 +67,8 @@ class PlanController:
         return plan
 
     def _error(self, action, exc):
-        message = action+'失败：'+str(exc)
+        message = action+'失败：'+describe_error(exc)
+        mark_invalid(self.window.calculation_page.plan_file_label,message)
         self.window.feedback.set_message(message, 'error')
         QMessageBox.warning(self.window, action+'失败', message)
 
@@ -101,6 +104,7 @@ class PlanController:
         except (OSError, InputError) as exc:
             self._error('保存方案', exc)
             return False
+        clear_invalid(self.window.calculation_page.plan_file_label)
         self.path = path
         self.saved_document = self.document()
         self._status()
@@ -126,12 +130,33 @@ class PlanController:
         selected, _ = QFileDialog.getOpenFileName(self.window, '打开计算方案', '', 'IPv6 计算方案 (*.json)')
         if not selected:
             return False
+        return self.open_path(selected)
+
+    def open_path(self, selected, *, dropped=False):
+        if self.window.export_service.busy or (dropped and self.window.subnet_list_page.service.busy):
+            self.window.feedback.set_message('请先完成或取消后台任务，再打开方案。', 'info')
+            return False
         try:
             plan = load_plan(selected)
         except (OSError, InputError) as exc:
             self._error('打开方案', exc)
             return False
+        document = self.document()
+        tracked = self.path is not None or bool(document[2].strip() or document[3].strip())
+        dirty = tracked and document != self.saved_document
         if not self.confirm_discard():
+            return False
+        if dropped and not dirty and QMessageBox.question(self.window,'替换当前计算方案',
+                '方案校验通过。是否用拖入的方案替换当前计算参数、结果和浏览位置？',
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                QMessageBox.StandardButton.No) != QMessageBox.StandardButton.Yes:
+            return False
+        # 确认期间可能先保存到同一个路径，或文件被外部程序修改。
+        # 重新校验实际将恢复的内容，避免把旧快照误标为已保存。
+        try:
+            plan = load_plan(selected)
+        except (OSError, InputError) as exc:
+            self._error('打开方案', exc)
             return False
         self.apply(plan)
         self.path = Path(selected)
@@ -142,6 +167,9 @@ class PlanController:
 
     def apply(self, plan):
         plan_to_payload(plan)
+        clear_invalid(self.window.calculation_page.plan_file_label)
+        for field in (self.window.calculation_page.network_input,self.window.calculation_page.target_input):
+            clear_invalid(field)
         result = calculate(plan.network, str(plan.target_prefix), preview_limit=0)
         window, page = self.window, self.window.results_page
         calculation = window.calculation_page
@@ -174,6 +202,7 @@ class PlanController:
 
     def _status(self):
         label = self.window.calculation_page.plan_file_label
+        clear_invalid(label)
         document = self.document()
         tracked = self.path is not None or bool(document[2].strip() or document[3].strip())
         modified = tracked and document != self.saved_document

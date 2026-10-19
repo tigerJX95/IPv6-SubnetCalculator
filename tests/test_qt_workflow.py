@@ -51,6 +51,8 @@ class QtWorkflowTests(unittest.TestCase):
         cls.settings_dir = tempfile.TemporaryDirectory()
         cls.settings = QSettings(str(Path(cls.settings_dir.name)/'preferences.ini'), QSettings.Format.IniFormat)
         cls.application = create_application([], settings=cls.settings)
+        # QApplication 为进程单例；其他 Qt 测试可能已经创建过它。
+        cls.application.theme_manager.settings = cls.settings
         cls.application.setQuitOnLastWindowClosed(False)
         cls.saved_clipboard = QMimeData()
         original = QApplication.clipboard().mimeData()

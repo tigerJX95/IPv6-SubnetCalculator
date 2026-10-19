@@ -50,7 +50,7 @@ def analyze_networks(text_a: str, text_b: str) -> NetworkRelation:
             # 复用计算器的 CIDR 校验和主机位规范化，关闭预览，不生成子网。
             results.append(calculate(text, '128', preview_limit=0))
         except InputError as exc:
-            raise InputError(f'网段 {label}：{exc}') from exc
+            raise InputError(f'网段 {label}：{exc}', field=label) from exc
     first, second = results
     a, b = first.network, second.network
     overlap = gap = 0

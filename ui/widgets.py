@@ -215,7 +215,8 @@ class FeedbackLabel(QLabel):
         self.set_message('输入参数后点击“开始计算”。')
 
     def set_message(self, text, severity='info'):
-        self.setText(text)
+        self.setText(('⚠ '+text) if severity == 'error' else text)
+        self.setAccessibleDescription(text)
         self.setProperty('severity', severity)
         self.style().unpolish(self)
         self.style().polish(self)

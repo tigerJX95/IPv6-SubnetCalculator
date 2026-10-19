@@ -16,8 +16,9 @@
 # along with IPv6SubnetCalculator. If not, see <https://www.gnu.org/licenses/>.
 
 """统一 Qt 剪贴板访问及错误反馈。"""
+from ui.standard_dialogs import QMessageBox
 from PyQt6.QtCore import QObject, pyqtSignal
-from PyQt6.QtWidgets import QApplication, QMessageBox
+from PyQt6.QtWidgets import QApplication
 
 
 class ClipboardService(QObject):

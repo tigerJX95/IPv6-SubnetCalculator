@@ -24,6 +24,7 @@ from app_info import DEFAULT_NETWORK
 from core.ipv6_core import common_target_prefixes, prefix_analysis, subnet_count_description
 from core.address_usage import describe_network
 from core.calculation_summary import format_calculation_summary
+from ui.input_feedback import bind_input
 from ui.fonts import data_font
 from ui.widgets import IconButton, value_label
 
@@ -155,6 +156,8 @@ class CalculationPage(QWidget):
         self.target_input.returnPressed.connect(self.calculate_requested)
         self.prefix_shortcuts.activated.connect(self._choose_prefix)
         self._update_shortcuts()
+        for field in (self.network_input,self.target_input):
+            bind_input(field)
 
     def normalize_network(self):
         self.network_input.setText(self.network_input.text().lower())

@@ -1,4 +1,4 @@
-# V1.4 开发说明 / Development Notes
+# V1.5 开发说明 / Development Notes
 
 ## 运行与构建 / Run and Build
 
@@ -11,13 +11,13 @@ python -m pip install -r requirements.txt
 python main.py
 ```
 
-Windows 下运行 `build.cmd`，会安装固定版本的界面依赖和 PyInstaller，生成 `dist/IPv6SubnetCalculator_V1.4.exe`。构建需要联网下载依赖；生成后的程序离线运行，不要求目标电脑安装 Python。EXE 的架构取决于所用 Python 的架构，建议使用 Windows x64 Python。
+Windows 下运行 `build.cmd`，会安装固定版本的界面依赖和 PyInstaller，生成 `dist/IPv6SubnetCalculator_V1.5.exe`。构建需要联网下载依赖；生成后的程序离线运行，不要求目标电脑安装 Python。EXE 的架构取决于所用 Python 的架构，建议使用 Windows x64 Python。
 
-On Windows, `build.cmd` installs the pinned interface dependencies and PyInstaller, then creates `dist/IPv6SubnetCalculator_V1.4.exe`. Building requires internet access to download dependencies. The resulting application works offline without Python on the target computer. Its architecture follows the Python interpreter used; Windows x64 Python is recommended.
+On Windows, `build.cmd` installs the pinned interface dependencies and PyInstaller, then creates `dist/IPv6SubnetCalculator_V1.5.exe`. Building requires internet access to download dependencies. The resulting application works offline without Python on the target computer. Its architecture follows the Python interpreter used; Windows x64 Python is recommended.
 
-可选运行 `python tools/package_release.py` 生成 `dist/IPv6SubnetCalculator_V1.4_Windows.zip`，包含 EXE、项目 `LICENSE`／`NOTICE` 及第三方许可文件。Windows 用户默认直接下载 EXE；ZIP 仅为可选归档，源码包单独提供。发布前运行 `verify.cmd` 检查本次 EXE。
+可选运行 `python tools/package_release.py` 生成 `dist/IPv6SubnetCalculator_V1.5_Windows.zip`，包含 EXE、项目 `LICENSE`／`NOTICE` 及第三方许可文件。Windows 用户默认直接下载 EXE；ZIP 仅为可选归档，源码包单独提供。发布前运行 `verify.cmd` 检查本次 EXE。
 
-Optionally run `python tools/package_release.py` to create `dist/IPv6SubnetCalculator_V1.4_Windows.zip`, containing the EXE, project LICENSE/NOTICE, and third-party license files. Publish the EXE as the default Windows download; the ZIP is optional and source is provided separately. Run `verify.cmd` before publishing to check the executable from this build.
+Optionally run `python tools/package_release.py` to create `dist/IPv6SubnetCalculator_V1.5_Windows.zip`, containing the EXE, project LICENSE/NOTICE, and third-party license files. Publish the EXE as the default Windows download; the ZIP is optional and source is provided separately. Run `verify.cmd` before publishing to check the executable from this build.
 
 ## 模块职责 / Module Responsibilities
 
@@ -86,15 +86,15 @@ Widget colors come from one stylesheet, without mixing in global `setPalette`. C
 
 Project-authored content uses `GPL-3.0-or-later`. The root `LICENSE` contains the unmodified GPLv3 text; `NOTICE` identifies the versions, scope, and lack of warranty. Third-party license files are retained separately.
 
-`build.cmd` 会将项目与第三方许可嵌入程序，并在 `dist/IPv6SubnetCalculator_V1.4_Licenses/` 输出可直接阅读的副本。该目录可作为独立许可附件保留；EXE 已嵌入许可文件。发布时提供与 EXE 对应版本的完整源码及构建材料（包括 `build.cmd`、`requirements.txt`、资源和开发说明）。源码可放在同一 Release 的源码附件中；确保该 Release 对应正确的提交和标签，不要仅链接到持续变化的主分支。
+`build.cmd` 会将项目与第三方许可嵌入程序，并在 `dist/IPv6SubnetCalculator_V1.5_Licenses/` 输出可直接阅读的副本。该目录可作为独立许可附件保留；EXE 已嵌入许可文件。发布时提供与 EXE 对应版本的完整源码及构建材料（包括 `build.cmd`、`requirements.txt`、资源和开发说明）。源码可放在同一 Release 的源码附件中；确保该 Release 对应正确的提交和标签，不要仅链接到持续变化的主分支。
 
-`build.cmd` embeds project and third-party license files in the application and also writes readable copies to `dist/IPv6SubnetCalculator_V1.4_Licenses/`. Retain that folder as an optional standalone license attachment; licenses are also embedded in the EXE. Provide the complete matching application source and build materials, including `build.cmd`, `requirements.txt`, assets, and these instructions. A source archive can accompany the same Release; use the matching commit and tag rather than linking only to a changing main branch.
+`build.cmd` embeds project and third-party license files in the application and also writes readable copies to `dist/IPv6SubnetCalculator_V1.5_Licenses/`. Retain that folder as an optional standalone license attachment; licenses are also embedded in the EXE. Provide the complete matching application source and build materials, including `build.cmd`, `requirements.txt`, assets, and these instructions. A source archive can accompany the same Release; use the matching commit and tag rather than linking only to a changing main branch.
 
 程序包含的第三方组件仍须按各自许可履行源码、版权和再分发义务。完整源码的提供范围包括适用许可证要求的依赖源码；仅附上项目的 Python 文件或上游主页链接并不自动满足所有第三方二进制分发条件。组件版本及获取入口见 `THIRD_PARTY_NOTICES.md`，发布时应保留所用版本的依赖源码及构建信息。
 
 Bundled third-party components retain their own source, attribution, and redistribution obligations. The source offer must also cover dependency source where required by the applicable licenses; providing only the application's Python files or an upstream home-page link does not automatically satisfy all third-party binary distribution conditions. Versions and upstream entry points are listed in `THIRD_PARTY_NOTICES.md`. Retain the dependency sources and build information for the versions actually shipped.
 
-## V1.4 自动验证 / Automated Verification
+## V1.5 自动验证 / Automated Verification
 
 Windows 下先运行 `build.cmd`，再运行 `verify.cmd`。验证入口执行回归测试、性能测量、源码程序检查和本次构建的 EXE 检查，将结果保存在 `verification/`，不加入 Git。
 
@@ -109,7 +109,7 @@ python tools/verify.py --report-dir verification
 指定打包程序可运行： / To include a packaged application:
 
 ```console
-python tools/verify.py --exe dist/IPv6SubnetCalculator_V1.4.exe --report-dir verification
+python tools/verify.py --exe dist/IPv6SubnetCalculator_V1.5.exe --report-dir verification
 ```
 
 `summary.json` 保存环境、逐阶段结果及性能数据；`SUMMARY.md` 为简要结果，`tests.log` 保存回归日志；`source.json` 和 `executable.json` 分别记录源码与打包程序检查。源码检查通过时，未提供的 EXE 仍标记为 `not_run`。只有在 Windows 上执行且 EXE 检查通过后，`windows_automated_checks` 才标记为通过；人工验收始终独立登记，见 [Windows 验收](WINDOWS_ACCEPTANCE.md)。
@@ -128,17 +128,17 @@ A pre-build `build_manifest.json` records a SHA-256 fingerprint of runtime sourc
 
 Performance timings are measurements of the current machine, without fixed hardware-dependent speed thresholds. Export memory is measured with `tracemalloc` and covers Python allocations only, excluding native Qt allocations and total process memory. A coarse guard detects unexpected export-memory growth.
 
-本轮环境与测量记录见 [V1.4 验证记录](VALIDATION.md)。 / See the [V1.4 validation record](VALIDATION.md) for this run and its environment.
+本轮环境与测量记录见 [V1.5 验证记录](VALIDATION.md)。 / See the [V1.5 validation record](VALIDATION.md) for this run and its environment.
 
-## V1.4 发布范围 / Release Scope
+## V1.5 发布范围 / Release Scope
 
-V1.4 增加父网段空闲空间与等价 CIDR 整理，沿用清单输入与可取消后台任务；顶部关于图标改为透明矢量线条。规划严格拒绝非法／越界记录，不改变计算方案格式或原始清单。空闲明细最多 5,000 条，全部空闲区间与总数仍精确；截断时禁止完整 CIDR 复制。自动分配与多级规划尚未实现。Git 标签使用小写 `v1.4`。
+V1.5 增加单文件计算方案拖放、红框／警示图标／加粗原因及标准弹窗中文化。打开与拖放复用校验及恢复，不更改方案格式；无效文件和取消不影响当前工作。后台任务期间暂缓拖放导入。既有空闲空间与 CIDR 整理继续保留。Git 标签使用小写 `v1.5`。
 
-V1.4 adds parent-network free space and equivalent CIDR aggregation using the shared input/cancellable worker, plus a transparent About icon. Invalid/out-of-parent entries are rejected; plan format/input are retained. Free-CIDR details are bounded at 5,000, with exact total/all intervals and disabled full copying when truncated. Automatic allocation and multi-level planning remain future work. Use the tag `v1.4`.
+V1.5 adds single-file plan drops, visible input errors and Chinese standard dialogs while retaining plan compatibility and prior planning features. Invalid files/cancellation preserve current work. Drops wait for background tasks. Use tag `v1.5`.
 
-发布说明草稿见 [V1.4 更新说明](RELEASE_NOTES.md)。实际验证记录见 [验证记录](VALIDATION.md)，其中 Windows 人工和长时间验收仅在实际完成后更新。
+发布说明草稿见 [V1.5 更新说明](RELEASE_NOTES.md)。实际验证记录见 [验证记录](VALIDATION.md)，其中 Windows 人工和长时间验收仅在实际完成后更新。
 
-See [V1.4 Release Notes](RELEASE_NOTES.md). The [Validation Record](VALIDATION.md) tracks actual checks; update Windows manual and extended-session acceptance only after those checks have been performed.
+See [V1.5 Release Notes](RELEASE_NOTES.md). The [Validation Record](VALIDATION.md) tracks actual checks; update Windows manual and extended-session acceptance only after those checks have been performed.
 
 ## 计算摘要复制 / Calculation Summary Copying
 
@@ -172,7 +172,7 @@ The full suite repeatedly creates/closes windows, switches themes, resizes, and 
 
 `ui/fonts.py` centralizes 12 pt interface text, 12 pt monospaced text, 11 pt dense binary text, and the 28 px title. Pages, the data model, shared value labels, and tooltips use these settings; dialogs inherit the application font. Index-column sizing uses font metrics, with a default row height of 38. Calculation and Address Tools use scrolling/wrapping in smaller windows.
 
-## V1.4 方案文件 / Plan Files
+## V1.5 方案文件 / Plan Files
 
 `core/calculation_plan.py` 定义格式与校验；`services/plan_storage.py` 负责有大小上限的 UTF-8 JSON 读写及原子替换；`ui/plan_controller.py` 协调文件选择、未保存提示和界面恢复。保存后只在参数、名称或备注变化时提示未保存，浏览变化仅随下一次保存记录。
 
@@ -199,3 +199,13 @@ Networks are grouped and sorted by start address/prefix. CIDRs form laminar inte
 复用逐行校验器，排序闭区间后合并重叠或首尾相接区间；空闲空间通过线性差集扫描获得。按首地址二进制对齐和剩余长度拆分 CIDR，既不枚举地址，也不扩展区间。空闲 CIDR 可高度碎片化：总数逐块精确计数，最多保留 5,000 个 IPv6Network 对象；全部空闲闭区间最多占用条数加一。整理结果不多于输入 CIDR 条数。整数容量始终使用 Python 整数，未转浮点。规划同样纳入源码／打包自检，修改输入清空旧结果，主窗口退出等待工作线程结束。
 
 Validation is shared. Sorted closed intervals are merged, free gaps are obtained by a linear scan, and aligned CIDRs are emitted by bit operations without address enumeration or coverage expansion. Free-space totals are exact while at most 5,000 CIDR objects are retained; gap intervals are bounded by input count plus one. Aggregated CIDRs cannot outnumber the input. Capacities remain integers. Source/frozen checks cover both planners and existing worker lifecycle protections apply.
+
+
+## V1.5 导入与展示边界
+
+- ui/plan_drop_controller.py：仅拦截主窗口中的文件 URL，QTimer 结束原生拖放回调后调用 PlanController.open_path；不处理其他弹窗或普通文本拖放。
+- ui/plan_controller.py：打开与拖放共用加载、先校验、未保存决策及恢复流程；拖放额外确认未修改工作的替换；不调用 MainWindow.calculate。
+- ui/input_feedback.py：字段错误属性、警示 action、辅助说明及编辑后清除；ui/theme.py 统一两主题红框和加粗错误。
+- ui/standard_dialogs.py：标准弹窗中文按钮、纯文本内容、Qt 非原生文件选择器；app.py 安装随包 Qt 中文资源，英文系统同样中文。
+- services/error_messages.py：常见文件系统错误以中文原因、原路径和系统错误码展示。
+- 后续 i18n 的阶段、状态保留与验收要求见 [I18N_PLAN.md](I18N_PLAN.md)。

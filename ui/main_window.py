@@ -29,6 +29,8 @@ from ui.address_tools_page import AddressToolsPage
 from ui.subnet_list_page import SubnetListPage
 from ui.export_controller import ExportController
 from ui.plan_controller import PlanController
+from ui.plan_drop_controller import PlanDropController
+from ui.input_feedback import mark_invalid, clear_invalid
 from ui.about_dialog import AboutDialog
 from ui.widgets import FeedbackLabel, ThemeButton, AboutButton
 
@@ -90,6 +92,7 @@ class MainWindow(QMainWindow):
         layout.addWidget(self.feedback)
 
         self.plan_controller = PlanController(self)
+        self.plan_drop_controller = PlanDropController(self)
         self.export_controller = ExportController(self, self.export_service)
         self.calculation_page.calculate_requested.connect(self.calculate)
         self.calculation_page.summary_copy_requested.connect(self._copy_calculation_summary)
@@ -123,10 +126,16 @@ class MainWindow(QMainWindow):
         if self.export_service.busy:
             self.feedback.set_message('请先完成或取消导出。', 'info')
             return
+        for field in (self.calculation_page.network_input,self.calculation_page.target_input):
+            clear_invalid(field)
         network, prefix = self.calculation_page.parameters()
         try:
             result = calculate(network, prefix, preview_limit=0)
         except InputError as exc:
+            field = self.calculation_page.target_input if exc.field == 'target' else self.calculation_page.network_input
+            mark_invalid(field,str(exc))
+            field.setFocus()
+            self.tabs.setCurrentWidget(self.calculation_page)
             self.result = None
             self.calculation_page.set_result(None)
             self.results_page.set_result(None)

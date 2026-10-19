@@ -17,10 +17,13 @@
 
 """独立清单页：文本导入、后台检查、原行号校验及精确关系统计。"""
 from pathlib import Path
+from ui.standard_dialogs import QFileDialog
+from ui.input_feedback import bind_input, mark_invalid, clear_invalid
 from PyQt6.QtCore import Qt, QAbstractTableModel, QModelIndex, pyqtSignal
 from PyQt6.QtGui import QColor, QKeySequence, QShortcut
 from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPlainTextEdit,
-    QTabWidget, QTableView, QHeaderView, QAbstractItemView, QFileDialog, QApplication)
+    QTabWidget, QTableView, QHeaderView, QAbstractItemView, QApplication)
+from services.error_messages import describe_error
 from core.ipv6_core import InputError
 from core.subnet_list import MAX_RELATION_DETAILS
 from services.subnet_list_service import SubnetListService, load_subnet_list
@@ -111,6 +114,7 @@ class SubnetListPage(QWidget):
         hint.setObjectName('Hint')
         layout.addWidget(hint)
         self.editor = QPlainTextEdit()
+        bind_input(self.editor)
         self.editor.setFont(data_font())
         self.editor.setMinimumHeight(100)
         self.editor.setMaximumHeight(150)
@@ -201,7 +205,7 @@ class SubnetListPage(QWidget):
         try:
             text = load_subnet_list(selected)
         except (OSError, InputError) as exc:
-            self.feedback.emit('导入失败：'+str(exc),'error')
+            self.feedback.emit('导入失败：'+describe_error(exc),'error')
             return
         self.editor.setPlainText(text)
         self.source_label.setText('已导入：'+Path(selected).name)
@@ -213,6 +217,7 @@ class SubnetListPage(QWidget):
             return
         self.result_tabs.setCurrentIndex(0)
         self._task = 'relations'
+        clear_invalid(self.editor)
         source, tooltip = self.source_label.text(), self.source_label.toolTip()
         self._invalidate()
         if source.startswith('已导入'):
@@ -221,6 +226,7 @@ class SubnetListPage(QWidget):
         try:
             self.service.start(self.editor.toPlainText())
         except Exception as exc:
+            mark_invalid(self.editor,str(exc))
             self.feedback.emit('无法开始检查：'+str(exc),'error')
             return
         self._busy(True)
@@ -232,13 +238,24 @@ class SubnetListPage(QWidget):
             return
         self.result_tabs.setCurrentIndex(2 if task=='free' else 3)
         self._task=task
+        clear_invalid(self.editor)
         if task=='free':
             self.planning.clear_free()
+            clear_invalid(self.planning.parent_input)
+            try:
+                from core.ipv6_core import calculate
+                calculate(self.planning.parent_input.text(),'128',preview_limit=0)
+            except InputError as exc:
+                mark_invalid(self.planning.parent_input,str(exc))
+                self.planning.free_status.setText('父网段输入错误：'+str(exc))
+                self.feedback.emit('父网段输入错误：'+str(exc),'error')
+                return
         else:
             self.planning.clear_aggregate()
         try:
             self.service.start(self.editor.toPlainText(),task,self.planning.parent_input.text())
         except Exception as exc:
+            mark_invalid(self.editor,str(exc))
             self.feedback.emit('无法开始规划：'+str(exc),'error')
             return
         self.planning.status(task).setText('正在后台规划，可点击停止图标取消…')
@@ -264,6 +281,10 @@ class SubnetListPage(QWidget):
             if self.source_label.text().startswith('输入已修改'):
                 self.source_label.setText('当前输入已检查；原始文件不会被修改。')
             severity='error' if value.error_count else 'success'
+            if value.error_count:
+                mark_invalid(self.editor,f'发现 {value.error_count:,} 个错误行，请查看校验记录。')
+            else:
+                clear_invalid(self.editor)
             self.feedback.emit(f'清单检查完成：有效 {value.valid_count:,} 条，错误 {value.error_count:,} 行。',severity)
         else:
             self.summary.setText('检查已取消，输入文本已保留。' if kind=='cancel' else '检查失败：'+value)

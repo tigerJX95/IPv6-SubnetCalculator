@@ -63,6 +63,7 @@ QComboBox {{ padding-right: 28px; }}
 QComboBox::drop-down {{ border: 0; width: 25px; background: transparent; }}
 QComboBox::down-arrow {{ image: url("{arrow}"); width: 12px; height: 8px; }}
 QLineEdit:focus, QComboBox:focus, QPlainTextEdit:focus {{ border: 1px solid {focus}; }}
+QLineEdit[invalid="true"], QPlainTextEdit[invalid="true"] {{ border: 2px solid {error}; }}
 QLineEdit:disabled, QComboBox:disabled, QPlainTextEdit:disabled {{ background: {disabled}; color: {disabled_text}; }}
 QLineEdit {{ placeholder-text-color: {muted}; }}
 QTextBrowser#AboutText {{ background: {surface}; color: {text}; border: 0;
@@ -96,9 +97,10 @@ QLabel#Hint {{ color: {hint}; }}
 QLabel#UsageType, QLabel#UsageGuidance {{ color: {warning}; }}
 QLabel#UsageType {{ font-weight: 600; }}
 QLabel#Reference {{ color: {muted}; }}
+QLabel[invalid="true"] {{ color: {error}; border: 1px solid {error}; border-radius: 4px; padding: 3px; font-weight: 700; }}
 QLabel#Feedback {{ padding: 5px 1px; }}
 QLabel#Feedback[severity="success"] {{ color: {success}; }}
-QLabel#Feedback[severity="error"] {{ color: {error}; }}
+QLabel#Feedback[severity="error"] {{ color: {error}; font-weight: 700; }}
 QLabel#Feedback[severity="info"] {{ color: {hint}; }}
 QProgressBar {{ border: 0; background: {progress}; border-radius: 5px; min-height: 10px; text-align: center; }}
 QProgressBar::chunk {{ background: {focus}; border-radius: 5px; }}

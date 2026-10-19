@@ -22,6 +22,7 @@ from app_info import DEFAULT_NETWORK
 from core.ipv6_core import InputError
 from core.address_conversion import convert_address
 from core.network_relations import analyze_networks
+from ui.input_feedback import bind_input, mark_invalid, clear_invalid
 from ui.fonts import data_font
 from ui.widgets import IconButton, value_label
 
@@ -139,6 +140,8 @@ class AddressToolsPage(QWidget):
         self.analyze_button.clicked.connect(self.analyze)
         self.copy_formats_button.clicked.connect(self.copy_formats)
         self.copy_relation_button.clicked.connect(self.copy_relation)
+        for field in (self.address_input,self.network_a_input,self.network_b_input):
+            bind_input(field)
 
     def _clear_formats(self):
         self.formats = None
@@ -156,10 +159,13 @@ class AddressToolsPage(QWidget):
         self.copy_relation_button.setEnabled(False)
 
     def convert(self):
+        clear_invalid(self.address_input)
         try:
             formats = convert_address(self.address_input.text())
         except InputError as exc:
             self._clear_formats()
+            mark_invalid(self.address_input,str(exc))
+            self.address_input.setFocus()
             self.feedback.emit('输入错误：'+str(exc), 'error')
             return
         self.formats = formats
@@ -174,10 +180,15 @@ class AddressToolsPage(QWidget):
         self.feedback.emit('地址格式转换完成。', 'success')
 
     def analyze(self):
+        clear_invalid(self.network_a_input)
+        clear_invalid(self.network_b_input)
         try:
             relation = analyze_networks(self.network_a_input.text(), self.network_b_input.text())
         except InputError as exc:
             self._clear_relation()
+            field=self.network_b_input if exc.field=='B' else self.network_a_input
+            mark_invalid(field,str(exc))
+            field.setFocus()
             self.feedback.emit('输入错误：'+str(exc), 'error')
             return
         self.relation = relation

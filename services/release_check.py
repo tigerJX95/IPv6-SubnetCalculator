@@ -181,6 +181,24 @@ class ReleaseCheck(QObject):
         self.window.plan_controller.apply(restored)
         self.require(self.window.result.subnet_count == 65536, '方案恢复计算不正确')
         self.checks.append('plan_save_and_restore_with_unicode_path')
+        self.require(self.window.plan_controller.open_path(path), '共用方案导入入口失败')
+        self.require(self.window.plan_controller.snapshot()==restored, '共用导入入口未恢复方案状态')
+        # 自检只读临时方案，不触发桌面拖放或用户确认。
+        self.window.plan_controller.path=None
+        self.window.plan_controller.saved_document=None
+        from PyQt6.QtCore import QCoreApplication
+        self.require('全选' in QCoreApplication.translate('QLineEdit','Select All'), '缺少 Qt 中文标准菜单')
+        self.require(resource_path('assets/qtbase_zh_CN.qm').is_file(), '缺少内置中文翻译')
+        calculation.target_input.setText('47')
+        self.window.calculate()
+        self.require(calculation.target_input.property('invalid'), '目标前缀错误缺少红框')
+        self.require(self.window.feedback.text().startswith('⚠'), '错误缺少警示标识')
+        self.require(self.window.feedback.property('severity')=='error', '错误提示状态不正确')
+        calculation.target_input.setText('64')
+        self.require(not calculation.target_input.property('invalid'), '编辑后红框未清除')
+        self.window.calculate()
+        self.checks.append('shared_plan_import_chinese_catalog_and_input_error_recovery')
+
         self.checks.append('default_calculation_and_resources')
         self.window.calculation_page.network_input.setText('::/0')
         self.window.calculation_page.target_input.setText('128')

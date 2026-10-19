@@ -19,6 +19,7 @@
 from threading import Event
 from time import monotonic
 from PyQt6.QtCore import QObject, QThread, pyqtSignal
+from services.error_messages import describe_error
 from core.subnet_export import export_all, ExportCancelled
 
 
@@ -48,7 +49,7 @@ class _ExportThread(QThread):
         except ExportCancelled:
             self.outcome = ('cancel', None)
         except Exception as exc:
-            self.outcome = ('error', str(exc))
+            self.outcome = ('error', describe_error(exc))
 
 
 class ExportService(QObject):

@@ -26,7 +26,10 @@ MAX_PREVIEW = 100
 
 
 class InputError(ValueError):
-    """面向用户的输入校验错误。"""
+    """面向用户的输入校验错误；field 仅用于界面定位，不改变错误文本。"""
+    def __init__(self, message, *, field=None):
+        super().__init__(message)
+        self.field = field
 
 
 @dataclass(frozen=True)
@@ -101,12 +104,12 @@ def calculate(network_text: str, target_text: str, *, preview_limit: int = MAX_P
     if not 0 <= original_prefix <= 128:
         raise InputError("原始网络前缀必须为 0～128 的整数。")
     if not target or not re.fullmatch(r"[0-9]{1,3}", target):
-        raise InputError("目标子网前缀必须为 0～128 的整数（不需要输入 /）。")
+        raise InputError("目标子网前缀必须为 0～128 的整数（不需要输入 /）。", field="target")
     target_prefix = int(target)
     if not 0 <= target_prefix <= 128:
-        raise InputError("目标子网前缀必须为 0～128 的整数。")
+        raise InputError("目标子网前缀必须为 0～128 的整数。", field="target")
     if target_prefix < original_prefix:
-        raise InputError("目标子网前缀不能小于原始网络前缀。")
+        raise InputError("目标子网前缀不能小于原始网络前缀。", field="target")
     ip = validate_ipv6_address(addr)
     net = IPv6Network((ip, original_prefix), strict=False)
     if isinstance(preview_limit, bool) or not isinstance(preview_limit, int) or not 0 <= preview_limit <= MAX_PREVIEW:
@@ -161,7 +164,7 @@ def validate_subnet_parameters(network: IPv6Network, target_prefix: int) -> None
         raise InputError('请使用有效的 IPv6 网络。')
     if (isinstance(target_prefix, bool) or not isinstance(target_prefix, int)
             or not network.prefixlen <= target_prefix <= 128):
-        raise InputError('目标子网前缀必须介于原网络前缀与 128 之间。')
+        raise InputError('目标子网前缀必须介于原网络前缀与 128 之间。', field="target")
 
 
 def subnet_at_index(network: IPv6Network, target_prefix: int, index: int) -> IPv6Network:

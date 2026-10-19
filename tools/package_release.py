@@ -28,7 +28,7 @@ from app_info import APP_VERSION
 
 LICENSE_FILES = ('LICENSE', 'NOTICE', 'THIRD_PARTY_NOTICES.md',
                  'docs/licenses/PyQt6_GPLv3.txt', 'docs/licenses/Qt_LGPLv3.txt',
-                 'docs/licenses/PyQt6_sip_LICENSE.txt')
+                 'docs/licenses/PyQt6_sip_LICENSE.txt', 'docs/licenses/Qt_Translations_NOTICE.txt')
 
 
 def package_release(project_root=ROOT):

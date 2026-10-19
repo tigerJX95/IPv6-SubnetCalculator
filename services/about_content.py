@@ -28,6 +28,7 @@ LICENSE_DOCUMENTS = (
     ('项目版权与许可范围', 'NOTICE'),
     ('PyQt6 · GPL v3 原文', 'docs/licenses/PyQt6_GPLv3.txt'),
     ('Qt 6 · LGPL v3 原文', 'docs/licenses/Qt_LGPLv3.txt'),
+    ('Qt 中文控件 · 来源与许可', 'docs/licenses/Qt_Translations_NOTICE.txt'),
     ('PyQt6-sip · 许可原文', 'docs/licenses/PyQt6_sip_LICENSE.txt'),
 )
 HELP_DOCUMENT = 'docs/about/USAGE.md'

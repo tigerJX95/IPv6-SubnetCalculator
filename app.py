@@ -31,6 +31,8 @@ def create_application(argv=None, settings=None):
     application = QApplication(sys.argv if argv is None else argv)
     application.setApplicationName(APP_NAME)
     application.setApplicationVersion(APP_VERSION)
+    from ui.standard_dialogs import install_chinese_dialogs
+    install_chinese_dialogs(application)
     application.setStyle('Fusion')
     font = application_font()
     application.setFont(font)

@@ -1,8 +1,8 @@
-# V1.4 Windows 验收 / Windows Acceptance
+# V1.5 Windows 验收 / Windows Acceptance
 
-V1.4 增加父网段空闲空间、等价 CIDR 整理及透明关于图标。验证范围包括核心功能、Windows 实机稳定性、性能和打包程序；实际 Windows 验收结果由本机运行和人工确认记录。多级分配规划仍待后续实现。
+V1.5 增加方案拖放、醒目输入错误与标准弹窗中文化。先完成本版 Windows 实机验收，再实施 V1.6 中英切换；设计见 I18N_PLAN.md。
 
-V1.4 adds parent-network free space, equivalent CIDR aggregation and a transparent About icon. Validation covers core functionality, Windows stability, performance, and packaged applications. Actual Windows acceptance is recorded after running the checks on Windows and completing the manual checks. Multi-level allocation remains future work.
+V1.5 adds plan drops, visible input errors and Chinese standard dialogs. Complete Windows acceptance before V1.6 bilingual switching.
 
 ## 自动检查 / Automated Checks
 
@@ -22,6 +22,9 @@ Automated checks open/close windows, switch themes, resize and minimize/restore.
 
 | 场景 / Scenario | 验收内容 / Expected behavior | 结果 / Result |
 |---|---|---|
+| 方案拖放 / Plan drops | 中文路径 JSON 拖到标题、输入框、编辑区和表格；确认／取消及未保存的保存／不保存／取消；坏文件、多文件、文件夹和 TXT 明确拒绝；不改源文件，不额外执行计算或导出；后台任务时阻止 / Check whole-window drops, transaction safety and busy handling | 待验收 / Pending |
+| 输入提示 / Input feedback | 两种主题测试网络、目标前缀、地址工具、定位、范围、父网段及清单错误；红框、警示图标、加粗原因，编辑后恢复 / Verify visible errors and recovery in both themes | 待验收 / Pending |
+| 中文弹窗 / Chinese dialogs | 英文 Windows 显示语言下检查打开／保存、覆盖、未保存、错误、导出确认、文件浏览和右键菜单；所有标准按钮为中文 / Check standard dialog text/buttons with English Windows display language | 待验收 / Pending |
 | Windows 环境 / Environment | 记录 Windows 版本、Python 架构、显示缩放比例 / Record Windows version, Python architecture and display scaling | 待验收 / Pending |
 | 独立启动 / Portable startup | EXE 在未安装 Python 的 Windows 机器上启动；路径含空格或中文时资源完整 / Launch on Windows without Python, including paths with spaces or Unicode | 待验收 / Pending |
 | 显示与主题 / Display and themes | 在常用缩放比例及最小窗口下查看四个页面、详情和导出弹窗；内容可读、无异常黑底、提示完整 / Check all four pages and dialogs at normal scaling and minimum size | 待验收 / Pending |
@@ -31,7 +34,7 @@ Automated checks open/close windows, switch themes, resize and minimize/restore.
 | 计算方案 / Calculation plans | 中文名称备注、最大空间末页、多选和范围高亮往返；损坏文件保留当前工作；文件锁定保存失败保留原文件；关闭和打开前保存／放弃／取消均正确 / Unicode metadata, maximum-space views, selections, corruption, locked files and unsaved prompts | 待验收 / Pending |
 | 子网清单 / Subnet lists | UTF-8／BOM 中文文件路径、错误行号、规范化与去重复制、重复／包含／相邻计数；5,000 条与海量关系明细上限；取消和退出安全；两种主题及最小窗口正常 / Check Unicode import, exact counts, bounded details, clipboard, cancellation, closing and themes | 待验收 / Pending |
 | 空闲空间与整理 / Planning | 检查空清单、完全占用、重复包含、越界拒绝、精确容量、整理覆盖不变、明细截断禁用复制、取消退出、浅深色透明关于图标 / Check empty/full occupancy, overlap, rejection, exact counts/coverage, bounded-copy protection, cancellation and transparent icon | 待验收 / Pending |
-| 关于与许可 / About and licenses | 顶部图标／F1 打开；四页完整；六份许可文档离线可读；版本正确；两种主题与缩放正常；Esc 关闭；不改变当前计算与方案 / Verify entry, pages, six offline documents, version, themes/scaling, Esc and retained calculation/plan | 待验收 / Pending |
+| 关于与许可 / About and licenses | 顶部图标／F1 打开；四页完整；七份许可文档离线可读；版本正确；两种主题与缩放正常；Esc 关闭；不改变当前计算与方案 / Verify entry, pages, seven offline documents, version, themes/scaling, Esc and retained calculation/plan | 待验收 / Pending |
 | 地址格式 / Address formats | 转换大写、展开、全零、全一和 IPv4 映射地址；逐项及全部粘贴到记事本，二进制完整 128 位 / Verify case, expansion, zero/max/mapped addresses, individual/all copy and exact 128-bit binary | 待验收 / Pending |
 | 双网段关系 / Network relationships | 检查相同、双向包含、相邻、独立、主机位规范化与非法输入；复制报告包含双方范围、精确重叠和间隔数 / Check all relationships, normalization, invalid inputs and complete report copying | 待验收 / Pending |
 | 文件与 Excel / Files and Excel | 中文路径保存成功；Excel 可打开；超长序号完整；覆盖已被 Excel 占用的文件时明确报错且原文件保留 / Verify Unicode paths, workbook opening, exact long indices and locked destinations | 待验收 / Pending |

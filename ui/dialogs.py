@@ -16,13 +16,15 @@
 # along with IPv6SubnetCalculator. If not, see <https://www.gnu.org/licenses/>.
 
 """详情、范围复制、导出范围及导出进度窗口。"""
+from ui.standard_dialogs import QMessageBox
 from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QFormLayout,
-                             QLabel, QLineEdit, QRadioButton, QProgressBar, QMessageBox)
+                             QLabel, QLineEdit, QRadioButton, QProgressBar)
 from core.ipv6_core import InputError, validate_subnet_index, subnet_at_index
 from core.subnet_tools import (MAX_COPY_RECORDS, validate_copy_range, subnet_range_text,
                                 adjacent_subnet_index)
-from ui.widgets import IconButton, value_label
+from ui.widgets import IconButton, value_label, FeedbackLabel
+from ui.input_feedback import bind_input, mark_invalid, clear_invalid
 
 
 class AppDialog(QDialog):
@@ -56,6 +58,7 @@ class RangeCopyDialog(AppDialog):
         self.start_input = QLineEdit(str(first))
         self.end_input = QLineEdit(str(last))
         for field in (self.start_input, self.end_input):
+            bind_input(field)
             field.setMaxLength(42)
             field.returnPressed.connect(self.perform)
         form = QFormLayout()
@@ -63,6 +66,10 @@ class RangeCopyDialog(AppDialog):
         form.addRow('起始序号：', self.start_input)
         form.addRow('结束序号（包含）：', self.end_input)
         layout.addLayout(form)
+        self.input_feedback=FeedbackLabel()
+        self.input_feedback.clear()
+        self.input_feedback.hide()
+        layout.addWidget(self.input_feedback)
         actions = QHBoxLayout()
         actions.addStretch()
         self.copy_button = IconButton('copy', '复制指定范围（Enter）')
@@ -74,10 +81,14 @@ class RangeCopyDialog(AppDialog):
         layout.addLayout(actions)
 
     def perform(self):
+        for field in (self.start_input,self.end_input):clear_invalid(field)
         try:
             first, last = validate_copy_range(self.start_input.text(), self.end_input.text(), self.subnet_result.subnet_count)
             text = subnet_range_text(self.subnet_result.network, self.subnet_result.target_prefix, first, last)
         except InputError as exc:
+            for field in (self.start_input,self.end_input):mark_invalid(field,str(exc))
+            self.input_feedback.set_message(str(exc),'error')
+            self.input_feedback.show()
             QMessageBox.warning(self, '无法复制', str(exc))
             return
         if self.clipboard.copy_text(text,
@@ -158,6 +169,7 @@ class ExportRangeDialog(AppDialog):
         self.end_input = QLineEdit(str(min(total, 1000)))
         for field in (self.start_input, self.end_input):
             field.setEnabled(False)
+            bind_input(field)
             field.setMaxLength(42)
             field.returnPressed.connect(self.confirm)
         self.start_input.setToolTip('输入子网序号，最小为 1。')
@@ -165,6 +177,10 @@ class ExportRangeDialog(AppDialog):
         form.addRow('起始序号：', self.start_input)
         form.addRow('结束序号：', self.end_input)
         layout.addLayout(form)
+        self.input_feedback=FeedbackLabel()
+        self.input_feedback.clear()
+        self.input_feedback.hide()
+        layout.addWidget(self.input_feedback)
         self.range_radio.toggled.connect(self.start_input.setEnabled)
         self.range_radio.toggled.connect(self.end_input.setEnabled)
         actions = QHBoxLayout()
@@ -178,6 +194,7 @@ class ExportRangeDialog(AppDialog):
         layout.addLayout(actions)
 
     def confirm(self):
+        for field in (self.start_input,self.end_input):clear_invalid(field)
         try:
             if self.all_radio.isChecked():
                 span = (1, self.total)
@@ -188,6 +205,9 @@ class ExportRangeDialog(AppDialog):
                     raise InputError('结束序号不能小于起始序号。')
                 span = (first, last)
         except InputError as exc:
+            for field in (self.start_input,self.end_input):mark_invalid(field,str(exc))
+            self.input_feedback.set_message(str(exc),'error')
+            self.input_feedback.show()
             QMessageBox.warning(self, '导出范围错误', str(exc))
             return
         self.span = span
