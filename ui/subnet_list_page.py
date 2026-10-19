@@ -27,6 +27,7 @@ from services.subnet_list_service import SubnetListService, load_subnet_list
 from ui.fonts import data_font
 from ui.theme import current_colors
 from ui.widgets import IconButton
+from ui.planning_views import PlanningViews
 
 
 class ListTableModel(QAbstractTableModel):
@@ -99,12 +100,13 @@ class SubnetListPage(QWidget):
         self.setObjectName('SubnetListPage')
         self.clipboard = clipboard
         self.analysis = None
+        self._task = 'relations'
         self.service = SubnetListService(self)
         self.service.completed.connect(self._completed)
         layout = QVBoxLayout(self)
         layout.setContentsMargins(12,12,12,12)
         layout.setSpacing(8)
-        hint = QLabel('导入或粘贴已有 IPv6 CIDR，每行一个；检查格式、重复、包含和相邻关系。')
+        hint = QLabel('每行一个 IPv6 CIDR：校验与关系检查、父网段空闲空间、等价 CIDR 整理。')
         hint.setWordWrap(True)
         hint.setObjectName('Hint')
         layout.addWidget(hint)
@@ -114,7 +116,7 @@ class SubnetListPage(QWidget):
         self.editor.setMaximumHeight(150)
         self.editor.setTabChangesFocus(True)
         self.editor.setPlaceholderText('2026:1015:abcd::/48\n2026:1015:abcd:1::/64\n# 空行和以 # 开头的注释会被忽略')
-        self.editor.setToolTip('每行一个 CIDR；最多 5,000 条、1 MiB，UTF-8（允许 BOM）。\nCtrl+Enter 检查；此清单不写入计算方案。')
+        self.editor.setToolTip('每行一个 CIDR；最多 5,000 条网段记录、1,048,576 字节（1 MiB），UTF-8（允许 BOM）。\nCtrl+Enter 检查；此清单不写入计算方案。')
         self.editor.setAccessibleName('待检查的 IPv6 CIDR 清单')
         self.editor.textChanged.connect(self._invalidate)
         layout.addWidget(self.editor)
@@ -149,6 +151,8 @@ class SubnetListPage(QWidget):
         self.relations_table.setColumnWidth(1,130)
         self.result_tabs.addTab(self.records_table,'校验记录')
         self.result_tabs.addTab(self.relations_table,'关系检查')
+        self.planning = PlanningViews(self,ListTableModel,_table)
+        self.result_tabs.currentChanged.connect(self._result_tab_changed)
         layout.addWidget(self.result_tabs,1)
         self.import_button.clicked.connect(self.import_file)
         self.analyze_button.clicked.connect(self.analyze)
@@ -160,13 +164,20 @@ class SubnetListPage(QWidget):
         self.shortcut.activated.connect(self.analyze)
         self._invalidate()
 
+    def _result_tab_changed(self, index):
+        planning=index>=2
+        self.summary.setVisible(not planning)
+        self.editor.setMinimumHeight(70 if planning else 100)
+        self.editor.setMaximumHeight(100 if planning else 150)
+
     def _invalidate(self):
         self.analysis = None
+        self.planning.clear_all()
         self.record_model.set_rows([])
         self.relation_model.set_rows([])
         self.copy_networks_button.setEnabled(False)
         self.copy_report_button.setEnabled(False)
-        self.summary.setText('等待检查。空行与注释不参与分析；清单不写入计算方案。')
+        self.summary.setText('清单可用于关系检查、空闲空间和 CIDR 整理；内容不写入计算方案。')
         self.source_label.setText('输入已修改，需重新检查；原始文件不会被修改。'
                                  if self.editor.toPlainText().strip() else '粘贴或导入后检查；原始文件不会被修改。')
         self.source_label.setToolTip('')
@@ -177,6 +188,7 @@ class SubnetListPage(QWidget):
         self.analyze_button.setEnabled(not busy)
         self.cancel_button.setVisible(busy)
         self.cancel_button.setEnabled(busy)
+        self.planning.refresh_buttons()
         self.busy_changed.emit(busy)
 
     def import_file(self):
@@ -199,6 +211,8 @@ class SubnetListPage(QWidget):
     def analyze(self):
         if self.service.busy:
             return
+        self.result_tabs.setCurrentIndex(0)
+        self._task = 'relations'
         source, tooltip = self.source_label.text(), self.source_label.toolTip()
         self._invalidate()
         if source.startswith('已导入'):
@@ -213,12 +227,37 @@ class SubnetListPage(QWidget):
         self.summary.setText('正在检查清单，可取消；不会修改计算方案或原始文件。')
         self.feedback.emit('正在后台检查 IPv6 清单…','info')
 
+    def start_planning(self, task):
+        if self.service.busy:
+            return
+        self.result_tabs.setCurrentIndex(2 if task=='free' else 3)
+        self._task=task
+        if task=='free':
+            self.planning.clear_free()
+        else:
+            self.planning.clear_aggregate()
+        try:
+            self.service.start(self.editor.toPlainText(),task,self.planning.parent_input.text())
+        except Exception as exc:
+            self.feedback.emit('无法开始规划：'+str(exc),'error')
+            return
+        self.planning.status(task).setText('正在后台规划，可点击停止图标取消…')
+        self._busy(True)
+        self.feedback.emit('正在后台计算空闲空间…' if task=='free' else '正在后台整理 CIDR…','info')
+
     def cancel(self):
         self.service.cancel()
         self.cancel_button.setEnabled(False)
-        self.summary.setText('正在取消清单检查…')
+        if self._task=='relations':
+            self.summary.setText('正在取消清单检查…')
+        else:
+            self.planning.status(self._task).setText('正在取消规划…')
 
     def _completed(self, outcome):
+        if self._task!='relations':
+            self.planning.completed(self._task,outcome)
+            self._busy(False)
+            return
         kind,value = outcome
         if kind=='ok':
             self.set_analysis(value)

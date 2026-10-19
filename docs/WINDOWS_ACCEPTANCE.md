@@ -1,8 +1,8 @@
-# V1.3 Windows 验收 / Windows Acceptance
+# V1.4 Windows 验收 / Windows Acceptance
 
-V1.3 增加 CIDR 清单导入、逐行校验、批量关系检查与报告复制。验证范围包括核心功能、Windows 实机稳定性、性能和打包程序；实际 Windows 验收结果由本机运行和人工确认记录。多级分配规划仍待后续实现。
+V1.4 增加父网段空闲空间、等价 CIDR 整理及透明关于图标。验证范围包括核心功能、Windows 实机稳定性、性能和打包程序；实际 Windows 验收结果由本机运行和人工确认记录。多级分配规划仍待后续实现。
 
-V1.3 adds CIDR-list import, line validation, batch relationships and report copying. Validation covers core functionality, Windows stability, performance, and packaged applications. Actual Windows acceptance is recorded after running the checks on Windows and completing the manual checks. Multi-level allocation remains future work.
+V1.4 adds parent-network free space, equivalent CIDR aggregation and a transparent About icon. Validation covers core functionality, Windows stability, performance, and packaged applications. Actual Windows acceptance is recorded after running the checks on Windows and completing the manual checks. Multi-level allocation remains future work.
 
 ## 自动检查 / Automated Checks
 
@@ -30,6 +30,7 @@ Automated checks open/close windows, switch themes, resize and minimize/restore.
 | 摘要复制 / Summary copying | 两种主题复制到记事本，检查网络、目标前缀、范围、精确容量和用途提示；编辑输入后复制旧摘要，重算后更新；非法重算禁用 / Paste in Notepad in both themes, verify exact data and guidance, edited-input snapshot behavior, valid update and invalid-input disabling | 待验收 / Pending |
 | 计算方案 / Calculation plans | 中文名称备注、最大空间末页、多选和范围高亮往返；损坏文件保留当前工作；文件锁定保存失败保留原文件；关闭和打开前保存／放弃／取消均正确 / Unicode metadata, maximum-space views, selections, corruption, locked files and unsaved prompts | 待验收 / Pending |
 | 子网清单 / Subnet lists | UTF-8／BOM 中文文件路径、错误行号、规范化与去重复制、重复／包含／相邻计数；5,000 条与海量关系明细上限；取消和退出安全；两种主题及最小窗口正常 / Check Unicode import, exact counts, bounded details, clipboard, cancellation, closing and themes | 待验收 / Pending |
+| 空闲空间与整理 / Planning | 检查空清单、完全占用、重复包含、越界拒绝、精确容量、整理覆盖不变、明细截断禁用复制、取消退出、浅深色透明关于图标 / Check empty/full occupancy, overlap, rejection, exact counts/coverage, bounded-copy protection, cancellation and transparent icon | 待验收 / Pending |
 | 关于与许可 / About and licenses | 顶部图标／F1 打开；四页完整；六份许可文档离线可读；版本正确；两种主题与缩放正常；Esc 关闭；不改变当前计算与方案 / Verify entry, pages, six offline documents, version, themes/scaling, Esc and retained calculation/plan | 待验收 / Pending |
 | 地址格式 / Address formats | 转换大写、展开、全零、全一和 IPv4 映射地址；逐项及全部粘贴到记事本，二进制完整 128 位 / Verify case, expansion, zero/max/mapped addresses, individual/all copy and exact 128-bit binary | 待验收 / Pending |
 | 双网段关系 / Network relationships | 检查相同、双向包含、相邻、独立、主机位规范化与非法输入；复制报告包含双方范围、精确重叠和间隔数 / Check all relationships, normalization, invalid inputs and complete report copying | 待验收 / Pending |

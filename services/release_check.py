@@ -222,6 +222,23 @@ class ReleaseCheck(QObject):
                 self.require(page.record_model.rowCount() == 5, '清单结果模型不完整')
                 self.require(len(result.normalized_text().splitlines()) == 3, '清单去重不正确')
                 self.checks.append('subnet_list_unicode_import_and_background_relations')
+                self.phase = 'planning_free'
+                page.editor.setPlainText('::/127\n::2/127')
+                page.planning.parent_input.setText('::/124')
+                page.start_planning('free')
+            elif self.phase == 'planning_free':
+                self.require(kind == 'ok', '后台空闲空间计算失败：'+str(result))
+                self.require(result.occupied_addresses == 4 and result.free_addresses == 12, '空闲容量不正确')
+                self.require(result.cidr_text() == '::4/126\n::8/125', '空闲 CIDR 覆盖不正确')
+                self.require(page.planning.copy_free_button.isEnabled(), '完整空闲结果无法复制')
+                self.checks.append('parent_free_space_exact_union_and_difference')
+                self.phase = 'planning_aggregate'
+                page.start_planning('aggregate')
+            elif self.phase == 'planning_aggregate':
+                self.require(kind == 'ok', '后台 CIDR 整理失败：'+str(result))
+                self.require(result.cidr_text() == '::/126' and result.address_count == 4, 'CIDR 等价整理不正确')
+                self.require(page.editor.toPlainText() == '::/127\n::2/127', 'CIDR 整理改写了原始输入')
+                self.checks.append('cidr_aggregation_preserves_coverage_and_input')
                 self.phase = 'list_cancel'
                 page.editor.setPlainText('\n'.join(['::/0']*5000))
                 page.analyze()

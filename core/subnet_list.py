@@ -102,7 +102,7 @@ class ListAnalysis:
         return '\n'.join(lines)
 
 
-def validate_list_text(text):
+def validate_list_text(text, *, allow_empty=False):
     if not isinstance(text, str):
         raise InputError('清单内容必须是文本。')
     try:
@@ -118,29 +118,35 @@ def validate_list_text(text):
         raise InputError(f'清单不能超过 {MAX_LIST_LINES:,} 个物理行。')
     entries = [(line, value.strip()) for line, value in enumerate(lines, 1)
                if value.strip() and not value.lstrip().startswith('#')]
-    if not entries:
+    if not entries and not allow_empty:
         raise InputError('请输入每行一个 IPv6 CIDR；空行和以 # 开头的注释会被忽略。')
     if len(entries) > MAX_LIST_RECORDS:
         raise InputError(f'每次最多检查 {MAX_LIST_RECORDS:,} 条网段，请拆分清单。')
     return entries
 
 
-def analyze_subnet_list(text, *, stop=None):
+def parse_subnet_records(text, *, stop=None, allow_empty=False):
     _check_stop(stop)
-    entries = validate_list_text(text)
     records = []
-    groups = defaultdict(list)
-    for line, value in entries:
+    for line, value in validate_list_text(text, allow_empty=allow_empty):
         _check_stop(stop)
         try:
             if len(value) > 200:
                 raise InputError('单条网段不能超过 200 个字符。')
             result = calculate(value, '128', preview_limit=0)
             record = ListRecord(line, value, result.network, result.normalized)
-            groups[result.network].append(line)
         except InputError as exc:
             record = ListRecord(line, value, error=str(exc))
         records.append(record)
+    return tuple(records)
+
+
+def analyze_subnet_list(text, *, stop=None):
+    records = parse_subnet_records(text, stop=stop)
+    groups = defaultdict(list)
+    for record in records:
+        if record.network is not None:
+            groups[record.network].append(record.line)
     details = []
     counts = dict(duplicate=0, contains=0, adjacent=0)
 

@@ -303,6 +303,107 @@ class QtWorkflowTests(unittest.TestCase):
         self.assertTrue(page.copy_report_button.isEnabled())
         self.assertIn('不代表整份清单通过',page.summary.text())
 
+    def plan_list(self, task, text='::/127\n::2/127', parent='::/124'):
+        page=self.window.subnet_list_page
+        page.editor.setPlainText(text)
+        page.planning.parent_input.setText(parent)
+        page.start_planning(task)
+        wait_until(lambda:not page.service.busy)
+        return page
+
+    def test_free_planning_counts_copy_and_parent_invalidation(self):
+        page=self.plan_list('free')
+        views=page.planning
+        self.assertEqual(views.free_result.free_addresses,12)
+        self.assertTrue(views.copy_free_button.isEnabled())
+        with patch.object(page.clipboard,'copy_text',return_value=True) as copied:
+            views.copy_free()
+            self.assertEqual(copied.call_args.args[0],'::4/126\n::8/125')
+            views.copy_report('free')
+            self.assertIn('全部空闲地址范围',copied.call_args.args[0])
+        views.parent_input.setText('::/123')
+        self.assertIsNone(views.free_result)
+        self.assertFalse(views.copy_free_button.isEnabled())
+
+    def test_aggregate_planning_copy_preserves_original_and_calculator(self):
+        before=self.window.result
+        page=self.plan_list('aggregate')
+        views=page.planning
+        self.assertEqual(views.aggregate_result.cidr_text(),'::/126')
+        self.assertEqual(page.editor.toPlainText(),'::/127\n::2/127')
+        self.assertIs(self.window.result,before)
+        with patch.object(page.clipboard,'copy_text',return_value=True) as copied:
+            views.copy_aggregate()
+            self.assertEqual(copied.call_args.args[0],'::/126')
+        page.editor.insertPlainText('bad')
+        self.assertIsNone(views.aggregate_result)
+        self.assertFalse(views.copy_aggregate_button.isEnabled())
+
+    def test_planning_error_strictness_and_recovery(self):
+        page=self.plan_list('free','::/0','::/64')
+        self.assertIsNone(page.planning.free_result)
+        self.assertIn('不完全位于',page.planning.free_status.text())
+        page=self.plan_list('aggregate','::/0\nbad')
+        self.assertIsNone(page.planning.aggregate_result)
+        self.assertIn('第 2 行',page.planning.aggregate_status.text())
+        page=self.plan_list('free','','::/0')
+        self.assertEqual(page.planning.free_result.free_addresses,2**128)
+
+    def test_free_truncated_results_disable_partial_cidr_copy(self):
+        from core.subnet_planning import free_space
+        from ipaddress import IPv6Address
+        text='\n'.join(f'{IPv6Address((index<<112)+1)}/128' for index in range(100))
+        page=self.plan_list('free',text,'::/0')
+        views=page.planning
+        self.assertFalse(views.free_result.complete)
+        self.assertFalse(views.copy_free_button.isEnabled())
+        self.assertTrue(views.copy_free_report_button.isEnabled())
+        self.assertEqual(views.free_model.rowCount(),5000)
+
+    def test_planning_cancel_and_window_close_wait_for_worker(self):
+        from core.subnet_list import ListCheckCancelled
+        def blocked(text,parent_text,stop):
+            stop.wait(2)
+            raise ListCheckCancelled()
+        page=self.window.subnet_list_page
+        page.editor.setPlainText('::/128')
+        with patch('services.subnet_list_service.free_space',side_effect=blocked):
+            page.start_planning('free')
+            self.assertTrue(page.service.busy)
+            self.assertTrue(page.planning.parent_input.isReadOnly())
+            self.window.close()
+            wait_until(lambda:not page.service.busy and not self.window.isVisible())
+        self.assertIsNone(page.planning.free_result)
+        self.assertIn('取消',page.planning.free_status.text())
+
+    def test_planning_both_themes_and_minimum_window(self):
+        page=self.plan_list('free')
+        page.start_planning('aggregate')
+        wait_until(lambda:not page.service.busy)
+        self.window.tabs.setCurrentWidget(page)
+        self.window.resize(900,620)
+        for theme in ('light','dark'):
+            self.application.theme_manager.apply(theme,persist=False)
+            for index in (2,3):
+                page.result_tabs.setCurrentIndex(index)
+                QApplication.processEvents()
+                self.assertLessEqual(page.result_tabs.geometry().bottom(),page.height())
+                self.assertTrue(page.result_tabs.currentWidget().isVisible())
+        self.assertIsNotNone(page.planning.free_result)
+        self.assertIsNotNone(page.planning.aggregate_result)
+
+    def test_about_icon_is_transparent_and_theme_aware(self):
+        for theme in ('light','dark'):
+            self.application.theme_manager.apply(theme,persist=False)
+            icon=self.window.about_button.icon().pixmap(52,52).toImage()
+            self.assertEqual(icon.pixelColor(5,5).alpha(),0)
+            self.assertEqual(icon.pixelColor(0,0).alpha(),0)
+        self.assertIn('F1',self.window.about_button.toolTip())
+        self.window.about_button.setFocus()
+        QTest.keyClick(self.window.about_button,Qt.Key.Key_Return)
+        self.assertTrue(self.window.about_dialog.isVisible())
+        self.window.about_dialog.close()
+
     def locate(self, text='90-210'):
         self.page.locator_mode_combo.setCurrentIndex(3)
         self.page.locator_input.setText(text)

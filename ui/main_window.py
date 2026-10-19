@@ -30,7 +30,7 @@ from ui.subnet_list_page import SubnetListPage
 from ui.export_controller import ExportController
 from ui.plan_controller import PlanController
 from ui.about_dialog import AboutDialog
-from ui.widgets import FeedbackLabel, ThemeButton, IconButton
+from ui.widgets import FeedbackLabel, ThemeButton, AboutButton
 
 
 class MainWindow(QMainWindow):
@@ -57,7 +57,7 @@ class MainWindow(QMainWindow):
         subtitle.setAlignment(Qt.AlignmentFlag.AlignCenter)
         heading = QHBoxLayout()
         heading.setContentsMargins(0, 0, 0, 0)
-        heading.addSpacing(80)
+        heading.addSpacing(82)
         heading.addWidget(title, 1)
         self.theme_manager = QApplication.instance().theme_manager
         self.theme_button = ThemeButton(self.theme_manager)
@@ -65,7 +65,7 @@ class MainWindow(QMainWindow):
         title_actions = QHBoxLayout()
         title_actions.setSpacing(6)
         title_actions.addWidget(self.theme_button)
-        self.about_button = IconButton('about_small', '关于程序、使用说明、第三方许可和法律责任（F1）')
+        self.about_button = AboutButton(self.theme_manager)
         self.about_button.clicked.connect(self.show_about)
         self.about_shortcut = QShortcut(QKeySequence('F1'), self)
         self.about_shortcut.activated.connect(self.show_about)

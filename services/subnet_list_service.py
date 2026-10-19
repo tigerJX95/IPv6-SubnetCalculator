@@ -18,6 +18,7 @@
 """有界 UTF-8 文件读取与可取消的后台清单检查。"""
 from threading import Event
 from PyQt6.QtCore import QObject, QThread, pyqtSignal
+from core.subnet_planning import free_space, aggregate_cidrs
 from core.ipv6_core import InputError
 from core.subnet_list import MAX_LIST_BYTES, validate_list_text, analyze_subnet_list, ListCheckCancelled
 
@@ -36,15 +37,24 @@ def load_subnet_list(path):
 
 
 class _ListThread(QThread):
-    def __init__(self, text, parent=None):
+    def __init__(self, text, parent=None, *, task='relations', parent_network=''):
         super().__init__(parent)
         self.text = text
+        self.task, self.parent_network = task, parent_network
         self.stop_event = Event()
         self.outcome = None
 
     def run(self):
         try:
-            self.outcome = ('ok', analyze_subnet_list(self.text, stop=self.stop_event))
+            if self.task=='relations':
+                result=analyze_subnet_list(self.text, stop=self.stop_event)
+            elif self.task=='free':
+                result=free_space(self.text,self.parent_network,stop=self.stop_event)
+            elif self.task=='aggregate':
+                result=aggregate_cidrs(self.text,stop=self.stop_event)
+            else:
+                raise InputError('未知的清单任务。')
+            self.outcome = ('ok',result)
         except ListCheckCancelled:
             self.outcome = ('cancel', None)
         except Exception as exc:
@@ -62,10 +72,10 @@ class SubnetListService(QObject):
     def busy(self):
         return self._thread is not None
 
-    def start(self, text):
+    def start(self, text, task='relations', parent_network=''):
         if self.busy:
             raise RuntimeError('清单检查正在进行。')
-        thread = _ListThread(text, self)
+        thread = _ListThread(text, self, task=task, parent_network=parent_network)
         self._thread = thread
         thread.finished.connect(self._finish)
         try:

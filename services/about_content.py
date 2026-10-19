@@ -56,7 +56,7 @@ def program_information():
 
 面向 Windows 的离线 IPv6 子网计算与地址分析工具。
 
-- **主要功能**：网络范围与容量计算、分页定位、方案保存与恢复、地址格式转换、双网段关系分析、已有 CIDR 清单导入与关系检查、TXT／Excel 导出。
+- **主要功能**：网络范围与容量计算、分页定位、方案保存与恢复、地址格式转换、双网段关系分析、已有 CIDR 清单检查、空闲空间、等价 CIDR 整理、TXT／Excel 导出。
 - **项目许可**：GNU GPL v3.0 或任何后续版本（GPL-3.0-or-later）。
 - **版权**：Copyright © 2026 IPv6SubnetCalculator contributors。
 - **致谢**：感谢 PyQt6、Qt 6 和 SIP 上游项目及其贡献者。

@@ -95,6 +95,45 @@ class IconButton(QToolButton):
             super().keyPressEvent(event)
 
 
+class AboutButton(QToolButton):
+    """与主题按钮一致的透明矢量图标，不使用带底纹的图块。"""
+    def __init__(self, manager, parent=None):
+        super().__init__(parent)
+        self.setObjectName('about_small')
+        self.setFixedSize(38,38)
+        self.setIconSize(QSize(26,26))
+        self.setToolTip('关于程序、使用说明、第三方许可和法律责任（F1）')
+        self.setAccessibleName(self.toolTip())
+        self.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
+        manager.changed.connect(self.refresh)
+        self.refresh()
+
+    def refresh(self, *_args):
+        pixmap=QPixmap(52,52)
+        pixmap.fill(Qt.GlobalColor.transparent)
+        painter=QPainter(pixmap)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+        painter.scale(2,2)
+        color=QColor(current_colors()['accent'])
+        painter.setPen(QPen(color,1.8,Qt.PenStyle.SolidLine,Qt.PenCapStyle.RoundCap))
+        painter.drawEllipse(QPointF(13,13),9,9)
+        painter.drawLine(QPointF(13,12),QPointF(13,18))
+        painter.drawLine(QPointF(11,18),QPointF(15,18))
+        painter.setBrush(color)
+        painter.setPen(Qt.PenStyle.NoPen)
+        painter.drawEllipse(QPointF(13,8.5),1.1,1.1)
+        painter.end()
+        self.setIcon(QIcon(pixmap))
+
+    def keyPressEvent(self,event):
+        if event.key() in (Qt.Key.Key_Return,Qt.Key.Key_Enter):
+            self.click()
+            event.accept()
+        else:
+            super().keyPressEvent(event)
+
+
 class ThemeButton(QToolButton):
     """A moon/sun button using vector painting and a keyboard shortcut."""
     def __init__(self, manager, parent=None):

@@ -1,4 +1,4 @@
-# 🌐 IPv6 Subnet Calculator V1.3
+# 🌐 IPv6 Subnet Calculator V1.4
 
 [简体中文](README.md) | **English**
 
@@ -38,18 +38,26 @@ IPv6SubnetCalculator is an offline IPv6 subnet calculator for Windows. It analyz
 - **Legal notice**: purpose, deployment responsibility, open-source rights, warranty and liability information consistent with applicable licenses.
 - **Reading**: selectable text, a resizable window, synchronized light/dark appearance, and help/license documents embedded in the executable.
 
-## 🆕 V1.3 Subnet List Import and Checks
+## 📋 Subnet List Import and Checks
 
 - **Existing networks**: paste text or import UTF-8 TXT/CIDR files (BOM accepted), one IPv6 CIDR per line. Blank lines and whole-line # comments are ignored.
 - **Line validation**: retains original line numbers/input and shows normalized CIDRs, host-bit adjustments and specific errors. Invalid lines are excluded from relationship analysis.
 - **Relationships**: exact duplicate, containment and adjacency pair counts. IPv6 CIDR overlap is either equality or containment; adjacency does not guarantee aggregation into one CIDR.
 - **Copying**: copy valid normalized CIDRs with duplicates removed in first-occurrence order, or copy a report with errors, exact totals and bounded relationship details. Deduplication neither removes contained subnets nor merges adjacent networks.
-- **Bounded processing**: up to 5,000 entries, 1 MiB and 20,000 physical lines per check. Background work can be cancelled. Details are limited to 1,000 pairs while totals remain exact.
+- **Bounded processing**: up to 5,000 validation entries, 1 MiB (1,048,576 bytes) and 20,000 physical lines including blanks/comments per check. Background work can be cancelled. Details are limited to 1,000 pairs while totals remain exact.
 - **Separate workspace**: list checks preserve calculator results/plans. List input, errors and reports are not stored in calculation plans; copy them to retain the work.
+
+## 🆕 V1.4 Free Space and Equivalent CIDR Aggregation
+
+- **Parent-network free space**: treat the list as occupied space within a parent CIDR. Show the occupied union, exact free address count and free CIDRs, without double-counting duplicates or containment.
+- **Strict validation**: all occupied entries must be valid and wholly inside the parent. An empty list represents no occupied space.
+- **Equivalent aggregation**: remove duplicates/covered subnets and merge only exactly mergeable ranges into a minimal CIDR set with identical coverage. Original input is retained.
+- **Copying and reports**: copy complete results or planning reports. Free-CIDR details are capped at 5,000; when truncated, complete-CIDR copying is disabled while reports retain all free address intervals and exact totals.
+- **Background and appearance**: both tasks can be cancelled and stale results are cleared on input changes. The About icon now uses transparent theme-aware lines with its tooltip/F1 entry retained.
 
 ## 📸 Screenshots
 
-Screenshot version: **V1.3**.
+Screenshot version: **V1.4**.
 
 ### Light Theme
 
@@ -65,6 +73,10 @@ Screenshot version: **V1.3**.
 
 ![Light List Relationships](docs/screenshots/list_relations_light.png)
 
+![Light Free Space](docs/screenshots/free_light.png)
+
+![Light CIDR Aggregation](docs/screenshots/aggregate_light.png)
+
 ### Dark Theme
 
 ![Dark Calculation page](docs/screenshots/calculation_dark.png)
@@ -79,9 +91,13 @@ Screenshot version: **V1.3**.
 
 ![Dark List Relationships](docs/screenshots/list_relations_dark.png)
 
+![Dark Free Space](docs/screenshots/free_dark.png)
+
+![Dark CIDR Aggregation](docs/screenshots/aggregate_dark.png)
+
 ## 📦 Download and Usage
 
-Download `IPv6SubnetCalculator_V1.3.exe` directly from Assets on GitHub [Releases](../../releases/latest). Run the downloaded executable; No additional runtime setup is required. Enter a network and target prefix, then click the calculation icon; the application switches to Results when complete.
+Download `IPv6SubnetCalculator_V1.4.exe` directly from Assets on GitHub [Releases](../../releases/latest). Run the downloaded executable; No additional runtime setup is required. Enter a network and target prefix, then click the calculation icon; the application switches to Results when complete.
 
 Press F1 or use the top-bar information icon for built-in help, license texts and legal notices.
 

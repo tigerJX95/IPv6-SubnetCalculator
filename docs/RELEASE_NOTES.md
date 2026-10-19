@@ -1,43 +1,43 @@
-# IPv6SubnetCalculator V1.3
+# IPv6SubnetCalculator V1.4
 
-## ✨ 子网清单导入与关系检查
+## ✨ 两项规划功能
 
-- 新增“子网清单”页，支持粘贴或导入 UTF-8 TXT／CIDR，保留原始行号，逐行显示规范化和错误。
-- 精确统计重复、包含及相邻关系；重复和包含均属于重叠，相邻不代表一定能够合并。
-- 支持复制有效、规范化、去重后的 CIDR，以及包含错误记录、精确总数与有限关系明细的报告。
-- 后台检查可取消；支持最多 5,000 条、1 MiB、20,000 个物理行。关系明细最多 1,000 对，总数不截断。
+- 新增父网段空闲空间：根据已有占用清单计算占用并集、空闲地址数量及最简空闲 CIDR，避免重复扣减。
+- 新增等价 CIDR 整理：移除重复／已覆盖网段并精确合并，地址覆盖集合保持不变。
+- 两项功能共用清单输入，后台执行、支持取消，提供完整结果及报告复制，不修改原始输入。
 
-## 🐛 状态与异常处理
+## 🐛 规划与复制保护
 
-- 错误行不参与关系分析，并明确提示结果仅覆盖有效项。
-- 输入修改后清空旧结果并禁用复制；取消、读取失败或线程异常可恢复操作。
-- 主程序退出时等待清单检查取消完成，保留现有计算与导出退出保护。
-- 保持计算方案格式兼容，清单内容不写入方案 JSON。
+- 非法记录阻止整次规划；空闲计算同时拒绝不完全位于父网段内的记录。
+- 空闲 CIDR 明细最多 5,000 条，总数及全部连续空闲范围不截断；明细截断时禁用完整 CIDR 复制。
+- 修改输入使旧结果失效；修改父网段只清空对应空闲结果。
+- 继续保持原方案格式兼容及后台任务退出保护。
 
-## 📸 文档与下载
+## 🎨 图标、说明与下载
 
-- 使用 V1.3 实际运行界面更新浅色与深色截图，并标明截图版本。
-- 更新中英文说明与内置帮助，下载链接统一使用 Releases 最新版入口。
-- 直接下载 `IPv6SubnetCalculator_V1.3.exe` 后运行；Git 标签使用 `v1.3`。
+- 关于图标去掉浅蓝底纹，改为透明、随主题调整颜色的线条图标，保留悬停提示与 F1。
+- 明确条数、总行数与字节大小的区别：1 MiB 为 1,048,576 字节。
+- 更新双语文档、离线帮助及 V1.4 实际浅深色界面截图。
+- 从 Releases 直接下载 `IPv6SubnetCalculator_V1.4.exe`；标签使用 `v1.4`。
 
 ---
 
-## ✨ Subnet List Import and Relationship Checks
+## ✨ Two Planning Features
 
-- Adds Subnet List: paste or import UTF-8 TXT/CIDR files, retaining original line numbers, normalized CIDRs and validation errors.
-- Counts duplicate, containment and adjacency pairs exactly. Equality and containment represent overlap; adjacency does not guarantee aggregation.
-- Copies valid normalized/deduplicated CIDRs or reports with errors, exact totals and bounded relationship details.
-- Runs cancellable background checks for up to 5,000 entries, 1 MiB and 20,000 physical lines. Details are capped at 1,000 pairs without truncating totals.
+- Adds parent-network free space: exact occupied union, free address counts and minimal free CIDRs without double-counting overlaps.
+- Adds equivalent CIDR aggregation: removes duplicate/covered networks and merges precisely without changing coverage.
+- Both share list input, run in a cancellable worker and provide result/report copying without rewriting input.
 
-## 🐛 State and Error Handling
+## 🐛 Planning and Copy Protection
 
-- Excludes invalid lines from relationships and states that results cover valid entries only.
-- Clears stale results after input changes; supports recovery after cancellation, read errors and worker failures.
-- Waits for list-check cancellation before closing, retaining existing export/plan protections.
-- Keeps the existing plan format compatible; list data is not saved in plan JSON.
+- Invalid entries reject planning; free-space checks also reject entries outside or broader than the parent.
+- Free CIDR details are capped at 5,000 while totals/all free intervals stay exact. Complete-CIDR copying is disabled when details are truncated.
+- Editing input invalidates old results; editing the parent clears only free-space results.
+- Retains plan-format compatibility and orderly worker shutdown.
 
-## 📸 Documentation and Downloads
+## 🎨 Appearance, Guidance and Downloads
 
-- Replaces light/dark previews with actual V1.3 interfaces and labels the screenshot version.
-- Updates bilingual documentation/offline help and uses the latest Releases download entry.
-- Download and run `IPv6SubnetCalculator_V1.3.exe` directly. Use the tag `v1.3`.
+- Replaces the tinted About tile with a transparent theme-aware line icon, retaining its tooltip and F1.
+- Clarifies entries, physical lines and byte size: 1 MiB is 1,048,576 bytes.
+- Updates bilingual/offline guidance and actual V1.4 light/dark previews.
+- Download `IPv6SubnetCalculator_V1.4.exe` from Releases directly; use tag `v1.4`.
