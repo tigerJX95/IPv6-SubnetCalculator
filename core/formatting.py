@@ -16,15 +16,16 @@
 # along with IPv6SubnetCalculator. If not, see <https://www.gnu.org/licenses/>.
 
 """不依赖界面框架的数字显示及导出格式校验。"""
+from core.localized_text import text as tx, join_text as jt
 from pathlib import Path
 
 
 def determine_export_format(path: Path, oversized: bool) -> str:
     suffix = path.suffix.lower()
     if suffix not in ('.xlsx', '.txt'):
-        raise ValueError('请选择 Excel（.xlsx）或 TXT（.txt）格式保存。')
+        raise ValueError(tx('请选择 Excel（.xlsx）或 TXT（.txt）格式保存。'))
     if oversized and suffix != '.txt':
-        raise ValueError('当前子网数量超过 Excel 容量限制，只能导出 TXT（.txt）。')
+        raise ValueError(tx('当前子网数量超过 Excel 容量限制，只能导出 TXT（.txt）。'))
     return suffix[1:]
 
 
@@ -33,10 +34,10 @@ def compact_count(number: int) -> str:
         exponent = len(str(number)) - 1
         divisor = 10**exponent
         scaled = (number * 100 + divisor // 2) // divisor
-        return f'{scaled // 100}.{scaled % 100:02d}×10^{exponent}'
-    for unit, divisor in (('京', 10**16), ('万亿', 10**12), ('亿', 10**8)):
+        return tx('{0}.{1:02d}×10^{2}', scaled // 100, scaled % 100, exponent)
+    for unit, divisor in ((tx('京'), 10**16), (tx('万亿'), 10**12), (tx('亿'), 10**8)):
         if number >= divisor:
             scaled = (number * 100 + divisor // 2) // divisor
             whole, fractional = divmod(scaled, 100)
-            return (str(whole) if fractional == 0 else f'{whole}.{fractional:02d}') + unit
-    return f'{number:,}'
+            return (str(whole) if fractional == 0 else tx('{0}.{1:02d}', whole, fractional)) + unit
+    return tx('{0:,}', number)

@@ -1,26 +1,26 @@
-# 国际化实施计划 / Internationalization Plan
+# V1.6 国际化实现 / Internationalization Implementation
 
-## 发布顺序 / Release sequence
+## 已实现 / Implemented
 
-- V1.5：完成方案拖放、输入错误提示和标准弹窗中文化，先进行 Windows 实机验收。
-- V1.6：以验收后的 V1.5 正式源码为基线，实现同一 Windows EXE 内置简体中文和 English。
-- V1.7：国际化后的布局、翻译完整性、兼容和状态恢复收敛；不为了版本数量增加功能。
+同一 EXE 内置简体中文与英语，地球菜单提供“简体中文 / English”。右上角顺序为语言、主题、关于。即时切换，保存 appearance/language 偏好，下次恢复；无效偏好回退简体中文。界面标题按语言显示，EXE 与仓库继续使用 IPv6SubnetCalculator 名称。
 
-V1.5 尚不提供语言切换。本文件记录已经确认的设计；V1.6 的实施以 V1.5 Windows 验收为前提。
-V1.5 has no language switch. V1.6 implementation follows V1.5 Windows acceptance.
+页面、工具提示、错误、状态、表头、标准弹窗及离线帮助覆盖双语。已打开的关于窗口保留标签、许可选择及阅读位置；许可原文不改。语言切换不重建页面、不调用业务计算、不重置模型，不触发组合框选择事件，因而保留结果、分页、选择、定位及规划状态。后台完成消息在 GUI 展示时使用当前语言。
 
-## 已确认的交互 / Confirmed behavior
+## 模块 / Modules
 
-右上角顺序为“语言 → 主题 → 关于”，语言入口采用透明地球图标及悬停提示。点击弹出“简体中文 / English”菜单，优先即时切换，无需重启；自动保存偏好，下次启动恢复。切换保留所有页面输入、参数、结果、当前页、选择、定位、清单与规划状态。
+- assets/i18n/app_en.ts：自有文本与格式模板，使用 Qt Linguist 维护。
+- assets/i18n/app_en.qm：由 Qt lrelease 编译，随 EXE 内置；常规构建无需安装翻译编辑工具。
+- assets/qtbase_zh_CN.qm：现有 Qt 中文标准控件资源；英语使用 Qt 原始英文。
+- services/language_service.py：QTranslator、QLocale、偏好及切换通知。
+- core/localized_text.py：不导入 Qt；文本保留原文和结构化参数，计算及 JSON 始终使用原文。仅展示时由翻译函数生成译文，用户原文作为参数保留，避免按词替换用户数据。
+- ui/localized_widgets.py：绑定源文本并更新现有控件属性；可编辑内容不绑定译文。组合框索引／数据与显示文字分离。
+- ui/standard_dialogs.py：当前语言的标准弹窗和文件选择器，保留默认安全按钮与用户输入文件名。
+- docs/about/USAGE_EN.md 与 LEGAL_EN.md：离线英文说明；许可文件保留原文。
 
-界面、图标悬停、弹窗、状态及错误信息一起切换。主标题为“IPv6 子网计算器”或“IPv6 Subnet Calculator”；EXE 与 GitHub 仓库继续使用 IPv6SubnetCalculator 标识。默认示例始终为 2026:1015:abcd::/48。
+## 维护与验证 / Maintenance and Validation
 
-## 技术边界 / Implementation boundaries
+修改译文后运行 `lrelease assets/i18n/app_en.ts -qm assets/i18n/app_en.qm`，提交 TS 与 QM。Qt Linguist/lrelease 为翻译维护工具，不是运行依赖，不加入 requirements。新增可见文字使用 text(source, *arguments)，保留模板参数，勿把用户字符串作为翻译键或根据译文判断业务分支。表格在切换时只通知表头／展示数据变化，不重置数据。
 
-采用 Qt Linguist、QTranslator 和 .ts/.qm 文件，并切换对应 QLocale；自有界面文本、动态格式模板与 Qt 标准控件分别维护。V1.5 已集中标准弹窗入口，并内置 Qt 中文翻译资源。后续译文仅改变展示，不修改计算逻辑、地址覆盖、精确整数及 JSON 方案结构；方案跨语言兼容。
+测试检查源模板与译文占位符、TS/QM 一致、语言偏好及重启恢复、非法偏好、保存失败、语言无关方案、精确整数、错误恢复、已有关于窗口、异步任务及最小窗口。Windows 人工验收、DPI、实际拖放与持续使用结果在完成后记录，不以 Linux offscreen 代替。
 
-切换时重新翻译现有对象，不销毁或重建工作页面。保留翻译器对象生命周期；更新静态控件与已有动态结果、打开的非模态窗口，定义后台任务完成时采用当前语言。用户名称、备注和输入原文不翻译，第三方许可保留原文。文本格式化和数值序列化分离，巨大整数不经浮点转换。
-
-## V1.6 验收 / Acceptance
-
-中英文全页面、弹窗、悬停与错误提示覆盖；切换前后数据及浏览状态一致；重启恢复语言；英文长文本在最小窗口及 Windows 常用缩放下可读；方案中英文往返、打包资源离线完整、后台取消退出及既有回归全部通过。语言保存失败应给出明确提示。
+V1.7 后续重点为国际化后的布局、翻译完整性和兼容收敛；按实际反馈调整，不为版本数量堆叠功能。

@@ -1,8 +1,8 @@
-# V1.5 Windows 验收 / Windows Acceptance
+# V1.6 Windows 验收 / Windows Acceptance
 
-V1.5 增加方案拖放、醒目输入错误与标准弹窗中文化。先完成本版 Windows 实机验收，再实施 V1.6 中英切换；设计见 I18N_PLAN.md。
+V1.6 增加中英即时切换、偏好恢复和英文离线帮助。需要在 Windows 中验证语言切换、显示缩放及打包资源，既有功能验收继续保留。
 
-V1.5 adds plan drops, visible input errors and Chinese standard dialogs. Complete Windows acceptance before V1.6 bilingual switching.
+V1.6 adds live bilingual switching, saved preferences and English offline help. Verify switching, DPI and packaged resources on Windows alongside existing workflows.
 
 ## 自动检查 / Automated Checks
 
@@ -22,6 +22,8 @@ Automated checks open/close windows, switch themes, resize and minimize/restore.
 
 | 场景 / Scenario | 验收内容 / Expected behavior | 结果 / Result |
 |---|---|---|
+| 中英切换 / Languages | 地球入口位置、两语言浅深主题、错误／悬停／弹窗／表格／帮助即时更新；保留结果、页码、选择、定位、清单、规划及关于阅读状态 / Verify all translated surfaces and retained work | 待验收 / Pending |
+| 重启与兼容 / Restart and compatibility | 重启恢复语言；中文名称备注及方案跨语言保存一致；后台任务完成采用当前语言；标准文件选择器输入文件名不变 / Verify persistence, data compatibility and asynchronous completion | 待验收 / Pending |
 | 方案拖放 / Plan drops | 中文路径 JSON 拖到标题、输入框、编辑区和表格；确认／取消及未保存的保存／不保存／取消；坏文件、多文件、文件夹和 TXT 明确拒绝；不改源文件，不额外执行计算或导出；后台任务时阻止 / Check whole-window drops, transaction safety and busy handling | 待验收 / Pending |
 | 输入提示 / Input feedback | 两种主题测试网络、目标前缀、地址工具、定位、范围、父网段及清单错误；红框、警示图标、加粗原因，编辑后恢复 / Verify visible errors and recovery in both themes | 待验收 / Pending |
 | 中文弹窗 / Chinese dialogs | 英文 Windows 显示语言下检查打开／保存、覆盖、未保存、错误、导出确认、文件浏览和右键菜单；所有标准按钮为中文 / Check standard dialog text/buttons with English Windows display language | 待验收 / Pending |

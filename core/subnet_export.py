@@ -17,6 +17,7 @@
 
 """使用有限内存导出 IPv6 子网，并在成功后替换目标文件。"""
 from __future__ import annotations
+from core.localized_text import text as tx
 
 from dataclasses import dataclass
 from pathlib import Path
@@ -45,7 +46,7 @@ def subnet_at(network: IPv6Network, target_prefix: int, index: int) -> IPv6Netwo
     validate_subnet_parameters(network, target_prefix)
     total = 1 << (target_prefix - network.prefixlen)
     if isinstance(index, bool) or not isinstance(index, int) or not 0 <= index < total:
-        raise IndexError('子网序号超出范围')
+        raise IndexError(tx('子网序号超出范围'))
     step = 1 << (128 - target_prefix)
     return IPv6Network((IPv6Address(int(network.network_address) + index * step), target_prefix))
 
@@ -55,11 +56,11 @@ def page_subnets(network: IPv6Network, target_prefix: int, page: int, page_size:
     if (isinstance(page, bool) or isinstance(page_size, bool) or
             not isinstance(page, int) or not isinstance(page_size, int) or
             page < 1 or page_size not in (25, 50, 100, 200)):
-        raise ValueError('分页参数不正确')
+        raise ValueError(tx('分页参数不正确'))
     total = 1 << (target_prefix - network.prefixlen)
     begin = (page - 1) * page_size
     if begin >= total:
-        raise ValueError('页码超出范围')
+        raise ValueError(tx('页码超出范围'))
     return [(i + 1, str(subnet_at(network, target_prefix, i))) for i in range(begin, min(begin + page_size, total))]
 
 
@@ -81,7 +82,7 @@ def _write_txt(file, network, prefix, total, stop, progress, start_index=0):
 
 def _write_xlsx(file, network, prefix, total, stop, progress, start_index=0):
     if total > XLSX_MAX_RECORDS:
-        raise ValueError('Excel 单工作表超出最大记录数量')
+        raise ValueError(tx('Excel 单工作表超出最大记录数量'))
     with zipfile.ZipFile(file, 'w', compression=zipfile.ZIP_DEFLATED, compresslevel=4, allowZip64=True) as z:
         z.writestr('[Content_Types].xml', '<?xml version="1.0" encoding="UTF-8"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/></Types>')
         z.writestr('_rels/.rels', '<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>')
@@ -121,15 +122,15 @@ def export_all(destination: str | Path, network: IPv6Network, target_prefix: int
     if (isinstance(start, bool) or isinstance(end, bool) or
         not isinstance(start, int) or not isinstance(end, int) or
         not 1 <= start <= end <= full_total):
-        raise ValueError('导出范围无效，请输入有效的起始和结束序号。')
+        raise ValueError(tx('导出范围无效，请输入有效的起始和结束序号。'))
     total = end - start + 1
     if format_type not in ('txt', 'xlsx'):
-        raise ValueError('不支持的导出格式')
+        raise ValueError(tx('不支持的导出格式'))
     if format_type == 'xlsx' and total > XLSX_MAX_RECORDS:
-        raise ValueError('超出 Excel 最大记录数，请使用 TXT 导出')
+        raise ValueError(tx('超出 Excel 最大记录数，请使用 TXT 导出'))
     path = Path(destination)
     if path.suffix.lower() != '.' + format_type:
-        raise ValueError('文件扩展名与导出格式不一致')
+        raise ValueError(tx('文件扩展名与导出格式不一致'))
     progress = progress or (lambda current, maximum: None)
     fd, temp = tempfile.mkstemp(prefix='.ipv6-export-', suffix='.'+format_type+'.tmp', dir=str(path.parent))
     try:

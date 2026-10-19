@@ -19,8 +19,9 @@
 import sys
 from pathlib import Path
 
-APP_VERSION = '1.5'
-APP_NAME = 'IPv6 子网计算器'
+APP_VERSION = '1.6'
+from core.localized_text import text as tx
+APP_NAME = tx('IPv6 子网计算器')
 DEFAULT_NETWORK = '2026:1015:abcd::/48'
 
 

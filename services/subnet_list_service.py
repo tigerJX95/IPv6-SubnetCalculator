@@ -16,6 +16,7 @@
 # along with IPv6SubnetCalculator. If not, see <https://www.gnu.org/licenses/>.
 
 """有界 UTF-8 文件读取与可取消的后台清单检查。"""
+from core.localized_text import text as tx, join_text as jt
 from threading import Event
 from PyQt6.QtCore import QObject, QThread, pyqtSignal
 from core.subnet_planning import free_space, aggregate_cidrs
@@ -27,11 +28,11 @@ def load_subnet_list(path):
     with open(path, 'rb') as stream:
         data = stream.read(MAX_LIST_BYTES+1)
     if len(data)>MAX_LIST_BYTES:
-        raise InputError('清单文件不能超过 1 MiB，请拆分后导入。')
+        raise InputError(tx('清单文件不能超过 1 MiB，请拆分后导入。'))
     try:
         text = data.decode('utf-8-sig')
     except UnicodeError as exc:
-        raise InputError('清单须为 UTF-8 文本（允许 BOM），请转换编码后重试。') from exc
+        raise InputError(tx('清单须为 UTF-8 文本（允许 BOM），请转换编码后重试。')) from exc
     validate_list_text(text)
     return text
 
@@ -53,7 +54,7 @@ class _ListThread(QThread):
             elif self.task=='aggregate':
                 result=aggregate_cidrs(self.text,stop=self.stop_event)
             else:
-                raise InputError('未知的清单任务。')
+                raise InputError(tx('未知的清单任务。'))
             self.outcome = ('ok',result)
         except ListCheckCancelled:
             self.outcome = ('cancel', None)
@@ -74,14 +75,14 @@ class SubnetListService(QObject):
 
     def start(self, text, task='relations', parent_network=''):
         if self.busy:
-            raise RuntimeError('清单检查正在进行。')
+            raise RuntimeError(tx('清单检查正在进行。'))
         thread = _ListThread(text, self, task=task, parent_network=parent_network)
         self._thread = thread
         thread.finished.connect(self._finish)
         try:
             thread.start()
             if not thread.isRunning() and not thread.isFinished():
-                raise RuntimeError('无法启动检查线程，请稍后重试。')
+                raise RuntimeError(tx('无法启动检查线程，请稍后重试。'))
         except Exception:
             self._thread = None
             thread.deleteLater()
@@ -95,7 +96,7 @@ class SubnetListService(QObject):
         thread = self._thread
         if thread is None:
             return
-        outcome = ('cancel', None) if thread.stop_event.is_set() else (thread.outcome or ('error', '检查未返回结果。'))
+        outcome = ('cancel', None) if thread.stop_event.is_set() else (thread.outcome or ('error', tx('检查未返回结果。')))
         self._thread = None
         thread.deleteLater()
         self.completed.emit(outcome)

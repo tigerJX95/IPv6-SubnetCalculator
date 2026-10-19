@@ -16,12 +16,13 @@
 # along with IPv6SubnetCalculator. If not, see <https://www.gnu.org/licenses/>.
 
 """结果页负责表格、分页、定位与选择；导出任务由外部协调。"""
+from ui.localized_widgets import QLabel, QLineEdit, QComboBox
+from core.localized_text import text as tx, join_text as jt
 from ui.standard_dialogs import QMessageBox
 from ui.input_feedback import bind_input, mark_invalid, clear_invalid
 from PyQt6.QtCore import Qt, pyqtSignal, QItemSelectionModel
 from PyQt6.QtGui import QKeySequence, QShortcut, QFontMetrics
-from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QTableView,
-                             QAbstractItemView, QHeaderView, QLineEdit, QComboBox)
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QTableView, QAbstractItemView, QHeaderView
 from core.ipv6_core import InputError
 from core.subnet_export import page_subnets
 from core.subnet_tools import LOCATOR_MODES, resolve_locator_range, summarize_selection, MAX_COPY_RECORDS
@@ -33,7 +34,7 @@ from ui.dialogs import RangeCopyDialog, SubnetDetailDialog
 
 
 class ResultsPage(QWidget):
-    feedback = pyqtSignal(str, str)
+    feedback = pyqtSignal(object, str)
     export_requested = pyqtSignal()
 
     def __init__(self, clipboard, parent=None):
@@ -53,11 +54,11 @@ class ResultsPage(QWidget):
 
         tools = QHBoxLayout()
         tools.setSpacing(10)
-        self.copy_selected_button = IconButton('copy', '复制选中子网（Ctrl+C）\n按序号顺序复制本页选择。')
-        self.copy_page_button = IconButton('copy_page', '复制本页全部子网\n无需先选中记录。')
-        self.copy_range_button = IconButton('copy_range', f'按序号范围复制子网\n单次最多 {MAX_COPY_RECORDS:,} 条。')
-        self.clear_selection_button = IconButton('clear_selection', '清除选择（Esc）\n保留定位范围高亮。')
-        self.export_button = IconButton('export', '导出全部子网或指定范围（TXT / Excel）\nExcel 最多 1,048,575 条，超出可使用 TXT。')
+        self.copy_selected_button = IconButton('copy', tx('复制选中子网（Ctrl+C）\n按序号顺序复制本页选择。'))
+        self.copy_page_button = IconButton('copy_page', tx('复制本页全部子网\n无需先选中记录。'))
+        self.copy_range_button = IconButton('copy_range', tx('按序号范围复制子网\n单次最多 {0:,} 条。', MAX_COPY_RECORDS))
+        self.clear_selection_button = IconButton('clear_selection', tx('清除选择（Esc）\n保留定位范围高亮。'))
+        self.export_button = IconButton('export', tx('导出全部子网或指定范围（TXT / Excel）\nExcel 最多 1,048,575 条，超出可使用 TXT。'))
         for widget in (self.copy_selected_button, self.copy_page_button, self.copy_range_button,
                        self.clear_selection_button):
             tools.addWidget(widget)
@@ -65,11 +66,11 @@ class ResultsPage(QWidget):
         tools.addWidget(self.export_button)
         layout.addLayout(tools)
 
-        self.selection_label = ClickableLabel('本页选中 0 条 · 地址总量 0')
+        self.selection_label = ClickableLabel(tx('本页选中 0 条 · 地址总量 0'))
         self.selection_label.setObjectName('Hint')
-        self.selection_label.setToolTip('点击复制完整精确统计。')
+        self.selection_label.setToolTip(tx('点击复制完整精确统计。'))
         self.selection_label.clicked.connect(self.copy_selection_statistics)
-        self.range_label = QLabel('定位范围：未设置')
+        self.range_label = QLabel(tx('定位范围：未设置'))
         self.range_label.setObjectName('Hint')
         self.range_label.setWordWrap(True)
         layout.addWidget(self.selection_label)
@@ -91,41 +92,41 @@ class ResultsPage(QWidget):
         self.table.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
         self.table.setColumnWidth(0, 130)
         self.table.setMinimumHeight(150)
-        self.table.setToolTip('Ctrl+单击多选，Shift+单击连续选择；Ctrl+A 全选本页，Ctrl+C 复制，Esc 清除选择。\n双击或按 Enter 查看子网详情。')
+        self.table.setToolTip(tx('Ctrl+单击多选，Shift+单击连续选择；Ctrl+A 全选本页，Ctrl+C 复制，Esc 清除选择。\n双击或按 Enter 查看子网详情。'))
         layout.addWidget(self.table, 1)
         self.table.selectionModel().selectionChanged.connect(self.refresh_statistics)
         self.table.doubleClicked.connect(self.show_detail)
 
         paging = QHBoxLayout()
         paging.setSpacing(7)
-        self.first_button = IconButton('first_small', '首页')
-        self.previous_button = IconButton('previous_small', '上一页')
-        self.next_button = IconButton('next_small', '下一页')
-        self.last_button = IconButton('last_small', '末页')
+        self.first_button = IconButton('first_small', tx('首页'))
+        self.previous_button = IconButton('previous_small', tx('上一页'))
+        self.next_button = IconButton('next_small', tx('下一页'))
+        self.last_button = IconButton('last_small', tx('末页'))
         for widget in (self.first_button, self.previous_button, self.next_button, self.last_button):
             paging.addWidget(widget)
         paging.addSpacing(9)
-        paging.addWidget(QLabel('页码：'))
+        paging.addWidget(QLabel(tx('页码：')))
         self.page_input = QLineEdit('1')
         bind_input(self.page_input)
         self.page_input.setMaxLength(42)
         self.page_input.setMinimumWidth(90)
         self.page_input.setMaximumWidth(220)
-        self.page_input.setToolTip('输入完整页码后按 Enter；支持巨大 IPv6 结果集。')
+        self.page_input.setToolTip(tx('输入完整页码后按 Enter；支持巨大 IPv6 结果集。'))
         paging.addWidget(self.page_input, 1)
-        self.jump_button = IconButton('jump_small', '跳转到指定页码（Enter）')
+        self.jump_button = IconButton('jump_small', tx('跳转到指定页码（Enter）'))
         paging.addWidget(self.jump_button)
         paging.addStretch()
-        paging.addWidget(QLabel('每页：'))
+        paging.addWidget(QLabel(tx('每页：')))
         self.page_size_combo = QComboBox()
         for size in (25, 50, 100, 200):
             self.page_size_combo.addItem(str(size), size)
         self.page_size_combo.setCurrentIndex(2)
         self.page_size_combo.setMinimumWidth(78)
-        self.page_size_combo.setToolTip('修改每页条数时，保留原页首子网所在位置。')
+        self.page_size_combo.setToolTip(tx('修改每页条数时，保留原页首子网所在位置。'))
         paging.addWidget(self.page_size_combo)
         layout.addLayout(paging)
-        self.page_label = ClickableLabel('暂无计算结果')
+        self.page_label = ClickableLabel(tx('暂无计算结果'))
         self.page_label.setObjectName('Hint')
         self.page_label.setAlignment(Qt.AlignmentFlag.AlignRight)
         self.page_label.clicked.connect(self.copy_page_statistics)
@@ -133,18 +134,18 @@ class ResultsPage(QWidget):
 
         locator = QHBoxLayout()
         locator.setSpacing(8)
-        locator.addWidget(QLabel('定位方式：'))
+        locator.addWidget(QLabel(tx('定位方式：')))
         self.locator_mode_combo = QComboBox()
         self.locator_mode_combo.addItems(LOCATOR_MODES)
         self.locator_mode_combo.setMinimumWidth(175)
-        self.locator_mode_combo.setToolTip('按 IPv6 地址、序号或对应范围定位。')
+        self.locator_mode_combo.setToolTip(tx('按 IPv6 地址、序号或对应范围定位。'))
         locator.addWidget(self.locator_mode_combo)
         self.locator_input = QLineEdit()
         bind_input(self.locator_input)
         self.locator_input.setMaxLength(250)
         locator.addWidget(self.locator_input, 1)
-        self.locator_button = IconButton('locate_small', '定位（Enter）\n范围高亮跨页保留，定位时只选中首条。')
-        self.clear_range_button = IconButton('clear_highlight_small', '清除定位高亮\n保留本页手动选择。')
+        self.locator_button = IconButton('locate_small', tx('定位（Enter）\n范围高亮跨页保留，定位时只选中首条。'))
+        self.clear_range_button = IconButton('clear_highlight_small', tx('清除定位高亮\n保留本页手动选择。'))
         locator.addWidget(self.locator_button)
         locator.addWidget(self.clear_range_button)
         layout.addLayout(locator)
@@ -192,8 +193,8 @@ class ResultsPage(QWidget):
             self.model.set_records([])
             self._updating = False
             self.page_input.setText('1')
-            self.page_label.setText('暂无计算结果')
-            self.page_label.setToolTip('计算后可查看并复制完整分页统计。')
+            self.page_label.setText(tx('暂无计算结果'))
+            self.page_label.setToolTip(tx('计算后可查看并复制完整分页统计。'))
             self._page_stats_full = ''
             self.refresh_statistics()
             self.update_actions()
@@ -231,23 +232,20 @@ class ResultsPage(QWidget):
                                     self.result.addresses_per_subnet if self.result else 0, self.locator_range)
         span = ''
         if stats.count:
-            span = (f' · 序号 {compact_count(stats.first)}' if stats.count == 1 else
-                    f' · 序号 {compact_count(stats.first)}～{compact_count(stats.last)}'
-                    f'（{"连续" if stats.contiguous else "非连续"}）')
-        self.selection_label.setText(f'本页选中 {stats.count:,} 条{span} · 地址总量 {compact_count(stats.address_count)}')
-        self._selection_stats_full = f'本页选中子网数：{stats.count:,}\n'
+            span = (tx(' · 序号 {0}', compact_count(stats.first)) if stats.count == 1 else
+                    tx(' · 序号 {0}～{1}（{2}）', compact_count(stats.first), compact_count(stats.last), tx('连续') if stats.contiguous else tx('非连续')))
+        self.selection_label.setText(tx('本页选中 {0:,} 条{1} · 地址总量 {2}', stats.count, span, compact_count(stats.address_count)))
+        self._selection_stats_full = tx('本页选中子网数：{0:,}\n', stats.count)
         if stats.count:
-            self._selection_stats_full += (f'首个选中序号：{stats.first:,}\n末个选中序号：{stats.last:,}\n'
-                                           f'选择连续性：{"连续" if stats.contiguous else "非连续"}\n')
-        self._selection_stats_full += f'选中子网地址总量：{stats.address_count:,}'
-        self.selection_label.setToolTip(self._selection_stats_full+'\n点击复制以上数据。')
+            self._selection_stats_full += (tx('首个选中序号：{0:,}\n末个选中序号：{1:,}\n选择连续性：{2}\n', stats.first, stats.last, tx('连续') if stats.contiguous else tx('非连续')))
+        self._selection_stats_full += tx('选中子网地址总量：{0:,}', stats.address_count)
+        self.selection_label.setToolTip(self._selection_stats_full+tx('\n点击复制以上数据。'))
         self.range_label.setText(
-            f'定位范围：共 {compact_count(stats.highlighted_total)} 条 · 本页高亮 {stats.highlighted_on_page:,} 条'
-            if self.locator_range else '定位范围：未设置')
+            tx('定位范围：共 {0} 条 · 本页高亮 {1:,} 条', compact_count(stats.highlighted_total), stats.highlighted_on_page)
+            if self.locator_range else tx('定位范围：未设置'))
         self.range_label.setToolTip(
-            f'定位序号：{self.locator_range[0]:,}～{self.locator_range[1]:,}\n'
-            f'范围总数：{stats.highlighted_total:,}\n本页高亮：{stats.highlighted_on_page:,}'
-            if self.locator_range else '高亮与手动选择分别统计。')
+            tx('定位序号：{0:,}～{1:,}\n范围总数：{2:,}\n本页高亮：{3:,}', self.locator_range[0], self.locator_range[1], stats.highlighted_total, stats.highlighted_on_page)
+            if self.locator_range else tx('高亮与手动选择分别统计。'))
         self.update_actions()
 
     def show_page(self, page):
@@ -259,9 +257,9 @@ class ResultsPage(QWidget):
                                self.locator_range)
         self._updating = False
         self.page_input.setText(str(page))
-        self.page_label.setText(f'第 {compact_count(page)} / {compact_count(self.total_pages)} 页 · 共 {compact_count(self.result.subnet_count)} 项')
-        self._page_stats_full = f'子网总数：{self.result.subnet_count:,}\n当前页码：{page:,}\n总页数：{self.total_pages:,}'
-        self.page_label.setToolTip(self._page_stats_full+'\n点击复制完整统计。')
+        self.page_label.setText(tx('第 {0} / {1} 页 · 共 {2} 项', compact_count(page), compact_count(self.total_pages), compact_count(self.result.subnet_count)))
+        self._page_stats_full = tx('子网总数：{0:,}\n当前页码：{1:,}\n总页数：{2:,}', self.result.subnet_count, page, self.total_pages)
+        self.page_label.setToolTip(self._page_stats_full+tx('\n点击复制完整统计。'))
         # 极大序号可手工拖宽或横向滚动，显示和复制均保留完整整数。
         width = min(470, max(115, QFontMetrics(data_font()).horizontalAdvance(
             str(self.model.records[-1][0]))+30))
@@ -285,22 +283,22 @@ class ResultsPage(QWidget):
             return
         text = self.page_input.text().strip()
         if not text.isascii() or not text.isdecimal() or len(text) > 42 or not 1 <= int(text) <= self.total_pages:
-            message=f'请输入 1 至 {self.total_pages:,} 之间的页码。'
+            message=tx('请输入 1 至 {0:,} 之间的页码。', self.total_pages)
             self.page_input.setText(str(self.page))
             mark_invalid(self.page_input,message)
-            self.feedback.emit('页码错误：'+message,'error')
-            QMessageBox.warning(self, '页码错误', message)
+            self.feedback.emit(tx('页码错误：')+message,'error')
+            QMessageBox.warning(self, tx('页码错误'), message)
             return
         clear_invalid(self.page_input)
         self.show_page(int(text))
 
     def normalize_locator(self):
-        if self.locator_mode_combo.currentText() in (LOCATOR_MODES[0], LOCATOR_MODES[2]):
+        if self.locator_mode_combo.sourceCurrentText() in (LOCATOR_MODES[0], LOCATOR_MODES[2]):
             self.locator_input.setText(self.locator_input.text().lower())
 
     def locator_mode_changed(self, *_):
-        hints = ('例如：2026:1015:abcd::1', '例如：30（序号从 1 开始）',
-                 '例如：2026:1015:abcd::1 - 2026:1015:abcd:2::1', '例如：1000-1500（包含起止序号）')
+        hints = (tx('例如：2026:1015:abcd::1'), tx('例如：30（序号从 1 开始）'),
+                 tx('例如：2026:1015:abcd::1 - 2026:1015:abcd:2::1'), tx('例如：1000-1500（包含起止序号）'))
         self.locator_input.clear()
         hint = hints[max(0, self.locator_mode_combo.currentIndex())]
         self.locator_input.setPlaceholderText(hint)
@@ -313,17 +311,17 @@ class ResultsPage(QWidget):
         self.normalize_locator()
         clear_invalid(self.locator_input)
         try:
-            first, last = resolve_locator_range(self.locator_mode_combo.currentText(), self.locator_input.text(),
+            first, last = resolve_locator_range(self.locator_mode_combo.sourceCurrentText(), self.locator_input.text(),
                                                 self.result.network, self.result.target_prefix)
         except InputError as exc:
             mark_invalid(self.locator_input,str(exc))
-            self.feedback.emit('定位失败：'+str(exc), 'error')
-            QMessageBox.warning(self, '定位失败', str(exc))
+            self.feedback.emit(tx('定位失败：')+str(exc), 'error')
+            QMessageBox.warning(self, tx('定位失败'), str(exc))
             return
         self.locator_range = (first, last)
         self.select_index(first)
-        self.feedback.emit(f'定位成功：第 {first:,} 个子网。' if first == last else
-                           f'已定位第 {first:,}～{last:,} 个子网，共 {last-first+1:,} 项；翻页仍保留范围高亮。', 'success')
+        self.feedback.emit(tx('定位成功：第 {0:,} 个子网。', first) if first == last else
+                           tx('已定位第 {0:,}～{1:,} 个子网，共 {2:,} 项；翻页仍保留范围高亮。', first, last, last - first + 1), 'success')
 
     def select_index(self, index):
         self.show_page((index-1)//self.page_size+1)
@@ -344,8 +342,8 @@ class ResultsPage(QWidget):
         self.table.clearSelection()
         self.refresh_statistics()
         if had_selection:
-            self.feedback.emit('已清除本页手动选择；定位范围高亮已保留。' if self.locator_range
-                               else '已清除本页手动选择。', 'info')
+            self.feedback.emit(tx('已清除本页手动选择；定位范围高亮已保留。') if self.locator_range
+                               else tx('已清除本页手动选择。'), 'info')
 
     def clear_locator_range(self):
         had_range = self.locator_range is not None
@@ -353,26 +351,26 @@ class ResultsPage(QWidget):
         self.model.set_locator_range(None)
         self.refresh_statistics()
         if had_range:
-            self.feedback.emit('已清除定位范围高亮；本页手动选择已保留。', 'info')
+            self.feedback.emit(tx('已清除定位范围高亮；本页手动选择已保留。'), 'info')
 
     def copy_selected(self):
         rows = self.selected_rows()
         if rows:
-            self.clipboard.copy_text('\n'.join(self.model.records[row][1] for row in rows),
-                                     f'已复制 {len(rows)} 个子网。', self)
+            self.clipboard.copy_text(jt('\n', (self.model.records[row][1] for row in rows)),
+                                     tx('已复制 {0} 个子网。', len(rows)), self)
 
     def copy_page(self):
         if self.result:
-            self.clipboard.copy_text('\n'.join(record[1] for record in self.model.records),
-                                     f'已复制 {len(self.model.records)} 个子网。', self)
+            self.clipboard.copy_text(jt('\n', (record[1] for record in self.model.records)),
+                                     tx('已复制 {0} 个子网。', len(self.model.records)), self)
 
     def copy_selection_statistics(self):
         if self.result:
-            self.clipboard.copy_text(self._selection_stats_full, '完整选择统计已复制到剪贴板。', self)
+            self.clipboard.copy_text(self._selection_stats_full, tx('完整选择统计已复制到剪贴板。'), self)
 
     def copy_page_statistics(self):
         if self.result:
-            self.clipboard.copy_text(self._page_stats_full, '完整分页统计已复制到剪贴板。', self)
+            self.clipboard.copy_text(self._page_stats_full, tx('完整分页统计已复制到剪贴板。'), self)
 
     def copy_range(self):
         if self.result:

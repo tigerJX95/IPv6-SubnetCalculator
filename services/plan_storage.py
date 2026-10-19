@@ -16,6 +16,7 @@
 # along with IPv6SubnetCalculator. If not, see <https://www.gnu.org/licenses/>.
 
 """UTF-8 JSON 方案读写；先校验再写入，成功后原子替换目标文件。"""
+from core.localized_text import text as tx, join_text as jt
 import json
 import os
 import tempfile
@@ -30,20 +31,20 @@ def _unique_object(pairs):
     result = {}
     for key, value in pairs:
         if key in result:
-            raise InputError('方案 JSON 包含重复字段：'+key)
+            raise InputError(tx('方案 JSON 包含重复字段：')+key)
         result[key] = value
     return result
 
 
 def _invalid_constant(value):
-    raise InputError('方案 JSON 包含无效数值：'+value)
+    raise InputError(tx('方案 JSON 包含无效数值：')+value)
 
 
 def load_plan(path):
     with Path(path).open('rb') as stream:
         data = stream.read(MAX_PLAN_BYTES+1)
     if len(data) > MAX_PLAN_BYTES:
-        raise InputError('方案文件超过 64 KiB，请选择计算方案 JSON，而不是子网列表。')
+        raise InputError(tx('方案文件超过 64 KiB，请选择计算方案 JSON，而不是子网列表。'))
     try:
         payload = json.loads(data.decode('utf-8-sig'), object_pairs_hook=_unique_object,
                              parse_constant=_invalid_constant)
@@ -51,13 +52,13 @@ def load_plan(path):
     except (UnicodeError, ValueError, RecursionError) as exc:
         if isinstance(exc, InputError):
             raise
-        raise InputError('方案文件不是有效的 UTF-8 JSON。') from exc
+        raise InputError(tx('方案文件不是有效的 UTF-8 JSON。')) from exc
 
 
 def save_plan(path, plan):
     data = (json.dumps(plan_to_payload(plan), ensure_ascii=False, indent=2, allow_nan=False)+'\n').encode('utf-8')
     if len(data) > MAX_PLAN_BYTES:
-        raise InputError('方案文件内容过大，请缩短名称或备注。')
+        raise InputError(tx('方案文件内容过大，请缩短名称或备注。'))
     path = Path(path)
     fd, temporary = tempfile.mkstemp(prefix='.ipv6-plan-', suffix='.json', dir=str(path.parent))
     try:

@@ -16,6 +16,7 @@
 # along with IPv6SubnetCalculator. If not, see <https://www.gnu.org/licenses/>.
 
 """后台导出生命周期。工作线程不接触窗口，计数保持 Python 整数精度。"""
+from core.localized_text import text as tx, join_text as jt
 from threading import Event
 from time import monotonic
 from PyQt6.QtCore import QObject, QThread, pyqtSignal
@@ -67,7 +68,7 @@ class ExportService(QObject):
 
     def start(self, path, result, fmt, start, end):
         if self.busy:
-            raise RuntimeError('已有导出任务正在运行。')
+            raise RuntimeError(tx('已有导出任务正在运行。'))
         thread = _ExportThread(path, result, fmt, start, end, self)
         self._thread = thread
         thread.progress.connect(self.progress)
@@ -76,7 +77,7 @@ class ExportService(QObject):
             thread.start()
             # Qt may report OS thread creation failure without raising Python exceptions.
             if not thread.isRunning() and not thread.isFinished():
-                raise RuntimeError('无法启动导出线程，请稍后重试。')
+                raise RuntimeError(tx('无法启动导出线程，请稍后重试。'))
         except Exception:
             self._thread = None
             thread.deleteLater()
@@ -90,7 +91,7 @@ class ExportService(QObject):
         thread = self._thread
         if thread is None:
             return
-        outcome = thread.outcome or ('error', '导出线程未返回结果，请重试。')
+        outcome = thread.outcome or ('error', tx('导出线程未返回结果，请重试。'))
         self._thread = None
         thread.deleteLater()
         self.completed.emit(outcome)

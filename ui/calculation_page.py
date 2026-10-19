@@ -16,10 +16,11 @@
 # along with IPv6SubnetCalculator. If not, see <https://www.gnu.org/licenses/>.
 
 """计算页：参数输入与结果展示，不执行导出或管理其他页面。"""
+from ui.localized_widgets import QGroupBox, QLabel, QLineEdit, QComboBox, QPlainTextEdit
+from core.localized_text import text as tx, join_text as jt
 from ipaddress import IPv6Address
 from PyQt6.QtCore import Qt, pyqtSignal
-from PyQt6.QtWidgets import (QWidget, QScrollArea, QVBoxLayout, QGridLayout,
-                             QHBoxLayout, QGroupBox, QLabel, QLineEdit, QComboBox, QPlainTextEdit)
+from PyQt6.QtWidgets import QWidget, QScrollArea, QVBoxLayout, QGridLayout, QHBoxLayout
 from app_info import DEFAULT_NETWORK
 from core.ipv6_core import common_target_prefixes, prefix_analysis, subnet_count_description
 from core.address_usage import describe_network
@@ -31,7 +32,7 @@ from ui.widgets import IconButton, value_label
 
 class CalculationPage(QWidget):
     calculate_requested = pyqtSignal()
-    summary_copy_requested = pyqtSignal(str)
+    summary_copy_requested = pyqtSignal(object)
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -50,19 +51,19 @@ class CalculationPage(QWidget):
         scroll.setWidget(content)
         layout.addWidget(scroll)
 
-        form = QGroupBox('计算参数')
+        form = QGroupBox(tx('计算参数'))
         grid = QGridLayout(form)
         grid.setHorizontalSpacing(18)
         grid.setVerticalSpacing(9)
         grid.setColumnStretch(0, 3)
         grid.setColumnStretch(1, 1)
-        grid.addWidget(QLabel('IPv6 网络地址及前缀'), 0, 0)
-        grid.addWidget(QLabel('目标子网前缀'), 0, 1)
+        grid.addWidget(QLabel(tx('IPv6 网络地址及前缀')), 0, 0)
+        grid.addWidget(QLabel(tx('目标子网前缀')), 0, 1)
         self.network_input = QLineEdit(DEFAULT_NETWORK)
         self.network_input.setObjectName('network_input')
         self.network_input.setFont(data_font())
         self.network_input.setMaxLength(200)
-        self.network_input.setToolTip('填写 IPv6 网络地址及 CIDR 前缀，例如 2026:1015:abcd::/48。')
+        self.network_input.setToolTip(tx('填写 IPv6 网络地址及 CIDR 前缀，例如 2026:1015:abcd::/48。'))
         grid.addWidget(self.network_input, 1, 0)
         prefix_area = QHBoxLayout()
         self.target_input = QLineEdit('64')
@@ -70,53 +71,53 @@ class CalculationPage(QWidget):
         self.target_input.setFont(data_font())
         self.target_input.setMaxLength(3)
         self.target_input.setMinimumWidth(55)
-        self.target_input.setToolTip('输入 0～128 的目标前缀，不需要 /，且不得小于原网络前缀。')
+        self.target_input.setToolTip(tx('输入 0～128 的目标前缀，不需要 /，且不得小于原网络前缀。'))
         self.prefix_shortcuts = QComboBox()
         self.prefix_shortcuts.setMinimumWidth(110)
-        self.prefix_shortcuts.setToolTip('选择适合当前网络的常用目标前缀，并立即计算。')
+        self.prefix_shortcuts.setToolTip(tx('选择适合当前网络的常用目标前缀，并立即计算。'))
         prefix_area.addWidget(self.target_input, 1)
         prefix_area.addWidget(self.prefix_shortcuts)
         grid.addLayout(prefix_area, 1, 1)
-        self.calculate_button = IconButton('calculate', '开始计算（输入框内按 Enter）')
+        self.calculate_button = IconButton('calculate', tx('开始计算（输入框内按 Enter）'))
         self.calculate_button.clicked.connect(self.calculate_requested)
         actions = QHBoxLayout()
         actions.addWidget(self.calculate_button)
-        self.save_plan_button = IconButton('save_plan', '保存计算方案（Ctrl+S）\n保存最后一次计算、名称备注及当前浏览位置。\n另存为：Ctrl+Shift+S。')
+        self.save_plan_button = IconButton('save_plan', tx('保存计算方案（Ctrl+S）\n保存最后一次计算、名称备注及当前浏览位置。\n另存为：Ctrl+Shift+S。'))
         self.save_plan_button.setEnabled(False)
-        self.open_plan_button = IconButton('open_plan', '打开计算方案（Ctrl+O）\n校验 JSON 后恢复计算及浏览位置。')
+        self.open_plan_button = IconButton('open_plan', tx('打开计算方案（Ctrl+O）\n校验 JSON 后恢复计算及浏览位置。'))
         actions.addWidget(self.save_plan_button)
         actions.addWidget(self.open_plan_button)
         actions.addStretch()
         grid.addLayout(actions, 2, 0, 1, 2)
         body.addWidget(form)
 
-        plan_box = QGroupBox('计算方案')
+        plan_box = QGroupBox(tx('计算方案'))
         plan_grid = QGridLayout(plan_box)
-        plan_grid.addWidget(QLabel('方案名称：'), 0, 0)
+        plan_grid.addWidget(QLabel(tx('方案名称：')), 0, 0)
         self.plan_name_input = QLineEdit()
         self.plan_name_input.setMaxLength(80)
-        self.plan_name_input.setPlaceholderText('例如：办公网络地址规划')
+        self.plan_name_input.setPlaceholderText(tx('例如：办公网络地址规划'))
         plan_grid.addWidget(self.plan_name_input, 0, 1)
-        plan_grid.addWidget(QLabel('备注：'), 1, 0, alignment=Qt.AlignmentFlag.AlignTop)
+        plan_grid.addWidget(QLabel(tx('备注：')), 1, 0, alignment=Qt.AlignmentFlag.AlignTop)
         self.plan_notes_input = QPlainTextEdit()
-        self.plan_notes_input.setPlaceholderText('记录用途、分配约定或后续事项（最多 2,000 字）')
+        self.plan_notes_input.setPlaceholderText(tx('记录用途、分配约定或后续事项（最多 2,000 字）'))
         self.plan_notes_input.setMaximumHeight(82)
         self.plan_notes_input.setMinimumHeight(62)
         plan_grid.addWidget(self.plan_notes_input, 1, 1)
-        self.plan_file_label = QLabel('方案文件：未保存')
+        self.plan_file_label = QLabel(tx('方案文件：未保存'))
         self.plan_file_label.setTextFormat(Qt.TextFormat.PlainText)
         self.plan_file_label.setObjectName('Reference')
         self.plan_file_label.setWordWrap(True)
         plan_grid.addWidget(self.plan_file_label, 2, 0, 1, 2)
         body.addWidget(plan_box)
 
-        summary = QGroupBox('网络计算摘要')
+        summary = QGroupBox(tx('网络计算摘要'))
         summary_grid = QGridLayout(summary)
         summary_grid.setHorizontalSpacing(16)
         summary_grid.setVerticalSpacing(11)
         summary_grid.setColumnStretch(1, 1)
         self.copy_summary_button = IconButton('copy',
-            '复制计算摘要\n复制当前显示的计算结果及地址用途提示；修改输入后需重新计算。')
+            tx('复制计算摘要\n复制当前显示的计算结果及地址用途提示；修改输入后需重新计算。'))
         self.copy_summary_button.setObjectName('copy_calculation_summary')
         self.copy_summary_button.setEnabled(False)
         self.copy_summary_button.clicked.connect(self.copy_summary)
@@ -124,21 +125,21 @@ class CalculationPage(QWidget):
                                alignment=Qt.AlignmentFlag.AlignTop)
         self.fields = {}
         for row, (label, key) in enumerate((
-                ('网络地址', 'network'), ('网络起始地址', 'start'), ('网络结束地址', 'end'),
-                ('可划分子网数', 'count'), ('每个子网地址数', 'capacity'), ('新增子网位数', 'bits'))):
+                (tx('网络地址'), 'network'), (tx('网络起始地址'), 'start'), (tx('网络结束地址'), 'end'),
+                (tx('可划分子网数'), 'count'), (tx('每个子网地址数'), 'capacity'), (tx('新增子网位数'), 'bits'))):
             summary_grid.addWidget(QLabel(label+'：'), row, 0, alignment=Qt.AlignmentFlag.AlignTop)
             value = value_label()
             summary_grid.addWidget(value, row, 1)
             self.fields[key] = value
         body.addWidget(summary)
 
-        usage = QGroupBox('地址类型与部署提示')
+        usage = QGroupBox(tx('地址类型与部署提示'))
         usage_layout = QVBoxLayout(usage)
         usage_layout.setSpacing(7)
         self.usage_type = QLabel('—')
         self.usage_type.setObjectName('UsageType')
         self.usage_type.setWordWrap(True)
-        self.usage_guidance = QLabel('计算后显示网络地址用途与部署限制。')
+        self.usage_guidance = QLabel(tx('计算后显示网络地址用途与部署限制。'))
         self.usage_guidance.setObjectName('UsageGuidance')
         self.usage_guidance.setWordWrap(True)
         self.usage_reference = QLabel()
@@ -178,9 +179,9 @@ class CalculationPage(QWidget):
                 except ValueError:
                     pass
         self.prefix_shortcuts.clear()
-        self.prefix_shortcuts.addItem('常用前缀', None)
+        self.prefix_shortcuts.addItem(tx('常用前缀'), None)
         for prefix in choices:
-            self.prefix_shortcuts.addItem(f'/{prefix}', prefix)
+            self.prefix_shortcuts.addItem(tx('/{0}', prefix), prefix)
         self.prefix_shortcuts.setEnabled(bool(choices))
 
     def _choose_prefix(self, index):
@@ -205,15 +206,15 @@ class CalculationPage(QWidget):
             for label in self.fields.values():
                 label.setText('—')
             self.usage_type.setText('—')
-            self.usage_guidance.setText('计算后显示网络地址用途与部署限制。')
+            self.usage_guidance.setText(tx('计算后显示网络地址用途与部署限制。'))
             self.usage_reference.clear()
             return
         values = dict(network=str(result.network), start=str(result.start_address),
                       end=str(result.end_address), count=subnet_count_description(result),
-                      capacity=f'{result.addresses_per_subnet:,}', bits=f'{prefix_analysis(result)} 位')
+                      capacity=tx('{0:,}', result.addresses_per_subnet), bits=tx('{0} 位', prefix_analysis(result)))
         for key, text in values.items():
             self.fields[key].setText(text)
         usage = describe_network(result.network)
-        self.usage_type.setText('地址类型：'+usage.name)
+        self.usage_type.setText(tx('地址类型：')+usage.name)
         self.usage_guidance.setText(usage.guidance)
-        self.usage_reference.setText('规范参考：'+usage.reference)
+        self.usage_reference.setText(tx('规范参考：')+usage.reference)

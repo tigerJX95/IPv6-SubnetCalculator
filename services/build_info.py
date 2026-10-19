@@ -16,6 +16,7 @@
 # along with IPv6SubnetCalculator. If not, see <https://www.gnu.org/licenses/>.
 
 """运行源码与资源的构建指纹，不包含用户配置、报告或测试输出。"""
+from core.localized_text import text as tx, join_text as jt
 import hashlib
 import json
 import sys
@@ -42,6 +43,6 @@ def current_build_info():
     if getattr(sys, 'frozen', False):
         payload = json.loads(resource_path('build_manifest.json').read_text(encoding='utf-8'))
         if payload.get('app_version') != APP_VERSION or not isinstance(payload.get('source_sha256'), str):
-            raise ValueError('构建清单的版本或内容无效，请使用 build.cmd 重新构建。')
+            raise ValueError(tx('构建清单的版本或内容无效，请使用 build.cmd 重新构建。'))
         return payload
     return dict(app_version=APP_VERSION, source_sha256=source_digest())

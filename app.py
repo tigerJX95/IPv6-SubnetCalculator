@@ -31,14 +31,15 @@ def create_application(argv=None, settings=None):
     application = QApplication(sys.argv if argv is None else argv)
     application.setApplicationName(APP_NAME)
     application.setApplicationVersion(APP_VERSION)
-    from ui.standard_dialogs import install_chinese_dialogs
-    install_chinese_dialogs(application)
     application.setStyle('Fusion')
     font = application_font()
     application.setFont(font)
     QToolTip.setFont(font)
     application.setWindowIcon(QIcon(str(resource_path('app.ico'))))
     application.theme_manager = ThemeManager(application, settings)
+    from services.language_service import LanguageManager
+    application.language_manager = LanguageManager(application,application.theme_manager.settings)
+    application.qt_chinese_translator = application.language_manager.chinese
     return application
 
 

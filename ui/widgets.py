@@ -16,11 +16,13 @@
 # along with IPv6SubnetCalculator. If not, see <https://www.gnu.org/licenses/>.
 
 """共用图标按钮、可复制统计标签和反馈显示。"""
+from ui.localized_widgets import QToolButton, QLabel
+from core.localized_text import text as tx, join_text as jt, Text
 from math import cos, sin, pi
 from functools import lru_cache
 from PyQt6.QtCore import Qt, QSize, QEvent, QPointF, pyqtSignal
 from PyQt6.QtGui import QIcon, QImage, QPixmap, QColor, QPainter, QPen
-from PyQt6.QtWidgets import QToolButton, QLabel, QApplication
+from PyQt6.QtWidgets import QApplication, QMenu
 from app_info import resource_path
 from ui.fonts import data_font
 from ui.theme import current_colors
@@ -45,17 +47,17 @@ class IconButton(QToolButton):
     def __init__(self, name, tooltip, parent=None):
         super().__init__(parent)
         self.asset_name = name
-        self._icons = {state: QIcon(str(resource_path(f'assets/{name}_{state}.png')))
+        self._icons = {state: QIcon(str(resource_path(tx('assets/{0}_{1}.png', name, state))))
                        for state in ('normal', 'hover', 'disabled')}
         self._dark_icons = {}
         for state in self._icons:
-            pixmap = dark_icon(resource_path(f'assets/{name}_{state}.png'), state)
+            pixmap = dark_icon(resource_path(tx('assets/{0}_{1}.png', name, state)), state)
             icon = QIcon(pixmap)
             icon.addPixmap(pixmap, QIcon.Mode.Disabled)
             self._dark_icons[state] = icon
         self._hovered = False
         self.setToolTip(tooltip)
-        self.setAccessibleName(tooltip.split('\n')[0])
+        self.setAccessibleName(tooltip.line() if isinstance(tooltip,Text) else tooltip.split("\n")[0])
         self.setObjectName(name)
         size = 34 if name.endswith('_small') else 44
         self.setIconSize(QSize(size, size))
@@ -102,8 +104,8 @@ class AboutButton(QToolButton):
         self.setObjectName('about_small')
         self.setFixedSize(38,38)
         self.setIconSize(QSize(26,26))
-        self.setToolTip('关于程序、使用说明、第三方许可和法律责任（F1）')
-        self.setAccessibleName(self.toolTip())
+        self.setToolTip(tx('关于程序、使用说明、第三方许可和法律责任（F1）'))
+        self.setAccessibleName(self.sourceToolTip())
         self.setCursor(Qt.CursorShape.PointingHandCursor)
         self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
         manager.changed.connect(self.refresh)
@@ -150,7 +152,7 @@ class ThemeButton(QToolButton):
 
     def refresh(self, *_args):
         dark = self.manager.name == 'dark'
-        text = f'当前：{"深色" if dark else "浅色"}主题\n切换到{"浅色" if dark else "深色"}主题（Ctrl+Shift+T）'
+        text = tx('当前：{0}主题\n切换到{1}主题（Ctrl+Shift+T）', tx('深色') if dark else tx('浅色'), tx('浅色') if dark else tx('深色'))
         self.setToolTip(text)
         self.setAccessibleName(text.replace('\n', '，'))
         pixmap = QPixmap(52, 52)
@@ -212,7 +214,7 @@ class FeedbackLabel(QLabel):
         self.setWordWrap(True)
         self.setMinimumHeight(30)
         self.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
-        self.set_message('输入参数后点击“开始计算”。')
+        self.set_message(tx('输入参数后点击“开始计算”。'))
 
     def set_message(self, text, severity='info'):
         self.setText(('⚠ '+text) if severity == 'error' else text)
@@ -229,3 +231,51 @@ def value_label(text='—', parent=None):
     label.setWordWrap(True)
     label.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
     return label
+
+
+class LanguageButton(QToolButton):
+    """透明地球图标；菜单使用语言自称，切换不重建任何工作页。"""
+    def __init__(self,manager,theme_manager,parent=None):
+        super().__init__(parent)
+        self.manager=manager
+        self.setObjectName('language_toggle')
+        self.setFixedSize(38,38)
+        self.setIconSize(QSize(26,26))
+        self.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
+        self.setToolTip(tx('语言：简体中文 / English'))
+        self.setAccessibleName(tx('语言：简体中文 / English'))
+        self.menu=QMenu(self)
+        self.actions_by_language={}
+        for code,label in (('zh_CN','简体中文'),('en_US','English')):
+            action=self.menu.addAction(label)
+            action.setCheckable(True)
+            action.triggered.connect(lambda checked=False,code=code:self.choose(code))
+            self.actions_by_language[code]=action
+        self.setMenu(self.menu)
+        self.setPopupMode(QToolButton.ToolButtonPopupMode.InstantPopup)
+        manager.changed.connect(self.refresh)
+        theme_manager.changed.connect(self.refresh)
+        self.refresh()
+
+    def choose(self,name):
+        if name==self.manager.name:
+            self.refresh()
+            return
+        saved=self.manager.apply(name)
+        if not saved:
+            window=self.window()
+            if hasattr(window,'feedback'):
+                window.feedback.set_message(tx('语言已切换，但无法保存偏好，下次启动可能恢复默认语言。'),'error')
+
+    def refresh(self,*_):
+        for code,action in self.actions_by_language.items():action.setChecked(code==self.manager.name)
+        pixmap=QPixmap(52,52);pixmap.fill(Qt.GlobalColor.transparent)
+        painter=QPainter(pixmap);painter.setRenderHint(QPainter.RenderHint.Antialiasing);painter.scale(2,2)
+        painter.setPen(QPen(QColor(current_colors()['accent']),1.5))
+        painter.drawEllipse(QPointF(13,13),9,9)
+        painter.drawEllipse(QPointF(13,13),4.2,9)
+        painter.drawLine(QPointF(4,13),QPointF(22,13))
+        painter.drawLine(QPointF(6,8),QPointF(20,8))
+        painter.drawLine(QPointF(6,18),QPointF(20,18))
+        painter.end();self.setIcon(QIcon(pixmap))

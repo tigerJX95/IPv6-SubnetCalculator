@@ -16,6 +16,7 @@
 # along with IPv6SubnetCalculator. If not, see <https://www.gnu.org/licenses/>.
 
 """窗口内文件拖放只导入单个本地方案；文本编辑拖放保持原行为。"""
+from core.localized_text import text as tx, join_text as jt
 from pathlib import Path
 from PyQt6.QtCore import QObject, QEvent, QTimer, Qt
 from PyQt6.QtWidgets import QApplication, QWidget
@@ -57,15 +58,15 @@ class PlanDropController(QObject):
     def import_urls(self, urls):
         try:
             if len(urls)!=1:
-                raise InputError('一次只能拖入一个计算方案文件。')
+                raise InputError(tx('一次只能拖入一个计算方案文件。'))
             if not urls[0].isLocalFile():
-                raise InputError('只支持本地计算方案文件，不支持网络链接。')
+                raise InputError(tx('只支持本地计算方案文件，不支持网络链接。'))
             path=Path(urls[0].toLocalFile())
             if not path.is_file():
-                raise InputError('请拖入一个现有文件，不支持文件夹。')
+                raise InputError(tx('请拖入一个现有文件，不支持文件夹。'))
             if path.suffix.lower()!='.json':
-                raise InputError('拖放仅支持 .json 计算方案；TXT／CIDR 请在子网清单页导入。')
+                raise InputError(tx('拖放仅支持 .json 计算方案；TXT／CIDR 请在子网清单页导入。'))
         except InputError as exc:
-            self.window.plan_controller._error('导入方案',exc)
+            self.window.plan_controller._error(tx('导入方案'),exc)
             return False
         return self.window.plan_controller.open_path(path,dropped=True)

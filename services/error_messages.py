@@ -16,23 +16,24 @@
 # along with IPv6SubnetCalculator. If not, see <https://www.gnu.org/licenses/>.
 
 """将文件系统异常转换为中文；保留错误码和路径便于排查。"""
+from core.localized_text import text as tx, join_text as jt
 import errno
 
 
 def describe_error(exc):
     if not isinstance(exc,OSError):
         return str(exc)
-    descriptions={errno.ENOENT:'找不到文件或目录，请检查路径。',errno.EACCES:'没有访问权限，或文件正被其他程序占用。',
-        errno.EPERM:'当前操作不被允许，请检查访问权限。',errno.ENOSPC:'磁盘空间不足，请清理空间后重试。',
-        errno.EROFS:'目标位置为只读，请选择可写目录。',errno.EISDIR:'所选路径是文件夹，请选择文件。',
-        errno.ENOTDIR:'路径中的目录无效，请重新选择。',errno.EEXIST:'文件或目录已存在。',
-        errno.EINVAL:'路径或文件名无效，请检查后重试。',errno.ENAMETOOLONG:'路径或文件名过长。'}
-    message=descriptions.get(exc.errno,'系统无法完成文件访问，请检查路径、权限或文件占用。')
+    descriptions={errno.ENOENT:tx('找不到文件或目录，请检查路径。'),errno.EACCES:tx('没有访问权限，或文件正被其他程序占用。'),
+        errno.EPERM:tx('当前操作不被允许，请检查访问权限。'),errno.ENOSPC:tx('磁盘空间不足，请清理空间后重试。'),
+        errno.EROFS:tx('目标位置为只读，请选择可写目录。'),errno.EISDIR:tx('所选路径是文件夹，请选择文件。'),
+        errno.ENOTDIR:tx('路径中的目录无效，请重新选择。'),errno.EEXIST:tx('文件或目录已存在。'),
+        errno.EINVAL:tx('路径或文件名无效，请检查后重试。'),errno.ENAMETOOLONG:tx('路径或文件名过长。')}
+    message=descriptions.get(exc.errno,tx('系统无法完成文件访问，请检查路径、权限或文件占用。'))
     if getattr(exc,'winerror',None) in (32,33):
-        message='文件正被其他程序占用，请关闭相关程序后重试。'
+        message=tx('文件正被其他程序占用，请关闭相关程序后重试。')
     if exc.filename:
-        message+='\n文件：'+str(exc.filename)
+        message+=tx('\n文件：')+str(exc.filename)
     code=getattr(exc,'winerror',None) or exc.errno
     if code is not None:
-        message+=f'（系统错误码：{code}）'
+        message+=tx('（系统错误码：{0}）', code)
     return message

@@ -16,6 +16,7 @@
 # along with IPv6SubnetCalculator. If not, see <https://www.gnu.org/licenses/>.
 
 """单个 IPv6 地址的无损格式转换。"""
+from core.localized_text import text as tx, join_text as jt
 from dataclasses import dataclass
 from core.ipv6_core import validate_ipv6_address
 
@@ -31,13 +32,12 @@ class AddressFormats:
         return self.compressed
 
     def as_text(self):
-        return '\n'.join(('IPv6 地址格式转换', f'压缩 / 规范化：{self.normalized}',
-                          f'完整展开：{self.expanded}', f'二进制（128 位）：{self.binary}'))
+        return jt('\n', (tx('IPv6 地址格式转换'), tx('压缩 / 规范化：{0}', self.normalized), tx('完整展开：{0}', self.expanded), tx('二进制（128 位）：{0}', self.binary)))
 
 
 def convert_address(text: str) -> AddressFormats:
     address = validate_ipv6_address(text)
     # 明确输出 8 组十六进制，避免不同 Python 版本对 IPv4 映射尾部的显示差异。
-    hexadecimal = f'{int(address):032x}'
-    expanded = ':'.join(hexadecimal[index:index+4] for index in range(0, 32, 4))
-    return AddressFormats(address.compressed, expanded, f'{int(address):0128b}')
+    hexadecimal = tx('{0:032x}', int(address))
+    expanded = jt(':', (hexadecimal[index:index + 4] for index in range(0, 32, 4)))
+    return AddressFormats(address.compressed, expanded, tx('{0:0128b}', int(address)))

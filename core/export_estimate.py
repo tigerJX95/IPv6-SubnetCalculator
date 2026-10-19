@@ -17,6 +17,7 @@
 
 """子网导出磁盘占用的参考区间，并非容量保证。"""
 from __future__ import annotations
+from core.localized_text import text as tx, join_text as jt
 from ipaddress import IPv6Network
 from .subnet_export import subnet_at
 from .ipv6_core import validate_subnet_parameters
@@ -32,7 +33,7 @@ def estimate_export_range(network: IPv6Network, prefix: int, fmt: str, count: in
     if (isinstance(count, bool) or isinstance(start_index, bool) or
             not isinstance(count, int) or not isinstance(start_index, int) or
             count <= 0 or start_index < 0 or start_index+count > total or fmt not in ('txt', 'xlsx')):
-        raise ValueError('导出估算参数无效')
+        raise ValueError(tx('导出估算参数无效'))
     sample_count = min(128, count)
     indices = {(i * (count - 1)) // max(sample_count - 1, 1) for i in range(sample_count)}
     lengths = [len(str(subnet_at(network, prefix, start_index + i)).encode('utf-8')) + 2 for i in indices]
@@ -53,4 +54,4 @@ def estimate_export_range(network: IPv6Network, prefix: int, fmt: str, count: in
 
 def format_size_range(low: int, high: int) -> str:
     unit, divisor = ('GiB', GIB) if high >= GIB else ('MiB', MIB)
-    return f'{low/divisor:,.2f}～{high/divisor:,.2f} {unit}'
+    return tx('{0:,.2f}～{1:,.2f} {2}', low / divisor, high / divisor, unit)

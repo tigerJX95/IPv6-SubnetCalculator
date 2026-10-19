@@ -16,16 +16,19 @@
 # along with IPv6SubnetCalculator. If not, see <https://www.gnu.org/licenses/>.
 
 """统一 Qt 剪贴板访问及错误反馈。"""
+from core.localized_text import text as tx, join_text as jt
 from ui.standard_dialogs import QMessageBox
+from services.language_service import display
 from PyQt6.QtCore import QObject, pyqtSignal
 from PyQt6.QtWidgets import QApplication
 
 
 class ClipboardService(QObject):
-    feedback = pyqtSignal(str, str)
+    feedback = pyqtSignal(object, str)
 
     def copy_text(self, text, success_message, parent=None):
         try:
+            text=display(text)
             clipboard = QApplication.clipboard()
             if clipboard is None:
                 raise RuntimeError('Clipboard unavailable')
@@ -33,9 +36,9 @@ class ClipboardService(QObject):
             if clipboard.text() != text:
                 raise RuntimeError('Clipboard content not accepted')
         except (RuntimeError, OSError):
-            message = '复制失败：暂时无法访问剪贴板，请稍后重试。'
+            message = tx('复制失败：暂时无法访问剪贴板，请稍后重试。')
             self.feedback.emit(message, 'error')
-            QMessageBox.warning(parent, '复制失败', message)
+            QMessageBox.warning(parent, tx('复制失败'), message)
             return False
         self.feedback.emit(success_message, 'success')
         return True

@@ -212,7 +212,35 @@ class ReleaseCheck(QObject):
         self.window.calculation_page.network_input.setText(DEFAULT_NETWORK)
         self.window.calculation_page.target_input.setText('64')
         self.window.calculate()
+        self.check_language_state()
         self.schedule(self.start_list_check)
+
+    def check_language_state(self):
+        manager=self.application.language_manager
+        page=self.window.results_page
+        page.select_index(104)
+        before=self.window.plan_controller.snapshot()
+        result=self.window.result
+        about=self.window.about_dialog
+        about.tabs.setCurrentIndex(2)
+        about.license_selector.setCurrentIndex(1)
+        original=about.licenses.toPlainText()
+        manager.apply('en_US',persist=False)
+        self.require(self.window.tabs.tabText(0)=='Calculation','English tab missing')
+        self.require('IPv6 Subnet Calculator' in self.window.windowTitle(),'English title missing')
+        self.require(self.window.plan_controller.snapshot()==before,'Language switch changed calculation view')
+        self.require(self.window.result is result,'Language switch recalculated result')
+        self.require(about.tabs.currentIndex()==2 and about.license_selector.currentIndex()==1,'Language switch changed About selection')
+        self.require(about.licenses.toPlainText()==original,'License original changed')
+        self.require('User Guide' in about.usage.toPlainText(),'English offline guide missing')
+        self.require('Runtime Components' in about.information.toPlainText(),'English program information missing')
+        manager.apply('zh_CN',persist=False)
+        self.require(self.window.tabs.tabText(0)=='子网计算','Chinese restoration missing')
+        self.require(self.window.plan_controller.snapshot()==before,'Chinese restoration changed view')
+        about.tabs.setCurrentIndex(0)
+        about.license_selector.setCurrentIndex(0)
+        page.clear_selection()
+        self.checks.append('bilingual_live_switch_preserves_calculation_view_and_license_originals')
 
     def start_list_check(self):
         from services.subnet_list_service import load_subnet_list

@@ -1,4 +1,4 @@
-# 🌐 IPv6 Subnet Calculator V1.5
+# 🌐 IPv6 Subnet Calculator V1.6
 
 [简体中文](README.md) | **English**
 
@@ -8,7 +8,7 @@ IPv6SubnetCalculator is an offline IPv6 subnet calculator for Windows. It analyz
 
 ## ✨ Features
 
-- **Network calculations:** IPv6 CIDR `/0`–`/128`, network ranges, subnet counts, addresses per subnet, and additional subnet bits. Includes common prefix shortcuts, address normalization, and Chinese input validation messages.
+- **Network calculations:** IPv6 CIDR `/0`–`/128`, network ranges, subnet counts, addresses per subnet, and additional subnet bits. Includes common prefix shortcuts, address normalization, and localized input validation messages.
 - **Calculation summary copying:** Use the copy icon at the top right of the network summary to copy ranges, source/target prefixes, exact capacities, and address guidance into planning documents.
 - **Address guidance:** Classifies ULA, 6to4, multicast, link-local, and other address types, with usage, deployment limitations, and standards references. Mathematical subnetting remains available for special-purpose addresses.
 - **Readability:** Larger interface, input, table, detail, and tooltip text, with adjusted table row heights and dialog space.
@@ -47,12 +47,13 @@ IPv6SubnetCalculator is an offline IPv6 subnet calculator for Windows. It analyz
 - **Bounded processing**: up to 5,000 validation entries, 1 MiB (1,048,576 bytes) and 20,000 physical lines including blanks/comments per check. Background work can be cancelled. Details are limited to 1,000 pairs while totals remain exact.
 - **Separate workspace**: list checks preserve calculator results/plans. List input, errors and reports are not stored in calculation plans; copy them to retain the work.
 
-## ✨ V1.5: Import and Input Experience
+## 🌐 Interface Languages
 
-- **Drop a calculation plan**: drop one local JSON plan anywhere in the main window, including input fields and tables. Validation precedes replacement confirmation; multiple files, folders, remote links and unsupported formats show clear feedback. Import waits while background work is active.
-- **Protect current work**: corrupt files leave parameters, results and selection unchanged. Unsaved work supports Save, Discard and Cancel. Import restores saved calculation/view state without additional calculations, exports or network changes.
-- **Visible input errors**: calculation, address tools, location, copy/export ranges and list validation use red borders, warning indicators and specific explanations. Bottom errors are bold; editing clears the relevant border.
-- **Chinese dialogs**: confirmations, warnings, file browsers and standard Qt menus include Chinese resources independently of Windows display language.
+- **One bilingual application**: Simplified Chinese and English are bundled in one EXE. The upper-right icons are Language → Theme → About; choose a language from the globe menu without restarting or connecting to the Internet.
+- **Retain your work**: continue using existing results after switching, with IPv6 inputs, parameters, pagination, selection, location ranges and planning content preserved.
+- **Consistent presentation**: pages, tooltips, dialogs, errors, status, table headers and offline help follow the selected language. Background completion uses the current language; the preference is restored at the next launch.
+- **Shared plans**: use the same calculation plan in either language, retaining names, notes and original list content.
+- **Input experience**: retains JSON plan drops, validated replacement, unsaved-work protection and visible error indicators.
 
 ## 🧮 Free Space and Equivalent CIDR Aggregation
 
@@ -64,53 +65,27 @@ IPv6SubnetCalculator is an offline IPv6 subnet calculator for Windows. It analyz
 
 ## 📸 Screenshots
 
-Screenshot version: **V1.5**.
+Version: **V1.6**.
 
-### Light Theme
+### English
 
-![Light Calculation page](docs/screenshots/calculation_light.png)
+![English calculation, light](docs/screenshots/en_calculation_light.png)
 
-![Light Results page](docs/screenshots/results_light.png)
+![English results, dark](docs/screenshots/en_results_dark.png)
 
-![Light Address Tools page](docs/screenshots/tools_light.png)
+![English address tools](docs/screenshots/en_tools_light.png)
 
-![Light About window](docs/screenshots/about_light.png)
+![English subnet planning](docs/screenshots/en_aggregate_dark.png)
 
-![Light Subnet List](docs/screenshots/list_light.png)
+### 简体中文
 
-![Light List Relationships](docs/screenshots/list_relations_light.png)
+![Chinese calculation, light](docs/screenshots/calculation_light.png)
 
-![Light Free Space](docs/screenshots/free_light.png)
-
-![Light CIDR Aggregation](docs/screenshots/aggregate_light.png)
-
-![Light input validation](docs/screenshots/input_error_light.png)
-
-![Chinese plan replacement confirmation](docs/screenshots/plan_drop_light.png)
-
-### Dark Theme
-
-![Dark input validation](docs/screenshots/input_error_dark.png)
-
-![Dark Calculation page](docs/screenshots/calculation_dark.png)
-
-![Dark Results page](docs/screenshots/results_dark.png)
-
-![Dark Address Tools page](docs/screenshots/tools_dark.png)
-
-![Dark About window](docs/screenshots/about_dark.png)
-
-![Dark Subnet List](docs/screenshots/list_dark.png)
-
-![Dark List Relationships](docs/screenshots/list_relations_dark.png)
-
-![Dark Free Space](docs/screenshots/free_dark.png)
-
-![Dark CIDR Aggregation](docs/screenshots/aggregate_dark.png)
+![Chinese results, dark](docs/screenshots/results_dark.png)
 
 ## 📦 Download and Usage
 
-Download `IPv6SubnetCalculator_V1.5.exe` directly from Assets on GitHub [Releases](../../releases/latest). Run the downloaded executable; No additional runtime setup is required. Enter a network and target prefix, then click the calculation icon; the application switches to Results when complete.
+Download `IPv6SubnetCalculator_V1.6.exe` directly from Assets on GitHub [Releases](../../releases/latest). Run the downloaded executable; no additional runtime setup is required. Enter a network and target prefix, then click the calculation icon; the application switches to Results when complete.
 
 Press F1 or use the top-bar information icon for built-in help, license texts and legal notices.
 
@@ -123,7 +98,7 @@ For source execution and building, see [Development Notes](docs/DEVELOPMENT.md).
 - Network relationships use normalized CIDRs. Adjacent means non-overlapping, directly contiguous ranges; it does not guarantee they form one CIDR. The gap count counts addresses between the two ranges.
 - Calculate before saving; edited parameters require recalculation. Plans store calculation state, excluding Address Tools and Subnet List contents and theme preferences.
 - Names support up to 80 characters and notes up to 2,000. Saved files include view state, but navigation alone does not trigger unsaved-change prompts.
-- The first launch uses the light theme; subsequent launches restore your choice. Hover over the theme icon to see the current theme, next theme, and shortcut. Native file pickers and title bars follow the operating system.
+- The first launch uses the light theme; subsequent launches restore your choice. Hover over the theme icon to see the current theme, next theme, and shortcut. 
 
 - Summary copying uses the last successful calculation shown on the page. Recalculate after editing inputs to update it.
 - The default example network is `2026:1015:abcd::/48`.

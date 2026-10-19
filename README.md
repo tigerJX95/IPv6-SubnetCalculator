@@ -1,4 +1,4 @@
-# 🌐 IPv6 子网计算器 V1.5
+# 🌐 IPv6 子网计算器 V1.6
 
 **简体中文** | [English](README_EN.md)
 
@@ -8,7 +8,7 @@ IPv6SubnetCalculator 是一款适用于 Windows 的离线 IPv6 子网计算工�
 
 ## ✨ 主要功能
 
-- **网络计算**：支持 `/0`～`/128` 的 IPv6 CIDR，计算网络范围、子网数量、每个子网的地址容量及新增子网位数。提供常用前缀选择、地址规范化和中文输入错误说明。
+- **网络计算**：支持 `/0`～`/128` 的 IPv6 CIDR，计算网络范围、子网数量、每个子网的地址容量及新增子网位数。提供常用前缀选择、地址规范化和具体输入错误说明。
 - **计算摘要复制**：点击“网络计算摘要”右上角复制图标，复制网络范围、源／目标前缀、精确容量和地址用途提示，可直接粘贴到规划文档。
 - **地址用途提示**：识别 ULA、6to4、组播、链路本地等地址类型，展示用途、部署限制与规范参考；保留特殊地址的数学划分能力。
 - **清晰阅读**：统一加大界面、输入框、结果表格、详情及悬停提示字体，配套调整表格行高和弹窗空间。
@@ -47,12 +47,13 @@ IPv6SubnetCalculator 是一款适用于 Windows 的离线 IPv6 子网计算工�
 - **有界处理**：每次最多 5,000 条待校验记录；文本最多 1 MiB（1,048,576 字节），含空行与注释共不超过 20,000 行；后台检查可取消。关系明细最多 1,000 对，总数仍精确统计。
 - **独立工作区**：清单检查不改变计算结果或方案。清单输入、错误记录和报告不写入计算方案，需要保留时请复制保存。
 
-## ✨ V1.5：导入与输入体验
+## 🌐 界面语言
 
-- **拖放计算方案**：把单个本地 JSON 方案拖到主窗口任意位置，包括输入框和表格；先校验，再确认替换。多文件、文件夹、网络链接及其他格式会明确提示；后台任务进行时暂缓导入。
-- **当前工作保护**：损坏文件不改变参数、结果或选择；未保存的工作可以保存、不保存或取消。导入恢复方案中的计算和浏览状态，不自动执行额外计算、导出或网络配置。
-- **醒目错误提示**：计算、地址工具、定位、范围复制、导出范围及清单校验采用红框、警示图标和具体错误说明；底部错误加粗，编辑后清除对应红框。
-- **完整中文弹窗**：确认、警告、文件选择和 Qt 标准菜单随程序提供中文，不依赖 Windows 显示语言。
+- **同一程序双语**：同一个 EXE 内置简体中文与 English，右上角按“语言 → 主题 → 关于”排列；点击地球图标选择语言，无需联网或重启。
+- **工作状态保留**：切换语言后可继续浏览现有结果，IPv6 输入、参数、页码、选择、定位范围及规划内容保持原样。
+- **完整展示范围**：页面、图标悬停、标准弹窗、错误、状态、表头及离线使用说明随语言切换；后台任务完成时使用当前语言，保存语言偏好供下次启动恢复。
+- **方案通用**：同一份计算方案可在中英文界面下使用，名称、备注和原始清单内容保持原样。
+- **输入提示**：支持单个 JSON 方案拖放，校验后确认替换；输入错误通过红框、警示图标和加粗说明标识。
 
 ## 🧮 空闲空间与 CIDR 整理
 
@@ -64,53 +65,27 @@ IPv6SubnetCalculator 是一款适用于 Windows 的离线 IPv6 子网计算工�
 
 ## 📸 运行截图
 
-截图版本：**V1.5**。
+截图版本：**V1.6**。
 
-### 浅色主题
+### 简体中文
 
-![浅色子网计算页](docs/screenshots/calculation_light.png)
+![浅色计算页面与语言入口](docs/screenshots/calculation_light.png)
 
-![浅色子网结果页](docs/screenshots/results_light.png)
+![深色子网结果](docs/screenshots/results_dark.png)
 
-![浅色地址工具页](docs/screenshots/tools_light.png)
+### English
 
-![浅色关于窗口](docs/screenshots/about_light.png)
+![English calculation, light](docs/screenshots/en_calculation_light.png)
 
-![浅色子网清单](docs/screenshots/list_light.png)
+![English results, dark](docs/screenshots/en_results_dark.png)
 
-![浅色清单关系检查](docs/screenshots/list_relations_light.png)
+![English address tools](docs/screenshots/en_tools_light.png)
 
-![浅色空闲空间规划](docs/screenshots/free_light.png)
-
-![浅色 CIDR 整理](docs/screenshots/aggregate_light.png)
-
-![浅色输入错误提示](docs/screenshots/input_error_light.png)
-
-![中文方案替换确认](docs/screenshots/plan_drop_light.png)
-
-### 深色主题
-
-![深色输入错误提示](docs/screenshots/input_error_dark.png)
-
-![深色子网计算页](docs/screenshots/calculation_dark.png)
-
-![深色子网结果页](docs/screenshots/results_dark.png)
-
-![深色地址工具页](docs/screenshots/tools_dark.png)
-
-![深色关于窗口](docs/screenshots/about_dark.png)
-
-![深色子网清单](docs/screenshots/list_dark.png)
-
-![深色清单关系检查](docs/screenshots/list_relations_dark.png)
-
-![深色空闲空间规划](docs/screenshots/free_dark.png)
-
-![深色 CIDR 整理](docs/screenshots/aggregate_dark.png)
+![English subnet planning](docs/screenshots/en_aggregate_dark.png)
 
 ## 📦 下载与使用
 
-从 GitHub [Releases](../../releases/latest) 的 Assets 中直接下载 `IPv6SubnetCalculator_V1.5.exe`，下载后即可运行，无需另行配置运行环境。输入 IPv6 网络地址与目标前缀，点击计算图标；完成后自动切换到结果页。
+从 GitHub [Releases](../../releases/latest) 的 Assets 中直接下载 `IPv6SubnetCalculator_V1.6.exe`，下载后即可运行，无需另行配置运行环境。输入 IPv6 网络地址与目标前缀，点击计算图标；完成后自动切换到结果页。
 
 按 F1 或点击顶部“ⓘ”可查看内置帮助、许可原文与法律责任说明。
 
@@ -123,7 +98,7 @@ IPv6SubnetCalculator 是一款适用于 Windows 的离线 IPv6 子网计算工�
 - 关系分析按规范化后的 CIDR 判断；“相邻”指无重叠且首尾相接，不保证能合并为单个 CIDR。间隔地址数是两段之间未被二者覆盖的地址数量。
 - 保存方案前请先完成计算；输入参数修改后需重新计算再保存。方案保存的是计算状态，地址工具及子网清单内容、主题偏好不写入方案。
 - 方案名称最多 80 字，备注最多 2,000 字。翻页及选择状态随保存记录，但单独浏览不会触发关闭时的修改提示。
-- 首次启动使用浅色主题；之后恢复上次选择。主题按钮悬停显示当前主题、切换目标和快捷键。系统文件选择器与标题栏的外观由操作系统决定。
+- 首次启动使用浅色主题；之后恢复上次选择。主题按钮悬停显示当前主题、切换目标和快捷键。
 - 摘要复制对应页面上最后一次成功计算的结果；修改输入后，请重新计算以更新摘要。
 - 默认示例网络为 `2026:1015:abcd::/48`。
 - IPv6 没有广播地址；“结束地址”表示网段最大地址。地址总量是数学容量，不代表实际可分配主机数量。

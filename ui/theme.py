@@ -16,6 +16,7 @@
 # along with IPv6SubnetCalculator. If not, see <https://www.gnu.org/licenses/>.
 
 """集中定义主题颜色；所有页面和弹窗使用同一套语义色。"""
+from core.localized_text import text as tx, join_text as jt
 from PyQt6.QtCore import QObject, QSettings, pyqtSignal
 from PyQt6.QtWidgets import QApplication
 from app_info import resource_path
@@ -41,7 +42,7 @@ THEMES = {
 
 def stylesheet(name):
     c = THEMES[name]
-    arrow = resource_path(f'assets/chevron_{name}.svg').as_posix()
+    arrow = resource_path(tx('assets/chevron_{0}.svg', name)).as_posix()
     return '''
 QWidget {{ color: {text}; background: transparent; }}
 QMainWindow, QDialog, QWidget#AppRoot {{ background: {window}; }}
@@ -71,6 +72,7 @@ QTextBrowser#AboutText {{ background: {surface}; color: {text}; border: 0;
 QComboBox QAbstractItemView {{ background: {surface}; color: {text}; border: 1px solid {border};
     selection-background-color: {selected}; selection-color: {selected_text}; outline: 0; }}
 QToolButton {{ border: 0; background: transparent; padding: 0; border-radius: 7px; }}
+QToolButton::menu-indicator {{ image: none; width: 0; }}
 QToolButton:focus {{ border: 1px solid {focus}; }}
 QPushButton {{ background: {button}; color: {text}; border: 1px solid {border}; border-radius: 5px; padding: 7px 15px; }}
 QPushButton:hover {{ background: {hover}; }}

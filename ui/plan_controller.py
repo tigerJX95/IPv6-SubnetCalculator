@@ -16,6 +16,7 @@
 # along with IPv6SubnetCalculator. If not, see <https://www.gnu.org/licenses/>.
 
 """方案文件对话框、快照与恢复协调；损坏文件不改变当前工作。"""
+from core.localized_text import text as tx, join_text as jt
 from pathlib import Path
 from ui.standard_dialogs import QFileDialog, QMessageBox
 from PyQt6.QtCore import QSignalBlocker, QItemSelectionModel
@@ -52,12 +53,12 @@ class PlanController:
     def snapshot(self):
         window = self.window
         if window.result is None:
-            raise InputError('请先完成一次有效计算，再保存方案。')
+            raise InputError(tx('请先完成一次有效计算，再保存方案。'))
         calculation = window.calculation_page
         network, prefix = calculation.parameters()
         requested = calculate(network, prefix, preview_limit=0)
         if (requested.network, requested.target_prefix) != (window.result.network, window.result.target_prefix):
-            raise InputError('输入参数已修改，请先重新计算后再保存方案。')
+            raise InputError(tx('输入参数已修改，请先重新计算后再保存方案。'))
         page = window.results_page
         plan = CalculationPlan(str(window.result.network), window.result.target_prefix,
             calculation.plan_name_input.text(), calculation.plan_notes_input.toPlainText(),
@@ -67,25 +68,25 @@ class PlanController:
         return plan
 
     def _error(self, action, exc):
-        message = action+'失败：'+describe_error(exc)
+        message = action+tx('失败：')+describe_error(exc)
         mark_invalid(self.window.calculation_page.plan_file_label,message)
         self.window.feedback.set_message(message, 'error')
-        QMessageBox.warning(self.window, action+'失败', message)
+        QMessageBox.warning(self.window, action+tx('失败'), message)
 
     def save(self, save_as=False):
         if self.window.export_service.busy:
-            self.window.feedback.set_message('请先完成或取消导出，再保存方案。', 'info')
+            self.window.feedback.set_message(tx('请先完成或取消导出，再保存方案。'), 'info')
             return False
         try:
             plan = self.snapshot()
         except InputError as exc:
-            self._error('保存方案', exc)
+            self._error(tx('保存方案'), exc)
             return False
         if self.path is not None and not save_as:
             path = self.path
         else:
-            selected, _ = QFileDialog.getSaveFileName(self.window, '保存计算方案',
-                str(self.path) if self.path else 'IPv6Plan.json', 'IPv6 计算方案 (*.json)',
+            selected, _ = QFileDialog.getSaveFileName(self.window, tx('保存计算方案'),
+                str(self.path) if self.path else 'IPv6Plan.json', tx('IPv6 计算方案 (*.json)'),
                 options=QFileDialog.Option.DontConfirmOverwrite)
             if not selected:
                 return False
@@ -93,22 +94,22 @@ class PlanController:
             if not path.suffix:
                 path = path.with_suffix('.json')
             if path.suffix.lower() != '.json':
-                self._error('保存方案', InputError('方案文件扩展名须为 .json。'))
+                self._error(tx('保存方案'), InputError(tx('方案文件扩展名须为 .json。')))
                 return False
-            if path.exists() and QMessageBox.question(self.window, '覆盖方案',
-                    '目标文件已存在，是否覆盖？', QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            if path.exists() and QMessageBox.question(self.window, tx('覆盖方案'),
+                    tx('目标文件已存在，是否覆盖？'), QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
                     QMessageBox.StandardButton.No) != QMessageBox.StandardButton.Yes:
                 return False
         try:
             save_plan(path, plan)
         except (OSError, InputError) as exc:
-            self._error('保存方案', exc)
+            self._error(tx('保存方案'), exc)
             return False
         clear_invalid(self.window.calculation_page.plan_file_label)
         self.path = path
         self.saved_document = self.document()
         self._status()
-        self.window.feedback.set_message('计算方案已保存。', 'success')
+        self.window.feedback.set_message(tx('计算方案已保存。'), 'success')
         return True
 
     def confirm_discard(self):
@@ -116,7 +117,7 @@ class PlanController:
         tracked = self.path is not None or bool(document[2].strip() or document[3].strip())
         if not tracked or document == self.saved_document:
             return True
-        answer = QMessageBox.question(self.window, '未保存的方案', '当前方案有未保存的更改，是否先保存？',
+        answer = QMessageBox.question(self.window, tx('未保存的方案'), tx('当前方案有未保存的更改，是否先保存？'),
             QMessageBox.StandardButton.Save | QMessageBox.StandardButton.Discard | QMessageBox.StandardButton.Cancel,
             QMessageBox.StandardButton.Cancel)
         if answer == QMessageBox.StandardButton.Save:
@@ -125,29 +126,29 @@ class PlanController:
 
     def open(self):
         if self.window.export_service.busy:
-            self.window.feedback.set_message('请先完成或取消导出，再打开方案。', 'info')
+            self.window.feedback.set_message(tx('请先完成或取消导出，再打开方案。'), 'info')
             return False
-        selected, _ = QFileDialog.getOpenFileName(self.window, '打开计算方案', '', 'IPv6 计算方案 (*.json)')
+        selected, _ = QFileDialog.getOpenFileName(self.window, tx('打开计算方案'), '', tx('IPv6 计算方案 (*.json)'))
         if not selected:
             return False
         return self.open_path(selected)
 
     def open_path(self, selected, *, dropped=False):
         if self.window.export_service.busy or (dropped and self.window.subnet_list_page.service.busy):
-            self.window.feedback.set_message('请先完成或取消后台任务，再打开方案。', 'info')
+            self.window.feedback.set_message(tx('请先完成或取消后台任务，再打开方案。'), 'info')
             return False
         try:
             plan = load_plan(selected)
         except (OSError, InputError) as exc:
-            self._error('打开方案', exc)
+            self._error(tx('打开方案'), exc)
             return False
         document = self.document()
         tracked = self.path is not None or bool(document[2].strip() or document[3].strip())
         dirty = tracked and document != self.saved_document
         if not self.confirm_discard():
             return False
-        if dropped and not dirty and QMessageBox.question(self.window,'替换当前计算方案',
-                '方案校验通过。是否用拖入的方案替换当前计算参数、结果和浏览位置？',
+        if dropped and not dirty and QMessageBox.question(self.window,tx('替换当前计算方案'),
+                tx('方案校验通过。是否用拖入的方案替换当前计算参数、结果和浏览位置？'),
                 QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
                 QMessageBox.StandardButton.No) != QMessageBox.StandardButton.Yes:
             return False
@@ -156,13 +157,13 @@ class PlanController:
         try:
             plan = load_plan(selected)
         except (OSError, InputError) as exc:
-            self._error('打开方案', exc)
+            self._error(tx('打开方案'), exc)
             return False
         self.apply(plan)
         self.path = Path(selected)
         self.saved_document = self.document()
         self._status()
-        self.window.feedback.set_message('计算方案已恢复。', 'success')
+        self.window.feedback.set_message(tx('计算方案已恢复。'), 'success')
         return True
 
     def apply(self, plan):
@@ -184,7 +185,7 @@ class PlanController:
         page.set_result(result)
         if plan.locator_range is not None:
             page.locator_mode_combo.setCurrentIndex(3)
-            page.locator_input.setText(f'{plan.locator_range[0]}-{plan.locator_range[1]}')
+            page.locator_input.setText(tx('{0}-{1}', plan.locator_range[0], plan.locator_range[1]))
         else:
             page.locator_input.clear()
         page.locator_range = plan.locator_range
@@ -206,5 +207,5 @@ class PlanController:
         document = self.document()
         tracked = self.path is not None or bool(document[2].strip() or document[3].strip())
         modified = tracked and document != self.saved_document
-        label.setText('方案文件：'+(self.path.name if self.path else '未保存')+('（有未保存更改）' if modified else ''))
-        label.setToolTip(str(self.path) if self.path else '使用保存图标或 Ctrl+S 将计算方案保存为 JSON。')
+        label.setText(tx('方案文件：')+(self.path.name if self.path else tx('未保存'))+(tx('（有未保存更改）') if modified else ''))
+        label.setToolTip(str(self.path) if self.path else tx('使用保存图标或 Ctrl+S 将计算方案保存为 JSON。'))

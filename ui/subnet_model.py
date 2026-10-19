@@ -16,9 +16,11 @@
 # along with IPv6SubnetCalculator. If not, see <https://www.gnu.org/licenses/>.
 
 """结果表格的数据模型：只保存当前页，完整序号始终保留 Python 整数。"""
+from core.localized_text import text as tx, join_text as jt
 from PyQt6.QtCore import Qt, QAbstractTableModel, QModelIndex
 from PyQt6.QtGui import QColor
 from PyQt6.QtWidgets import QApplication
+from services.language_service import display
 from ui.fonts import data_font
 from ui.theme import current_colors
 
@@ -27,10 +29,17 @@ class SubnetTableModel(QAbstractTableModel):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.records = []
+        manager=getattr(QApplication.instance(),"language_manager",None)
+        if manager is not None:manager.changed.connect(self._language_changed)
         self.locator_range = None
         application = QApplication.instance()
         if application is not None and hasattr(application, 'theme_manager'):
             application.theme_manager.changed.connect(self._theme_changed)
+
+    def _language_changed(self,*_args):
+        self.headerDataChanged.emit(Qt.Orientation.Horizontal,0,1)
+        if self.records:
+            self.dataChanged.emit(self.index(0,0),self.index(len(self.records)-1,1),[Qt.ItemDataRole.ToolTipRole])
 
     def _theme_changed(self, _name):
         if self.records:
@@ -57,12 +66,12 @@ class SubnetTableModel(QAbstractTableModel):
             if self.locator_range[0] <= number <= self.locator_range[1]:
                 return QColor(current_colors()['highlight'])
         if role == Qt.ItemDataRole.ToolTipRole:
-            return f'子网序号：{number:,}\n{subnet}\n双击或按 Enter 查看详情。'
+            return display(tx('子网序号：{0:,}\n{1}\n双击或按 Enter 查看详情。', number, subnet))
         return None
 
     def headerData(self, section, orientation, role=Qt.ItemDataRole.DisplayRole):
         if orientation == Qt.Orientation.Horizontal and role == Qt.ItemDataRole.DisplayRole:
-            return ('序号', 'IPv6 子网')[section] if section in (0, 1) else None
+            return display((tx('序号'), tx('IPv6 子网'))[section]) if section in (0, 1) else None
         return None
 
     def set_records(self, records, locator_range=None):

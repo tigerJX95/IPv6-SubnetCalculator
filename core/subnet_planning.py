@@ -16,6 +16,7 @@
 # along with IPv6SubnetCalculator. If not, see <https://www.gnu.org/licenses/>.
 
 """通过闭区间求并集、差集与精确 CIDR 覆盖，不枚举 IPv6 地址。"""
+from core.localized_text import text as tx, join_text as jt
 from dataclasses import dataclass
 from ipaddress import IPv6Address, IPv6Network
 from core.ipv6_core import InputError, calculate
@@ -28,8 +29,8 @@ def _records(text, stop, allow_empty=False):
     records = parse_subnet_records(text, stop=stop, allow_empty=allow_empty)
     invalid = [record for record in records if record.error]
     if invalid:
-        lines = '、'.join(str(record.line) for record in invalid[:5])
-        raise InputError(f'第 {lines} 行存在错误。规划要求所有网段有效，请先修正清单。')
+        lines = jt('、', (str(record.line) for record in invalid[:5]))
+        raise InputError(tx('第 {0} 行存在错误。规划要求所有网段有效，请先修正清单。', lines))
     return records
 
 
@@ -76,23 +77,23 @@ class FreeSpaceResult:
 
     def cidr_text(self):
         if not self.complete:
-            raise InputError('空闲 CIDR 明细已截断，不能作为完整清单复制；请复制含全部地址范围的报告。')
-        return '\n'.join(map(str,self.cidrs))
+            raise InputError(tx('空闲 CIDR 明细已截断，不能作为完整清单复制；请复制含全部地址范围的报告。'))
+        return jt('\n', map(str, self.cidrs))
 
     def as_text(self):
-        lines=['IPv6 空闲空间报告',f'父网段：{self.parent}',
-            f'父网段主机位规范化：{"是" if self.parent_normalized else "否"}',
-            f'占用清单：{self.input_count:,} 条；主机位规范化：{self.normalized_count:,} 条',
-            f'父网段地址数：{self.parent.num_addresses:,}',f'占用并集地址数：{self.occupied_addresses:,}',
-            f'空闲地址数：{self.free_addresses:,}',f'空闲连续范围：{len(self.free_ranges):,} 段',
-            f'最简空闲 CIDR：{self.cidr_count:,} 条；明细显示 {len(self.cidrs):,} 条',
-            '空闲仅指父网段扣除当前清单的数学差集，不证明地址已获分配或可部署。',
-            '', '全部空闲地址范围（包含首末地址）：']
-        lines.extend(f'{IPv6Address(start)} ～ {IPv6Address(end)}｜{end-start+1:,} 个地址' for start,end in self.free_ranges)
-        lines.extend(['','空闲 CIDR 明细：',*(str(net) for net in self.cidrs)])
+        lines=[tx('IPv6 空闲空间报告'),tx('父网段：{0}', self.parent),
+            tx('父网段主机位规范化：{0}', tx('是') if self.parent_normalized else tx('否')),
+            tx('占用清单：{0:,} 条；主机位规范化：{1:,} 条', self.input_count, self.normalized_count),
+            tx('父网段地址数：{0:,}', self.parent.num_addresses),tx('占用并集地址数：{0:,}', self.occupied_addresses),
+            tx('空闲地址数：{0:,}', self.free_addresses),tx('空闲连续范围：{0:,} 段', len(self.free_ranges)),
+            tx('最简空闲 CIDR：{0:,} 条；明细显示 {1:,} 条', self.cidr_count, len(self.cidrs)),
+            tx('空闲仅指父网段扣除当前清单的数学差集，不证明地址已获分配或可部署。'),
+            '', tx('全部空闲地址范围（包含首末地址）：')]
+        lines.extend(tx('{0} ～ {1}｜{2:,} 个地址', IPv6Address(start), IPv6Address(end), end - start + 1) for start,end in self.free_ranges)
+        lines.extend(['',tx('空闲 CIDR 明细：'),*(str(net) for net in self.cidrs)])
         if not self.complete:
-            lines.append('CIDR 明细已截断；上方全部地址范围与精确总数未截断。请勿把部分 CIDR 当成完整清单。')
-        return '\n'.join(lines)
+            lines.append(tx('CIDR 明细已截断；上方全部地址范围与精确总数未截断。请勿把部分 CIDR 当成完整清单。'))
+        return jt('\n', lines)
 
 
 @dataclass(frozen=True)
@@ -103,14 +104,10 @@ class AggregateResult:
     address_count: int
 
     def cidr_text(self):
-        return '\n'.join(map(str,self.cidrs))
+        return jt('\n', map(str, self.cidrs))
 
     def as_text(self):
-        return '\n'.join(['IPv6 等价 CIDR 整理报告',f'输入网段：{self.input_count:,} 条',
-            f'主机位规范化：{self.normalized_count:,} 条',f'整理后：{len(self.cidrs):,} 条',
-            f'覆盖地址数（并集）：{self.address_count:,}',
-            '移除重复与已覆盖子网，仅合并能够精确合并的相邻范围；地址覆盖集合保持不变。',
-            '本结果不保留原始分配层级或业务边界，请确认后再用于规划。', '', '整理后的完整 CIDR：',self.cidr_text()])
+        return jt('\n', [tx('IPv6 等价 CIDR 整理报告'), tx('输入网段：{0:,} 条', self.input_count), tx('主机位规范化：{0:,} 条', self.normalized_count), tx('整理后：{0:,} 条', len(self.cidrs)), tx('覆盖地址数（并集）：{0:,}', self.address_count), tx('移除重复与已覆盖子网，仅合并能够精确合并的相邻范围；地址覆盖集合保持不变。'), tx('本结果不保留原始分配层级或业务边界，请确认后再用于规划。'), '', tx('整理后的完整 CIDR：'), self.cidr_text()])
 
 
 def free_space(text, parent_text, *, stop=None):
@@ -121,7 +118,7 @@ def free_space(text, parent_text, *, stop=None):
     for record in records:
         _check_stop(stop)
         if not record.network.subnet_of(parent):
-            raise InputError(f'第 {record.line} 行网段 {record.network} 不完全位于父网段 {parent} 内，请修正后再规划。')
+            raise InputError(tx('第 {0} 行网段 {1} 不完全位于父网段 {2} 内，请修正后再规划。', record.line, record.network, parent))
     occupied=_union(records,stop)
     gaps=[]
     cursor=int(parent.network_address)

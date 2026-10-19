@@ -16,7 +16,8 @@
 # along with IPv6SubnetCalculator. If not, see <https://www.gnu.org/licenses/>.
 
 """所有输入共用的错误边框、警示图标和编辑后清除逻辑。"""
-from PyQt6.QtWidgets import QLineEdit, QStyle
+from ui.localized_widgets import QLineEdit, LanguageAction
+from PyQt6.QtWidgets import QStyle
 
 
 def clear_invalid(widget):
@@ -46,8 +47,9 @@ def mark_invalid(widget, message):
     if isinstance(widget,QLineEdit):
         action=getattr(widget,'_input_error_action',None)
         if action is None:
-            action=widget.addAction(widget.style().standardIcon(QStyle.StandardPixmap.SP_MessageBoxWarning),
-                                    QLineEdit.ActionPosition.TrailingPosition)
+            action=LanguageAction(widget)
+            action.setIcon(widget.style().standardIcon(QStyle.StandardPixmap.SP_MessageBoxWarning))
+            widget.addAction(action,QLineEdit.ActionPosition.TrailingPosition)
             widget._input_error_action=action
         action.setToolTip(message)
         action.setVisible(True)

@@ -16,6 +16,7 @@
 # along with IPv6SubnetCalculator. If not, see <https://www.gnu.org/licenses/>.
 
 """IPv6 清单校验与关系统计；仅处理网段边界，不枚举地址。"""
+from core.localized_text import text as tx, join_text as jt
 from dataclasses import dataclass
 from collections import defaultdict
 from core.ipv6_core import calculate, InputError
@@ -52,8 +53,8 @@ class ListRelation:
 
     @property
     def description(self):
-        return {'duplicate': '重复网段', 'contains': '前者包含后者',
-                'adjacent': '相邻（无重叠）'}[self.kind]
+        return {'duplicate': tx('重复网段'), 'contains': tx('前者包含后者'),
+                'adjacent': tx('相邻（无重叠）')}[self.kind]
 
 
 @dataclass(frozen=True)
@@ -78,50 +79,50 @@ class ListAnalysis:
         return self.duplicate_pairs+self.containment_pairs+self.adjacent_pairs
 
     def normalized_text(self):
-        return '\n'.join(str(network) for network in self.unique_networks)
+        return jt('\n', (str(network) for network in self.unique_networks))
 
     def as_text(self):
-        lines = ['IPv6 子网清单检查报告',
-            f'有效网段：{self.valid_count:,}；错误行：{self.error_count:,}；去重后：{len(self.unique_networks):,}',
-            f'重复关系：{self.duplicate_pairs:,} 对；包含关系：{self.containment_pairs:,} 对；相邻关系：{self.adjacent_pairs:,} 对',
-            f'重叠关系（重复＋包含）：{self.duplicate_pairs+self.containment_pairs:,} 对',
-            f'关系明细：{len(self.relations):,} / {self.relation_count:,} 对（最多 {MAX_RELATION_DETAILS:,} 对）',
-            '关系只统计有效网段；错误行不参与分析。原始行号包含空行和注释行。',
-            '相邻不代表一定能合并为一个 CIDR；本报告不证明地址分配权或实际可达性。',
-            '去重仅移除相同网段，不移除包含的子网，也不合并相邻网段。', '', '网段校验：']
+        lines = [tx('IPv6 子网清单检查报告'),
+            tx('有效网段：{0:,}；错误行：{1:,}；去重后：{2:,}', self.valid_count, self.error_count, len(self.unique_networks)),
+            tx('重复关系：{0:,} 对；包含关系：{1:,} 对；相邻关系：{2:,} 对', self.duplicate_pairs, self.containment_pairs, self.adjacent_pairs),
+            tx('重叠关系（重复＋包含）：{0:,} 对', self.duplicate_pairs + self.containment_pairs),
+            tx('关系明细：{0:,} / {1:,} 对（最多 {2:,} 对）', len(self.relations), self.relation_count, MAX_RELATION_DETAILS),
+            tx('关系只统计有效网段；错误行不参与分析。原始行号包含空行和注释行。'),
+            tx('相邻不代表一定能合并为一个 CIDR；本报告不证明地址分配权或实际可达性。'),
+            tx('去重仅移除相同网段，不移除包含的子网，也不合并相邻网段。'), '', tx('网段校验：')]
         for record in self.records:
             if record.error:
-                lines.append(f'第 {record.line} 行：{record.original}｜错误：{record.error}')
+                lines.append(tx('第 {0} 行：{1}｜错误：{2}', record.line, record.original, record.error))
             else:
-                lines.append(f'第 {record.line} 行：{record.original} → {record.network}｜'+
-                             ('主机位已规范化' if record.normalized else '有效'))
-        lines.extend(('', '关系明细：'))
-        lines.extend(f'第 {item.first} 行 / 第 {item.second} 行：{item.description}' for item in self.relations)
+                lines.append(tx('第 {0} 行：{1} → {2}｜', record.line, record.original, record.network)+
+                             (tx('主机位已规范化') if record.normalized else tx('有效')))
+        lines.extend(('', tx('关系明细：')))
+        lines.extend(tx('第 {0} 行 / 第 {1} 行：{2}', item.first, item.second, item.description) for item in self.relations)
         if self.relation_count > len(self.relations):
-            lines.append('关系明细已截断；上方统计仍为精确总数。')
-        return '\n'.join(lines)
+            lines.append(tx('关系明细已截断；上方统计仍为精确总数。'))
+        return jt('\n', lines)
 
 
 def validate_list_text(text, *, allow_empty=False):
     if not isinstance(text, str):
-        raise InputError('清单内容必须是文本。')
+        raise InputError(tx('清单内容必须是文本。'))
     try:
         size = len(text.encode('utf-8'))
     except UnicodeError as exc:
-        raise InputError('清单包含无效的 Unicode 字符。') from exc
+        raise InputError(tx('清单包含无效的 Unicode 字符。')) from exc
     if size > MAX_LIST_BYTES:
-        raise InputError('清单不能超过 1 MiB，请拆分后检查。')
+        raise InputError(tx('清单不能超过 1 MiB，请拆分后检查。'))
     if '\x00' in text:
-        raise InputError('清单包含空字符，请使用 UTF-8 纯文本文件。')
+        raise InputError(tx('清单包含空字符，请使用 UTF-8 纯文本文件。'))
     lines = text.removeprefix('\ufeff').splitlines()
     if len(lines) > MAX_LIST_LINES:
-        raise InputError(f'清单不能超过 {MAX_LIST_LINES:,} 个物理行。')
+        raise InputError(tx('清单不能超过 {0:,} 个物理行。', MAX_LIST_LINES))
     entries = [(line, value.strip()) for line, value in enumerate(lines, 1)
                if value.strip() and not value.lstrip().startswith('#')]
     if not entries and not allow_empty:
-        raise InputError('请输入每行一个 IPv6 CIDR；空行和以 # 开头的注释会被忽略。')
+        raise InputError(tx('请输入每行一个 IPv6 CIDR；空行和以 # 开头的注释会被忽略。'))
     if len(entries) > MAX_LIST_RECORDS:
-        raise InputError(f'每次最多检查 {MAX_LIST_RECORDS:,} 条网段，请拆分清单。')
+        raise InputError(tx('每次最多检查 {0:,} 条网段，请拆分清单。', MAX_LIST_RECORDS))
     return entries
 
 
@@ -132,7 +133,7 @@ def parse_subnet_records(text, *, stop=None, allow_empty=False):
         _check_stop(stop)
         try:
             if len(value) > 200:
-                raise InputError('单条网段不能超过 200 个字符。')
+                raise InputError(tx('单条网段不能超过 200 个字符。'))
             result = calculate(value, '128', preview_limit=0)
             record = ListRecord(line, value, result.network, result.normalized)
         except InputError as exc:
