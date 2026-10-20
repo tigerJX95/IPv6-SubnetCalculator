@@ -62,3 +62,14 @@ class LanguageManager(QObject):
             saved=self.settings.status()==self.settings.Status.NoError
         self.changed.emit(name)
         return saved
+
+
+def export_labels():
+    """在 GUI 线程取得冻结的导出标签；工作线程始终使用此快照。"""
+    from core.subnet_export import ExportLabels
+    app = QApplication.instance()
+    manager = getattr(app, 'language_manager', None)
+    if manager is None or manager.name == 'zh_CN':
+        return ExportLabels()
+    translate = lambda source: QCoreApplication.translate('Export', source)
+    return ExportLabels(translate('IPv6子网'), translate('序号'), translate('IPv6 子网'))

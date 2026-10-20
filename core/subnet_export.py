@@ -26,7 +26,7 @@ from typing import Callable, Iterator
 import os
 import tempfile
 import zipfile
-from xml.sax.saxutils import escape
+from xml.sax.saxutils import escape, quoteattr
 from ipaddress import IPv6Address, IPv6Network
 from .ipv6_core import validate_subnet_parameters
 
@@ -35,6 +35,14 @@ BATCH_SIZE = 1024
 
 class ExportCancelled(Exception):
     pass
+
+@dataclass(frozen=True)
+class ExportLabels:
+    """开始任务前确定的展示文字；核心导出不访问 Qt 或全局语言状态。"""
+    sheet_name: str = 'IPv6子网'
+    index_header: str = '序号'
+    subnet_header: str = 'IPv6 子网'
+
 
 @dataclass(frozen=True)
 class ExportReport:
@@ -80,13 +88,14 @@ def _write_txt(file, network, prefix, total, stop, progress, start_index=0):
             progress(index, total)
 
 
-def _write_xlsx(file, network, prefix, total, stop, progress, start_index=0):
+def _write_xlsx(file, network, prefix, total, stop, progress, start_index=0, labels=None):
+    labels = labels or ExportLabels()
     if total > XLSX_MAX_RECORDS:
         raise ValueError(tx('Excel 单工作表超出最大记录数量'))
     with zipfile.ZipFile(file, 'w', compression=zipfile.ZIP_DEFLATED, compresslevel=4, allowZip64=True) as z:
         z.writestr('[Content_Types].xml', '<?xml version="1.0" encoding="UTF-8"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/></Types>')
         z.writestr('_rels/.rels', '<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>')
-        z.writestr('xl/workbook.xml', '<?xml version="1.0" encoding="UTF-8"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="IPv6子网" sheetId="1" r:id="rId1"/></sheets></workbook>')
+        z.writestr('xl/workbook.xml', f'<?xml version="1.0" encoding="UTF-8"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name={quoteattr(labels.sheet_name)} sheetId="1" r:id="rId1"/></sheets></workbook>')
         z.writestr('xl/_rels/workbook.xml.rels', '<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/></Relationships>')
         with z.open('xl/worksheets/sheet1.xml', 'w', force_zip64=True) as output:
             # Excel 数值只有 15 位有效数字。若本次范围含超长序号，整列
@@ -95,7 +104,7 @@ def _write_xlsx(file, network, prefix, total, stop, progress, start_index=0):
             index_width = max(13, len(str(start_index + total)) + 2)
             output.write(('<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><cols>'
                           f'<col min="1" max="1" width="{index_width}" customWidth="1"/>'
-                          '<col min="2" max="2" width="48" customWidth="1"/></cols><sheetData><row r="1"><c r="A1" t="inlineStr"><is><t>序号</t></is></c><c r="B1" t="inlineStr"><is><t>IPv6 子网</t></is></c></row>').encode())
+                          f'<col min="2" max="2" width="48" customWidth="1"/></cols><sheetData><row r="1"><c r="A1" t="inlineStr"><is><t>{escape(labels.index_header)}</t></is></c><c r="B1" t="inlineStr"><is><t>{escape(labels.subnet_header)}</t></is></c></row>').encode())
             for index, address in enumerate(_iter_subnets(network, prefix, total, stop, start_index), 1):
                 row = index + 1
                 number = index + start_index
@@ -110,10 +119,12 @@ def _write_xlsx(file, network, prefix, total, stop, progress, start_index=0):
 def export_all(destination: str | Path, network: IPv6Network, target_prefix: int,
                format_type: str, *, stop: Event | None = None,
                progress: Callable[[int, int], None] | None = None,
-               start: int = 1, end: int | None = None) -> ExportReport:
+               start: int = 1, end: int | None = None,
+               labels: ExportLabels | None = None) -> ExportReport:
     """先写入临时文件，成功后再替换目标文件。
 
     调用前须在界面确认超大导出和覆盖现有文件。
+    labels 是任务开始前的语言快照，省略时保持中文；TXT 仅写 CIDR。
     """
     validate_subnet_parameters(network, target_prefix)
     full_total = 1 << (target_prefix - network.prefixlen)
@@ -138,7 +149,7 @@ def export_all(destination: str | Path, network: IPv6Network, target_prefix: int
             if format_type == 'txt':
                 _write_txt(out, network, target_prefix, total, stop, progress, start - 1)
             else:
-                _write_xlsx(out, network, target_prefix, total, stop, progress, start - 1)
+                _write_xlsx(out, network, target_prefix, total, stop, progress, start - 1, labels)
         if stop is not None and stop.is_set():
             raise ExportCancelled()
         os.replace(temp, path)

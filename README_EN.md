@@ -1,4 +1,4 @@
-# 🌐 IPv6 Subnet Calculator V1.6
+# 🌐 IPv6 Subnet Calculator V1.7
 
 [简体中文](README.md) | **English**
 
@@ -19,7 +19,7 @@ IPv6SubnetCalculator is an offline IPv6 subnet calculator for Windows. It analyz
 - **Pagination and location:** 25, 50, 100, or 200 rows per page; page navigation and lookup by IPv6 address, subnet index, or corresponding ranges. Only the current page is loaded, and locator highlighting persists across pages.
 - **Selection and copying:** Current-page counts, first and last indices, continuity, and total address capacity. Copy selected subnets, the current page, an index range, or exact statistics. Supports Ctrl/Shift selection, Ctrl+A, Ctrl+C, and Esc.
 - **Subnet details:** Double-click or press Enter to inspect full address ranges and capacity, browse adjacent subnets, and copy details.
-- **File export:** Export all subnets or a range to TXT or Excel (XLSX), with size estimates, progress, and cancellation. The destination is replaced only after its temporary file is written successfully.
+- **File export:** Export all subnets or a range to TXT or Excel (XLSX), with size estimates, progress, and cancellation. The destination is replaced only after its temporary file is written successfully. Excel column headers and the worksheet name use the interface language at export start; TXT keeps one CIDR per line.
 
 ## 💾 Calculation Plans
 
@@ -65,7 +65,7 @@ IPv6SubnetCalculator is an offline IPv6 subnet calculator for Windows. It analyz
 
 ## 📸 Screenshots
 
-Version: **V1.6**.
+Version: **V1.7**.
 
 ### English
 
@@ -85,7 +85,7 @@ Version: **V1.6**.
 
 ## 📦 Download and Usage
 
-Download `IPv6SubnetCalculator_V1.6.exe` directly from Assets on GitHub [Releases](../../releases/latest). Run the downloaded executable; no additional runtime setup is required. Enter a network and target prefix, then click the calculation icon; the application switches to Results when complete.
+Download `IPv6SubnetCalculator_V1.7.exe` directly from Assets on GitHub [Releases](../../releases/latest). Run the downloaded executable; no additional runtime setup is required. Enter a network and target prefix, then click the calculation icon; the application switches to Results when complete.
 
 Press F1 or use the top-bar information icon for built-in help, license texts and legal notices.
 

@@ -1,4 +1,4 @@
-# V1.6 国际化实现 / Internationalization Implementation
+# V1.7 国际化实现 / Internationalization Implementation
 
 ## 已实现 / Implemented
 
@@ -24,3 +24,13 @@
 测试检查源模板与译文占位符、TS/QM 一致、语言偏好及重启恢复、非法偏好、保存失败、语言无关方案、精确整数、错误恢复、已有关于窗口、异步任务及最小窗口。Windows 人工验收、DPI、实际拖放与持续使用结果在完成后记录，不以 Linux offscreen 代替。
 
 V1.7 后续重点为国际化后的布局、翻译完整性和兼容收敛；按实际反馈调整，不为版本数量堆叠功能。
+
+
+## V1.7 导出国际化 / Export Localization
+
+- `App` 上下文保留界面“序号 → Index”；新增 `Export` 上下文将同一中文源词译为“No.”，并提供“IPv6 Subnet”“IPv6 Subnets”。维护目录时按上下文检查，不能只按源文字去重。
+- GUI 线程在任务实际开始时解析导出标签并冻结；即使文件选择期间或导出期间切换语言，也以任务开始时为准。完成提示使用完成时的界面语言。
+- 核心写入器不依赖 Qt，默认保留中文兼容；TXT 不添加标题，JSON 不加入语言字段。
+- Qt 页签内部滚动按钮的悬停提示需要显式刷新，不能只重译页签标题。
+
+The `Export` context separates file wording (“No.”) from UI wording (“Index”). Resolve labels at actual task start on the GUI thread and pass an immutable snapshot to the Qt-free writer. Completion feedback follows the current interface language. Refresh internal tab-scroll tooltips explicitly; keep TXT and JSON language-independent.

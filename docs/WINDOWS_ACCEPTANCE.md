@@ -1,8 +1,8 @@
-# V1.6 Windows 验收 / Windows Acceptance
+# V1.7 Windows 验收 / Windows Acceptance
 
-V1.6 增加中英即时切换、偏好恢复和英文离线帮助。需要在 Windows 中验证语言切换、显示缩放及打包资源，既有功能验收继续保留。
+V1.7 完善 Excel 导出语言、页签滚动提示及容量估算显示。需要在 Windows 中验证语言切换、显示缩放及打包资源，既有功能验收继续保留。
 
-V1.6 adds live bilingual switching, saved preferences and English offline help. Verify switching, DPI and packaged resources on Windows alongside existing workflows.
+V1.7 localizes Excel output and improves tab-scroll tooltips and size estimates. Verify switching, DPI and packaged resources on Windows alongside existing workflows.
 
 ## 自动检查 / Automated Checks
 
@@ -46,3 +46,15 @@ Automated checks open/close windows, switch themes, resize and minimize/restore.
 测试文件建议放在临时目录，保留原文件副本用于覆盖与取消检查。报告中记录实际机器的耗时；Linux 自动检查及短时操作循环不计作 Windows 人工或长时间稳定性验收。
 
 Use a temporary test folder and keep copies of originals for overwrite/cancellation checks. Record timings from the actual machine. Linux checks and short operation loops are recorded separately from Windows manual and extended-session acceptance.
+
+
+## V1.7 导出专项 / Export Acceptance
+
+- [ ] 中文 XLSX：表头“序号”“IPv6 子网”，工作表“IPv6子网”；英文为“No.”“IPv6 Subnet”，工作表“IPv6 Subnets”。在实际 Excel 中打开确认。
+- [ ] 从第 100 项开始导出，确认保留实际序号及对应 CIDR；完整 IPv6 空间的末两项序号保留全部数字。
+- [ ] 在保存文件选择器中切换语言再开始，文件使用最终开始时的语言。
+- [ ] 大范围导出期间切换语言，文件内部语言一致，完成提示使用当前界面语言。
+- [ ] TXT 中英文结果一致，每行一个 CIDR，可重新导入；取消导出保留原文件并清理临时文件。
+- [ ] 最小窗口和两种主题下，页签滚动按钮悬停分别为中文或英文。
+
+Check actual Excel opening, both header languages and sheet names, non-first ranges and exact large indices. Switch languages in the picker and during export; verify task-start file language and current-language feedback. Reimport TXT, cancel an export and inspect tab-scroll tooltips in both themes.

@@ -17,7 +17,7 @@
 
 """将展示文本绑定到 Qt 控件；重新翻译只更新文字，不重建控件或编辑内容。"""
 from PyQt6 import QtWidgets as W
-from PyQt6.QtCore import QSignalBlocker
+from PyQt6.QtCore import QSignalBlocker, QCoreApplication
 from PyQt6.QtGui import QAction
 from core.localized_text import Text
 from services.language_service import display
@@ -101,12 +101,23 @@ class QTabWidget(Localized,W.QTabWidget):
     def __init__(self,*args,**kwargs):
         self._tabs=[]
         super().__init__(*args,**kwargs)
+        self._translate_scroll_buttons()
     def addTab(self,widget,value):
         self._tabs.append(value)
         return super().addTab(widget,display(value))
     def retranslate(self,*args):
         super().retranslate(*args)
         for i,value in enumerate(self._tabs):super().setTabText(i,display(value))
+        self._translate_scroll_buttons()
+
+    def _translate_scroll_buttons(self):
+        # Qt creates these buttons once; changing tab labels leaves their old tips.
+        for name,source in (('ScrollLeftButton','Scroll Left'),('ScrollRightButton','Scroll Right')):
+            button=self.tabBar().findChild(W.QToolButton,name)
+            if button is not None:
+                label=QCoreApplication.translate('QTabBar',source)
+                button.setToolTip(label)
+                button.setAccessibleName(label)
 
 
 class QRadioButton(Localized,W.QRadioButton):

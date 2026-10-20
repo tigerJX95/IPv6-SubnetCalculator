@@ -339,7 +339,11 @@ class ReleaseCheck(QObject):
             self.service.start(self.current_path, result, 'txt', 1, result.subnet_count)
             QTimer.singleShot(0, self.service.cancel)
         else:
+            if fmt == 'xlsx':
+                self.application.language_manager.apply('en_US',persist=False)
             self.service.start(self.current_path, result, fmt, 1, 100000 if fmt == 'txt' else 20000)
+            if fmt == 'xlsx':
+                self.application.language_manager.apply('zh_CN',persist=False)
 
     def completed_export(self, outcome):
         if self.error:
@@ -362,6 +366,17 @@ class ReleaseCheck(QObject):
             else:
                 with ZipFile(self.current_path) as archive:
                     self.require(archive.testzip() is None, 'XLSX 压缩包损坏')
+                    ns={'x':'http://schemas.openxmlformats.org/spreadsheetml/2006/main'}
+                    book=ElementTree.fromstring(archive.read('xl/workbook.xml'))
+                    self.require(book.find('x:sheets/x:sheet',ns).get('name')=='IPv6 Subnets',
+                                 'English sheet name missing')
+                    with archive.open('xl/worksheets/sheet1.xml') as header_stream:
+                        for _,element in ElementTree.iterparse(header_stream,events=('end',)):
+                            if element.tag.endswith('}row'):
+                                headers=[cell.findtext('x:is/x:t',namespaces=ns) for cell in element]
+                                self.require(headers==['No.','IPv6 Subnet'],'English export headers missing')
+                                break
+                    self.checks.append('english_xlsx_headers_and_frozen_export_language')
                     with archive.open('xl/worksheets/sheet1.xml') as stream:
                         rows = 0
                         for _, element in ElementTree.iterparse(stream, events=('end',)):

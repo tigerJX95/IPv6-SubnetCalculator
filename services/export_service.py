@@ -21,16 +21,18 @@ from threading import Event
 from time import monotonic
 from PyQt6.QtCore import QObject, QThread, pyqtSignal
 from services.error_messages import describe_error
-from core.subnet_export import export_all, ExportCancelled
+from core.subnet_export import export_all, ExportCancelled, ExportLabels
+from services.language_service import export_labels
 
 
 class _ExportThread(QThread):
     progress = pyqtSignal(object, object)
 
-    def __init__(self, path, result, fmt, start, end, parent=None):
+    def __init__(self, path, result, fmt, start, end, parent=None, *, labels=None):
         super().__init__(parent)
         self.path, self.result, self.fmt = path, result, fmt
         self.start_index, self.end_index = start, end
+        self.labels = labels or ExportLabels()
         self.stop_event = Event()
         self.outcome = None
         self._last_progress = 0.0
@@ -45,7 +47,7 @@ class _ExportThread(QThread):
         try:
             report = export_all(self.path, self.result.network, self.result.target_prefix, self.fmt,
                                 start=self.start_index, end=self.end_index,
-                                stop=self.stop_event, progress=self.report_progress)
+                                stop=self.stop_event, progress=self.report_progress, labels=self.labels)
             self.outcome = ('ok', report)
         except ExportCancelled:
             self.outcome = ('cancel', None)
@@ -69,7 +71,7 @@ class ExportService(QObject):
     def start(self, path, result, fmt, start, end):
         if self.busy:
             raise RuntimeError(tx('已有导出任务正在运行。'))
-        thread = _ExportThread(path, result, fmt, start, end, self)
+        thread = _ExportThread(path, result, fmt, start, end, self, labels=export_labels())
         self._thread = thread
         thread.progress.connect(self.progress)
         thread.finished.connect(self._finish)

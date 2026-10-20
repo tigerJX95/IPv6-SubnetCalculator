@@ -284,12 +284,15 @@ class I18nTests(unittest.TestCase):
 
     def test_all_catalog_entries_finished_and_placeholders_preserved(self):
         path=Path(__file__).resolve().parents[1]/'assets/i18n/app_en.ts'
-        messages=ET.parse(path).getroot().findall('context/message')
+        tree=ET.parse(path).getroot()
+        messages=[m for c in tree.findall('context') for m in c.findall('message')]
         self.assertGreater(len(messages),500)
+        contexts={id(m): c.findtext('name') for c in tree.findall('context') for m in c.findall('message')}
         for message in messages:
+            context=contexts[id(message)]
             source=message.findtext('source');translated=message.find('translation')
             self.assertTrue(translated.text,source);self.assertNotEqual(translated.get('type'),'unfinished')
-            self.assertEqual(self.app.language_manager.english.translate('App',source.encode('utf-8')),translated.text,source)
+            self.assertEqual(self.app.language_manager.english.translate(context,source.encode('utf-8')),translated.text,source)
             self.assertEqual(sorted(re.findall(r'\{[0-9]+[^}]*\}',source)),sorted(re.findall(r'\{[0-9]+[^}]*\}',translated.text)),source)
 
     def test_minimum_size_themes_and_repeated_switches(self):

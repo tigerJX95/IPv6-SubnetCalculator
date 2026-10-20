@@ -16,7 +16,7 @@ Choose a location mode: IPv6 address, subnet index, address range or index range
 
 Copy selected subnets, the entire page, a bounded index range, exact statistics or the calculation summary using the relevant icons. Tooltips explain each action. Range copying is limited to 5,000 records per operation; export larger sets.
 
-Export all subnets or an index range to TXT or Excel (XLSX). A worksheet supports 1,048,575 data rows plus its header; use TXT above this limit. Review size estimates and available space before very large exports. Cancelling removes incomplete temporary files and preserves an existing destination. The export data format and column headers remain compatible with previous versions; the interface language does not alter addresses or serialized numbers.
+Export all subnets or an index range to TXT or Excel (XLSX). A worksheet supports 1,048,575 data rows plus its header; use TXT above this limit. Review size estimates and available space before very large exports. Cancelling removes incomplete temporary files and preserves an existing destination. Excel headers and the worksheet name use the interface language at export start. English output uses “No.”, “IPv6 Subnet” and the worksheet name “IPv6 Subnets”; Chinese output retains its original Chinese labels. Switching languages during export does not change that file. TXT contains one CIDR per line. Addresses, selected ranges and exact index values are unchanged.
 
 ## 4. Calculation plans and drag-and-drop
 

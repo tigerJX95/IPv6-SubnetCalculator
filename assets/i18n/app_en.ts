@@ -2468,5 +2468,24 @@ This application provides mathematical results and planning assistance. It does 
       <source>文件扩展名与导出格式不一致</source>
       <translation>The file extension does not match the export format</translation>
     </message>
+    <message>
+      <source>{0:,.2f}～{1:,.2f} {2}</source>
+      <translation>{0:,.2f}–{1:,.2f} {2}</translation>
+    </message>
+  </context>
+  <context>
+    <name>Export</name>
+    <message>
+      <source>IPv6子网</source>
+      <translation>IPv6 Subnets</translation>
+    </message>
+    <message>
+      <source>序号</source>
+      <translation>No.</translation>
+    </message>
+    <message>
+      <source>IPv6 子网</source>
+      <translation>IPv6 Subnet</translation>
+    </message>
   </context>
 </TS>
