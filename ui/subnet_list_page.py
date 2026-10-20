@@ -33,6 +33,7 @@ from ui.fonts import data_font
 from ui.theme import current_colors
 from ui.widgets import IconButton
 from ui.planning_views import PlanningViews
+from ui.list_output_controller import ListOutputController
 
 
 class ListTableModel(QAbstractTableModel):
@@ -140,9 +141,10 @@ class SubnetListPage(QWidget):
         self.analyze_button = IconButton('check_list', tx('检查清单格式与网段关系（Ctrl+Enter）'))
         self.copy_networks_button = IconButton('copy_page', tx('复制有效网段：规范化并去重，保留首次出现顺序；错误行不复制'))
         self.copy_report_button = IconButton('copy', tx('复制检查报告（包含错误行、精确统计及有限关系明细）'))
+        self.save_button = IconButton('save_plan',tx('保存原始输入、有效 CIDR 或检查报告为 TXT'))
         self.cancel_button = IconButton('stop_small', tx('取消当前清单检查，保留输入文本'))
         self.cancel_button.setVisible(False)
-        for button in (self.import_button, self.analyze_button, self.copy_networks_button, self.copy_report_button, self.cancel_button):
+        for button in (self.import_button, self.analyze_button, self.copy_networks_button, self.copy_report_button, self.save_button, self.cancel_button):
             actions.addWidget(button)
         self.source_label = QLabel(tx('粘贴或导入后检查；原始文件不会被修改。'))
         self.source_label.setObjectName('Reference')
@@ -167,6 +169,7 @@ class SubnetListPage(QWidget):
         self.result_tabs.addTab(self.records_table,tx('校验记录'))
         self.result_tabs.addTab(self.relations_table,tx('关系检查'))
         self.planning = PlanningViews(self,ListTableModel,_table)
+        self.output_controller=ListOutputController(self)
         self.result_tabs.currentChanged.connect(self._result_tab_changed)
         layout.addWidget(self.result_tabs,1)
         self.import_button.clicked.connect(self.import_file)
@@ -196,6 +199,7 @@ class SubnetListPage(QWidget):
         self.source_label.setText(tx('输入已修改，需重新检查；原始文件不会被修改。')
                                  if self.editor.toPlainText().strip() else tx('粘贴或导入后检查；原始文件不会被修改。'))
         self.source_label.setToolTip('')
+        self.output_controller.refresh()
 
     def _busy(self, busy):
         self.editor.setReadOnly(busy)
@@ -204,6 +208,7 @@ class SubnetListPage(QWidget):
         self.cancel_button.setVisible(busy)
         self.cancel_button.setEnabled(busy)
         self.planning.refresh_buttons()
+        self.output_controller.refresh()
         self.busy_changed.emit(busy)
 
     def import_file(self):
@@ -323,6 +328,7 @@ class SubnetListPage(QWidget):
             + (tx('\n存在错误行：以下关系仅基于有效网段，不代表整份清单通过。') if result.error_count else ''))
         self.copy_networks_button.setEnabled(bool(result.unique_networks))
         self.copy_report_button.setEnabled(True)
+        self.output_controller.refresh()
 
     def copy_networks(self):
         if self.analysis is not None and self.analysis.unique_networks:

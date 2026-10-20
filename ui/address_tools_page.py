@@ -84,7 +84,7 @@ class AddressToolsPage(QWidget):
         self.format_fields, self.format_copy_buttons = {}, {}
         for row, (label, key) in enumerate(((tx('压缩 / 规范化'), 'compressed'),
                                             (tx('完整展开'), 'expanded'), (tx('二进制 · 128 位'), 'binary')), 1):
-            grid.addWidget(QLabel(label+'：'), row, 0)
+            grid.addWidget(QLabel(tx('{0}：',label)), row, 0)
             field = value_label()
             if key == 'binary':
                 field.setFont(data_font(dense=True))
@@ -199,13 +199,13 @@ class AddressToolsPage(QWidget):
             return
         self.relation = relation
         self.relation_title.setText(tx('分析结果：')+relation.title)
-        self.relation_fields['a'].setText('A：'+str(relation.network_a))
-        self.relation_fields['b'].setText('B：'+str(relation.network_b))
+        self.relation_fields['a'].setText(tx('A：{0}',relation.network_a))
+        self.relation_fields['b'].setText(tx('B：{0}',relation.network_b))
         self.relation_fields['counts'].setText(tx('重叠地址数：{0:,}    间隔地址数：{1:,}', relation.overlap_count, relation.gap_count))
         self.relation_detail.setText(relation.detail)
         self.copy_relation_button.setEnabled(True)
-        normalized = tx('（主机位已规范化：')+ jt('、', (label for label, flag in (('A', relation.normalized_a), ('B', relation.normalized_b)) if flag))+'）' if relation.normalized_a or relation.normalized_b else ''
-        self.feedback.emit(tx('网段关系分析完成')+normalized+'。', 'success')
+        normalized = tx('（主机位已规范化：{0}）',jt(tx('、'), (label for label, flag in (('A', relation.normalized_a), ('B', relation.normalized_b)) if flag))) if relation.normalized_a or relation.normalized_b else ''
+        self.feedback.emit(tx('网段关系分析完成')+normalized+tx('。'), 'success')
 
     def copy_format(self, key):
         if self.formats is not None:

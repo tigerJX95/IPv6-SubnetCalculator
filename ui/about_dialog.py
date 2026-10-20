@@ -85,6 +85,8 @@ class OfflineBrowser(QTextBrowser):
     def display_document(self, relative):
         self._document_path=relative
         language=QApplication.instance().language_manager.name
+        if relative=='THIRD_PARTY_NOTICES.md':
+            relative='docs/about/COMPONENTS_EN.md' if language=='en_US' else 'docs/about/COMPONENTS.md'
         if language=='en_US' and relative in (HELP_DOCUMENT,LEGAL_DOCUMENT):
             relative=relative.replace('.md','_EN.md')
         try:

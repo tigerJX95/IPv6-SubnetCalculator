@@ -45,7 +45,9 @@ class PlanningViews:
         self.free_button=IconButton('free_space',tx('计算父网段减去当前占用清单后的空闲空间'))
         self.copy_free_button=IconButton('copy_page',tx('复制完整空闲 CIDR；明细截断时禁用，避免漏复制'))
         self.copy_free_report_button=IconButton('copy',tx('复制空闲报告：含全部空闲地址范围与精确容量'))
-        for button in (self.free_button,self.copy_free_button,self.copy_free_report_button):controls.addWidget(button)
+        self.save_free_button=IconButton('save_plan',tx('保存空闲 CIDR 或完整规划报告为 TXT'))
+        self.send_free_button=IconButton('check_list',tx('将完整空闲 CIDR 送回清单检查；截断时禁用'))
+        for button in (self.free_button,self.copy_free_button,self.copy_free_report_button,self.save_free_button,self.send_free_button):controls.addWidget(button)
         layout.addLayout(controls)
         self.free_status=QLabel()
         self.free_status.setWordWrap(True)
@@ -67,7 +69,9 @@ class PlanningViews:
         self.aggregate_button=IconButton('aggregate',tx('整理为覆盖范围完全相同的最简 CIDR 集合；不修改原始清单'))
         self.copy_aggregate_button=IconButton('copy_page',tx('复制整理后的完整 CIDR 集合'))
         self.copy_aggregate_report_button=IconButton('copy',tx('复制 CIDR 整理报告与完整结果'))
-        for button in (self.aggregate_button,self.copy_aggregate_button,self.copy_aggregate_report_button):controls.addWidget(button)
+        self.save_aggregate_button=IconButton('save_plan',tx('保存整理后的 CIDR 或规划报告为 TXT'))
+        self.send_aggregate_button=IconButton('check_list',tx('将整理结果送回清单检查；替换已有输入前确认'))
+        for button in (self.aggregate_button,self.copy_aggregate_button,self.copy_aggregate_report_button,self.save_aggregate_button,self.send_aggregate_button):controls.addWidget(button)
         layout.addLayout(controls)
         self.aggregate_status=QLabel()
         self.aggregate_status.setWordWrap(True)
@@ -117,6 +121,8 @@ class PlanningViews:
         self.copy_free_report_button.setEnabled(not busy and self.free_result is not None)
         self.copy_aggregate_button.setEnabled(not busy and self.aggregate_result is not None)
         self.copy_aggregate_report_button.setEnabled(not busy and self.aggregate_result is not None)
+        output=getattr(self.owner,'output_controller',None)
+        if output is not None:output.refresh()
 
     def status(self, task):
         return self.free_status if task=='free' else self.aggregate_status

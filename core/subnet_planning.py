@@ -29,7 +29,7 @@ def _records(text, stop, allow_empty=False):
     records = parse_subnet_records(text, stop=stop, allow_empty=allow_empty)
     invalid = [record for record in records if record.error]
     if invalid:
-        lines = jt('、', (str(record.line) for record in invalid[:5]))
+        lines = jt(tx('、'), (str(record.line) for record in invalid[:5]))
         raise InputError(tx('第 {0} 行存在错误。规划要求所有网段有效，请先修正清单。', lines))
     return records
 

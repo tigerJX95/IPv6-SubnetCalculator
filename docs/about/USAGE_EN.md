@@ -67,3 +67,17 @@ The source examples include `SubnetList_EN.txt`, `PlanningNetworks_EN.txt` and `
 In Address Tools, enter inclusive first and last IPv6 addresses, then use the conversion icon or press Enter. Supports one address through the complete IPv6 space. The last address must be at least the first; omit CIDR prefixes and zone identifiers. Results cover exactly the range using minimal CIDRs and show an exact address count. Editing either address invalidates old results.
 
 Icons copy the CIDR list or full report, or send the results to Subnet List for automatic checking. Different existing input requires confirmation with No as the default. Busy list tasks block transfer. Calculator results and calculation plans are preserved.
+
+
+## 11. Save and reuse list/planning text
+
+Use the save icon above Subnet List:
+- Original Input saves current editor text, including comments, blank lines and errors, even before checking.
+- Valid Deduplicated CIDRs saves valid normalized networks in first-occurrence order after a successful check. Error rows remain available in the report.
+- Check Report saves error records, exact totals and bounded relationship details.
+
+The Free Space and Aggregation save icons offer complete CIDRs or planning reports. CIDR TXT has one network per line and can be reimported; reports are for reading and archiving. Truncated free-space details disable complete CIDR saving and transfer, while reports retain all free address intervals and exact counts. A zero-free-space result still supports a report.
+
+Reports use the interface language at actual save time; original input stays unchanged. Overwriting requires confirmation, and failed writes preserve the existing file. If input/results change while a dialog is open, start saving again.
+
+The Send Back for Checking icon returns complete planning results to Subnet List. Different existing input requires confirmation with No as the default. Accepted transfer clears old analysis and starts a new check. Busy tasks block transfer.

@@ -21,6 +21,7 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QFileDialog as QtFileDialog, QDialog, QApplication, QLineEdit
 from ui.localized_widgets import QMessageBox as QtMessageBox
 from services.language_service import display
+from ui.file_dialog_model import LocalizedFileSystemModel
 
 
 class QMessageBox(QtMessageBox):
@@ -77,6 +78,9 @@ class QFileDialog(QtFileDialog):
     """使用自带中文目录浏览器，避免系统语言影响文件选择窗口。"""
     def __init__(self,*args,**kwargs):
         super().__init__(*args,**kwargs)
+        self.setOption(QtFileDialog.Option.DontUseNativeDialog)
+        self.file_types=LocalizedFileSystemModel(self)
+        self.setProxyModel(self.file_types)
         self._caption_source=None
         self._filters_source=None
         self._labels_source={}

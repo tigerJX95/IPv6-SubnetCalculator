@@ -1,8 +1,8 @@
-# V1.8 Windows 验收 / Windows Acceptance
+# V1.9 Windows 验收 / Windows Acceptance
 
-V1.8 新增地址范围转 CIDR，并更新英文示例与截图。需要在 Windows 中验证语言切换、显示缩放及打包资源，既有功能验收继续保留。
+V1.9 增加清单／规划 TXT 保存与结果回流。需要在 Windows 中验证语言切换、显示缩放及打包资源，既有功能验收继续保留。
 
-V1.8 adds address-range conversion and refreshes English examples and screenshots. Verify switching, DPI and packaged resources on Windows alongside existing workflows.
+V1.9 adds list/planning TXT saves and protected result transfer. Verify switching, DPI and packaged resources on Windows alongside existing workflows.
 
 ## 自动检查 / Automated Checks
 
@@ -77,3 +77,26 @@ Open the English examples and compare matching CIDRs and results. Confirm switch
 - [ ] 发送至空清单自动检查；已有内容时“否”保留原文，“是”替换并检查；忙碌时不覆盖。
 
 Check inclusive bounds, exact counts, invalid-order recovery, copy/report language, minimum-size access and safe transfer to existing/busy lists.
+
+
+## V1.9 文本保存与回流 / Text Output and Transfer
+
+- [ ] 中英文、两主题：保存菜单文案、悬停提示及启用状态正确。
+- [ ] 原始输入保留空行、注释与中文内容；有效 CIDR 文件可重新导入，报告包含错误行及精确数量。
+- [ ] 空闲与整理结果分别保存清单及报告；空闲明细截断时只能保存报告，无空闲结果仍可保存报告。
+- [ ] 取消保存／拒绝覆盖保留原文件；文件占用或权限失败后可重试，临时文件清理。
+- [ ] 保存窗口期间切换语言，报告采用保存时语言；修改输入、父网段或来源结果后拒绝旧快照。
+- [ ] 规划回流默认“否”；确认后替换并自动检查；取消及忙碌时保留当前工作。
+
+Verify output content, reimport, incomplete/empty results, overwrite and failure recovery, dialog-time changes, save-time language and protected planning transfer on Windows.
+
+
+## V1.9 双语审计修订 / Bilingual Revision
+
+- [ ] 简体中文模式：导出／打开／保存等文件选择器中，普通文件夹类型为“文件夹”，其他类型、大小单位及日期不受 Windows 显示语言影响。
+- [ ] English 模式：Folder、文件类型与日期均使用英文展示。
+- [ ] 窗口保持打开时来回切换，目录、选中文件、筛选项和输入文件名不丢失。
+- [ ] 关于中的程序信息、帮助、法律说明和组件概览对应当前语言，许可证原文不变。
+- [ ] 文件不存在提示、保存／放弃／取消确认及输入框右键菜单语言一致。
+
+Verify these cases on Windows in both OS display languages where available; Linux offscreen and simulated native-type strings do not replace Windows acceptance.

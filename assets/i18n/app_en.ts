@@ -2327,7 +2327,7 @@ File: </translation>
 
 面向 Windows 的离线 IPv6 子网计算与地址分析工具。
 
-- **主要功能**：网络范围与容量计算、分页定位、方案保存与恢复、地址格式转换、地址范围转 CIDR、双网段关系分析、已有 CIDR 清单检查、空闲空间、等价 CIDR 整理、TXT／Excel 导出。
+- **主要功能**：网络范围与容量计算、分页定位、方案保存与恢复、地址格式转换、地址范围转 CIDR、双网段关系分析、已有 CIDR 清单检查、空闲空间、等价 CIDR 整理、清单与规划文本保存、TXT／Excel 导出。
 - **项目许可**：GNU GPL v3.0 或任何后续版本（GPL-3.0-or-later）。
 - **版权**：Copyright © 2026 IPv6SubnetCalculator contributors。
 - **致谢**：感谢 PyQt6、Qt 6 和 SIP 上游项目及其贡献者。
@@ -2347,7 +2347,7 @@ File: </translation>
 
 An offline IPv6 subnet calculator and address-analysis tool for Windows.
 
-- **Features**: network ranges and capacities, pagination and location, calculation plans, address formats, address-range conversion, two-network relationships, CIDR list validation, free space, equivalent aggregation and TXT/Excel export.
+- **Features**: network ranges and capacities, pagination and location, calculation plans, address formats, address-range conversion, two-network relationships, CIDR list validation, free space, equivalent aggregation, list/planning text saves and TXT/Excel export.
 - **Project license**: GNU GPL v3.0 or any later version (GPL-3.0-or-later).
 - **Copyright**: Copyright © 2026 IPv6SubnetCalculator contributors.
 - **Acknowledgments**: PyQt6, Qt 6, SIP and their contributors.
@@ -2551,6 +2551,166 @@ This application provides mathematical results and planning assistance. It does 
     <message>
       <source>子网清单状态已变化，请重新发送。</source>
       <translation>The subnet list state changed. Send the results again.</translation>
+    </message>
+    <message>
+      <source>保存原始输入、有效 CIDR 或检查报告为 TXT</source>
+      <translation>Save original input, valid CIDRs or a check report as TXT</translation>
+    </message>
+    <message>
+      <source>保存原始输入为 TXT</source>
+      <translation>Save Original Input as TXT</translation>
+    </message>
+    <message>
+      <source>保存完整 CIDR 清单为 TXT</source>
+      <translation>Save Complete CIDR List as TXT</translation>
+    </message>
+    <message>
+      <source>保存整理后的 CIDR 或规划报告为 TXT</source>
+      <translation>Save aggregated CIDRs or a planning report as TXT</translation>
+    </message>
+    <message>
+      <source>保存文本失败：</source>
+      <translation>Could not save text: </translation>
+    </message>
+    <message>
+      <source>保存有效去重 CIDR 为 TXT</source>
+      <translation>Save Valid Deduplicated CIDRs as TXT</translation>
+    </message>
+    <message>
+      <source>保存检查报告为 TXT</source>
+      <translation>Save Check Report as TXT</translation>
+    </message>
+    <message>
+      <source>保存清单或规划文本</source>
+      <translation>Save List or Planning Text</translation>
+    </message>
+    <message>
+      <source>保存空闲 CIDR 或完整规划报告为 TXT</source>
+      <translation>Save free CIDRs or the complete planning report as TXT</translation>
+    </message>
+    <message>
+      <source>保存规划报告为 TXT</source>
+      <translation>Save Planning Report as TXT</translation>
+    </message>
+    <message>
+      <source>将使用当前规划结果替换清单，并重新检查。是否继续？</source>
+      <translation>Replace the current list with this planning result and run the check again. Continue?</translation>
+    </message>
+    <message>
+      <source>将完整空闲 CIDR 送回清单检查；截断时禁用</source>
+      <translation>Send complete free CIDRs back for checking; disabled for truncated details</translation>
+    </message>
+    <message>
+      <source>将整理结果送回清单检查；替换已有输入前确认</source>
+      <translation>Send aggregated CIDRs back for checking; confirm before replacing existing input</translation>
+    </message>
+    <message>
+      <source>文本已保存：{0}</source>
+      <translation>Text saved: {0}</translation>
+    </message>
+    <message>
+      <source>规划结果已变化，请重新计算后再发送。</source>
+      <translation>The planning result changed. Recalculate before sending.</translation>
+    </message>
+    <message>
+      <source>请使用 .txt 扩展名保存文本文件。</source>
+      <translation>Use the .txt extension to save text files.</translation>
+    </message>
+    <message>
+      <source>输入、结果或任务状态已变化，请重新选择保存。</source>
+      <translation>Input, results or task state changed. Start saving again.</translation>
+    </message>
+    <message>
+      <source>名称</source>
+      <translation>Name</translation>
+    </message>
+    <message>
+      <source>大小</source>
+      <translation>Size</translation>
+    </message>
+    <message>
+      <source>类型</source>
+      <translation>Type</translation>
+    </message>
+    <message>
+      <source>修改日期</source>
+      <translation>Date Modified</translation>
+    </message>
+    <message>
+      <source>快捷方式</source>
+      <translation>Shortcut</translation>
+    </message>
+    <message>
+      <source>磁盘驱动器</source>
+      <translation>Drive</translation>
+    </message>
+    <message>
+      <source>文件夹</source>
+      <translation>Folder</translation>
+    </message>
+    <message>
+      <source>文本文档</source>
+      <translation>Text Document</translation>
+    </message>
+    <message>
+      <source>IPv6 CIDR 清单</source>
+      <translation>IPv6 CIDR List</translation>
+    </message>
+    <message>
+      <source>JSON 文档</source>
+      <translation>JSON Document</translation>
+    </message>
+    <message>
+      <source>Excel 工作簿</source>
+      <translation>Excel Workbook</translation>
+    </message>
+    <message>
+      <source>ZIP 压缩文件</source>
+      <translation>ZIP Archive</translation>
+    </message>
+    <message>
+      <source>Python 脚本</source>
+      <translation>Python Script</translation>
+    </message>
+    <message>
+      <source>Windows 命令脚本</source>
+      <translation>Windows Command Script</translation>
+    </message>
+    <message>
+      <source>Markdown 文档</source>
+      <translation>Markdown Document</translation>
+    </message>
+    <message>
+      <source>应用程序</source>
+      <translation>Application</translation>
+    </message>
+    <message>
+      <source>动态链接库</source>
+      <translation>Dynamic Link Library</translation>
+    </message>
+    <message>
+      <source>{0} 文件</source>
+      <translation>{0} File</translation>
+    </message>
+    <message>
+      <source>文件</source>
+      <translation>File</translation>
+    </message>
+    <message>
+      <source>（主机位已规范化：{0}）</source>
+      <translation> (host bits normalized: {0})</translation>
+    </message>
+    <message>
+      <source>、</source>
+      <translation>, </translation>
+    </message>
+    <message>
+      <source>。</source>
+      <translation>.</translation>
+    </message>
+    <message>
+      <source>当前：{0}主题，切换到{1}主题（Ctrl+Shift+T）</source>
+      <translation>Current: {0} theme, switch to {1} theme (Ctrl+Shift+T)</translation>
     </message>
   </context>
   <context>

@@ -1,4 +1,4 @@
-# V1.8 国际化实现 / Internationalization Implementation
+# V1.9 国际化实现 / Internationalization Implementation
 
 ## 已实现 / Implemented
 

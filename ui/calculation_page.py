@@ -127,7 +127,7 @@ class CalculationPage(QWidget):
         for row, (label, key) in enumerate((
                 (tx('网络地址'), 'network'), (tx('网络起始地址'), 'start'), (tx('网络结束地址'), 'end'),
                 (tx('可划分子网数'), 'count'), (tx('每个子网地址数'), 'capacity'), (tx('新增子网位数'), 'bits'))):
-            summary_grid.addWidget(QLabel(label+'：'), row, 0, alignment=Qt.AlignmentFlag.AlignTop)
+            summary_grid.addWidget(QLabel(tx('{0}：',label)), row, 0, alignment=Qt.AlignmentFlag.AlignTop)
             value = value_label()
             summary_grid.addWidget(value, row, 1)
             self.fields[key] = value

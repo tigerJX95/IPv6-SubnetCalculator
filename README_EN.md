@@ -1,4 +1,4 @@
-# 🌐 IPv6 Subnet Calculator V1.8
+# 🌐 IPv6 Subnet Calculator V1.9
 
 [简体中文](README.md) | **English**
 
@@ -49,6 +49,8 @@ IPv6SubnetCalculator is an offline IPv6 subnet calculator for Windows. It analyz
 - **Bounded processing**: up to 5,000 validation entries, 1 MiB (1,048,576 bytes) and 20,000 physical lines including blanks/comments per check. Background work can be cancelled. Details are limited to 1,000 pairs while totals remain exact.
 - **Separate workspace**: list checks preserve calculator results/plans. List input, errors and reports are not stored in calculation plans; copy them to retain the work.
 
+- **Save list text**: Use the save icon to choose original input, valid deduplicated CIDRs or a check report. Original input retains comments and blank lines; reports include error records and exact statistics.
+
 ## 🌐 Interface Languages
 
 - **One bilingual application**: Simplified Chinese and English are bundled in one EXE. The upper-right icons are Language → Theme → About; choose a language from the globe menu without restarting or connecting to the Internet.
@@ -56,6 +58,8 @@ IPv6SubnetCalculator is an offline IPv6 subnet calculator for Windows. It analyz
 - **Consistent presentation**: pages, tooltips, dialogs, errors, status, table headers and offline help follow the selected language. Background completion uses the current language; the preference is restored at the next launch.
 - **Shared plans**: use the same calculation plan in either language, retaining names, notes and original list content.
 - **Input experience**: retains JSON plan drops, validated replacement, unsaved-work protection and visible error indicators.
+
+- **File-window language**: Folder/type labels, sizes and dates follow the selected language. The component overview is localized; original license texts are retained.
 
 ## 🧮 Free Space and Equivalent CIDR Aggregation
 
@@ -65,9 +69,11 @@ IPv6SubnetCalculator is an offline IPv6 subnet calculator for Windows. It analyz
 - **Copying and reports**: copy complete results or planning reports. Free-CIDR details are capped at 5,000; when truncated, complete-CIDR copying is disabled while reports retain all free address intervals and exact totals.
 - **Background and appearance**: both tasks can be cancelled and stale results are cleared on input changes. The About icon now uses transparent theme-aware lines with its tooltip/F1 entry retained.
 
+- **Save and reuse planning results**: Save complete free/aggregated CIDRs or planning reports as TXT, or send complete results back to Subnet List with replacement confirmation. Truncated free-space details still support reports containing all address intervals.
+
 ## 📸 Screenshots
 
-Version: **V1.8**.
+Version: **V1.9**.
 
 ### English
 
@@ -81,6 +87,10 @@ Version: **V1.8**.
 
 ![IPv6 address range to CIDR](docs/screenshots/en_address_range_dark.png)
 
+![Planning TXT save and transfer](docs/screenshots/free_light.png)
+
+![English list save menu](docs/screenshots/en_list_save_menu_light.png)
+
 ### 简体中文
 
 ![Chinese calculation, light](docs/screenshots/calculation_light.png)
@@ -89,7 +99,7 @@ Version: **V1.8**.
 
 ## 📦 Download and Usage
 
-Download `IPv6SubnetCalculator_V1.8.exe` directly from Assets on GitHub [Releases](../../releases/latest). Run the downloaded executable; no additional runtime setup is required. Enter a network and target prefix, then click the calculation icon; the application switches to Results when complete.
+Download `IPv6SubnetCalculator_V1.9.exe` directly from Assets on GitHub [Releases](../../releases/latest). Run the downloaded executable; no additional runtime setup is required. Enter a network and target prefix, then click the calculation icon; the application switches to Results when complete.
 
 Press F1 or use the top-bar information icon for built-in help, license texts and legal notices.
 

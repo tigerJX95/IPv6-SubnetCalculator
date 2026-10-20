@@ -34,7 +34,7 @@ LICENSE_DOCUMENTS = (
 )
 HELP_DOCUMENT = 'docs/about/USAGE.md'
 LEGAL_DOCUMENT = 'docs/about/LEGAL.md'
-DOCUMENT_PATHS = frozenset(path for _, path in LICENSE_DOCUMENTS) | {HELP_DOCUMENT, LEGAL_DOCUMENT, 'docs/about/USAGE_EN.md','docs/about/LEGAL_EN.md'}
+DOCUMENT_PATHS = frozenset(path for _, path in LICENSE_DOCUMENTS) | {HELP_DOCUMENT, LEGAL_DOCUMENT, 'docs/about/USAGE_EN.md','docs/about/LEGAL_EN.md','docs/about/COMPONENTS.md','docs/about/COMPONENTS_EN.md'}
 
 
 def read_document(relative):
@@ -54,4 +54,4 @@ def program_information():
         sip_distribution = version('PyQt6-sip')
     except PackageNotFoundError:
         sip_distribution = tx('发行元数据不可用（SIP 引擎 {0}）', SIP_VERSION_STR)
-    return tx('**IPv6SubnetCalculator · V{0}**\n\n面向 Windows 的离线 IPv6 子网计算与地址分析工具。\n\n- **主要功能**：网络范围与容量计算、分页定位、方案保存与恢复、地址格式转换、地址范围转 CIDR、双网段关系分析、已有 CIDR 清单检查、空闲空间、等价 CIDR 整理、TXT／Excel 导出。\n- **项目许可**：GNU GPL v3.0 或任何后续版本（GPL-3.0-or-later）。\n- **版权**：Copyright © 2026 IPv6SubnetCalculator contributors。\n- **致谢**：感谢 PyQt6、Qt 6 和 SIP 上游项目及其贡献者。\n\n### 当前运行组件\n\n| 组件 | 实际运行版本 |\n|---|---|\n| PyQt6 | {1} |\n| Qt | {2} |\n| PyQt6-sip | {3} |\n\n许可原文、使用说明与法律责任信息可在本窗口离线查看。\n本程序提供数学计算与辅助规划信息，不会修改系统网络配置，也不验证地址的实际可达性。\n', APP_VERSION, PYQT_VERSION_STR, qVersion(), sip_distribution)
+    return tx('**IPv6SubnetCalculator · V{0}**\n\n面向 Windows 的离线 IPv6 子网计算与地址分析工具。\n\n- **主要功能**：网络范围与容量计算、分页定位、方案保存与恢复、地址格式转换、地址范围转 CIDR、双网段关系分析、已有 CIDR 清单检查、空闲空间、等价 CIDR 整理、清单与规划文本保存、TXT／Excel 导出。\n- **项目许可**：GNU GPL v3.0 或任何后续版本（GPL-3.0-or-later）。\n- **版权**：Copyright © 2026 IPv6SubnetCalculator contributors。\n- **致谢**：感谢 PyQt6、Qt 6 和 SIP 上游项目及其贡献者。\n\n### 当前运行组件\n\n| 组件 | 实际运行版本 |\n|---|---|\n| PyQt6 | {1} |\n| Qt | {2} |\n| PyQt6-sip | {3} |\n\n许可原文、使用说明与法律责任信息可在本窗口离线查看。\n本程序提供数学计算与辅助规划信息，不会修改系统网络配置，也不验证地址的实际可达性。\n', APP_VERSION, PYQT_VERSION_STR, qVersion(), sip_distribution)

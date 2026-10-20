@@ -111,7 +111,7 @@ class SubnetDetailDialog(AppDialog):
         self.values = {}
         for name in (tx('子网序号'), tx('IPv6 子网'), tx('起始地址'), tx('结束地址'), tx('地址数量')):
             self.values[name] = value_label()
-            form.addRow(name+'：', self.values[name])
+            form.addRow(tx('{0}：',name), self.values[name])
         layout.addLayout(form)
         actions = QHBoxLayout()
         self.previous_button = IconButton('previous_small', tx('上一个子网'))

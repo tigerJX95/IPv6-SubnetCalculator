@@ -154,7 +154,7 @@ class ThemeButton(QToolButton):
         dark = self.manager.name == 'dark'
         text = tx('当前：{0}主题\n切换到{1}主题（Ctrl+Shift+T）', tx('深色') if dark else tx('浅色'), tx('浅色') if dark else tx('深色'))
         self.setToolTip(text)
-        self.setAccessibleName(text.replace('\n', '，'))
+        self.setAccessibleName(tx('当前：{0}主题，切换到{1}主题（Ctrl+Shift+T）',tx('深色') if dark else tx('浅色'),tx('浅色') if dark else tx('深色')))
         pixmap = QPixmap(52, 52)
         pixmap.fill(Qt.GlobalColor.transparent)
         painter = QPainter(pixmap)

@@ -223,7 +223,31 @@ class ReleaseCheck(QObject):
         panel.start_input.setText('2026:1015:abcd::1');panel.end_input.setText('2026:1015:abcd::ff')
         self.checks.append('address_range_exact_coverage_and_bilingual_state')
         self.check_language_state()
+        self.check_file_metadata_language()
         self.schedule(self.start_list_check)
+
+    def check_file_metadata_language(self):
+        from ui.standard_dialogs import QFileDialog
+        folder=self.directory/'FolderTypeCheck'
+        folder.mkdir()
+        dialog=QFileDialog(self.window)
+        try:
+            dialog.setDirectory(str(self.directory))
+            proxy=dialog.file_types
+            original=proxy.sourceModel().index(str(folder))
+            self.require(original.isValid(),'Folder index missing')
+            index=proxy.mapFromSource(original.siblingAtColumn(2))
+            self.require(proxy.data(index)=='文件夹','Chinese folder type missing')
+            self.application.language_manager.apply('en_US',persist=False)
+            self.require(proxy.data(index)=='Folder','English folder type missing')
+            about=self.window.about_dialog
+            about.license_selector.setCurrentIndex(0)
+            self.require('Third-Party Components' in about.licenses.toPlainText(),'English component overview missing')
+            self.require(not any('\u4e00'<=c<='\u9fff' for c in about.licenses.toPlainText()),'Chinese text in English overview')
+            self.checks.append('file_metadata_and_component_overview_follow_language')
+        finally:
+            self.application.language_manager.apply('zh_CN',persist=False)
+            dialog.deleteLater()
 
     def check_language_state(self):
         manager=self.application.language_manager
@@ -278,6 +302,18 @@ class ReleaseCheck(QObject):
                 self.require(page.record_model.rowCount() == 5, '清单结果模型不完整')
                 self.require(len(result.normalized_text().splitlines()) == 3, '清单去重不正确')
                 self.checks.append('subnet_list_unicode_import_and_background_relations')
+                from services.text_output import save_text_atomic
+                from services.language_service import display
+                self.require(page.output_controller.actions['networks'].isEnabled(),'List output action disabled')
+                text_path=self.directory/'有效清单.txt'
+                save_text_atomic(text_path,str(result.normalized_text())+'\n')
+                self.require(len(text_path.read_text(encoding='utf-8').splitlines())==3,'Saved CIDR count mismatch')
+                self.application.language_manager.apply('en_US',persist=False)
+                report_path=self.directory/'检查报告.txt'
+                save_text_atomic(report_path,display(result.as_text()))
+                self.require('IPv6 Subnet List Check Report' in report_path.read_text(encoding='utf-8'),'English saved report missing')
+                self.application.language_manager.apply('zh_CN',persist=False)
+                self.checks.append('list_txt_output_and_localized_report')
                 self.phase = 'planning_free'
                 page.editor.setPlainText('::/127\n::2/127')
                 page.planning.parent_input.setText('::/124')
@@ -295,6 +331,13 @@ class ReleaseCheck(QObject):
                 self.require(result.cidr_text() == '::/126' and result.address_count == 4, 'CIDR 等价整理不正确')
                 self.require(page.editor.toPlainText() == '::/127\n::2/127', 'CIDR 整理改写了原始输入')
                 self.checks.append('cidr_aggregation_preserves_coverage_and_input')
+                from services.text_output import save_text_atomic
+                self.require(page.output_controller.actions['aggregate_cidrs'].isEnabled(),'Planning output action disabled')
+                self.require(page.planning.send_aggregate_button.isEnabled(),'Planning transfer disabled')
+                output=self.directory/'整理结果.txt'
+                save_text_atomic(output,str(result.cidr_text())+'\n')
+                self.require(output.read_text(encoding='utf-8')=='::/126\n','Planning TXT mismatch')
+                self.checks.append('planning_txt_output_and_transfer_actions')
                 self.phase = 'list_cancel'
                 page.editor.setPlainText('\n'.join(['::/0']*5000))
                 page.analyze()
