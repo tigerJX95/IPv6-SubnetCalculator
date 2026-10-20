@@ -1,39 +1,49 @@
-# IPv6SubnetCalculator V1.7
+# IPv6SubnetCalculator V1.8
 
-## 🐛 导出国际化
+## ✨ 地址范围转 CIDR
 
-- 修复英文界面导出的 Excel 仍含中文表头及工作表名的问题；英文使用 `No.`、`IPv6 Subnet`，工作表名 `IPv6 Subnets`。
-- 中文导出保留“序号”“IPv6 子网”及工作表名“IPv6子网”。
-- 文件使用开始导出时的界面语言；导出期间切换语言保持文件内部一致，完成提示跟随当前界面语言。
-- 保留指定范围的实际序号、超长整数精度及取消后的原文件保护。
+- 新增包含首末地址的 IPv6 范围转换，生成精确覆盖、不超出范围的最简 CIDR 清单与精确地址总数。
+- 支持复制 CIDR 清单和完整报告，编辑输入后自动清除旧结果。
+- 可将结果送入“子网清单”自动检查；替换已有内容前确认，任务忙碌时保护当前清单。
+- 支持中英文、浅深色主题及最小窗口，通过图标和悬停提示操作。
 
-## 🌐 文字与文档
+## 🐛 英文示例与截图
 
-- 补齐英文容量估算范围分隔符，刷新 Qt 页签滚动按钮悬停提示。
-- 检查界面、弹窗、表头与提示文字，增加翻译模板覆盖及实际 XLSX 内容回归。
-- TXT 保持每行一个 CIDR，不添加标题；JSON 方案格式保持兼容。
-- 更新双语 README、离线帮助及运行截图。
+- 修正英文规划截图误用中文示例，导致输入区显示“父网段”注释的问题。
+- 新增英文子网清单、规划清单和计算方案示例；英文规划注释使用 `# Parent network: 2026:1015:abcd::/48`。
+- 重新拍摄英文清单、空闲空间、CIDR 整理及方案相关截图，更新中英文 README 的截图。
+- 英文与中文样例保留相同的网段、计算参数和浏览状态；切换语言继续保留用户输入原文。
+
+## 📖 文档
+
+- 补充中英文示例文件对照说明和离线使用指引。
+- 计算及导出行为沿用 V1.7，包括 Excel 导出语言、精确序号和取消保护。
 
 ## 📦 下载
 
-在 Releases 的 Assets 中直接下载 `IPv6SubnetCalculator_V1.7.exe`。标签：`v1.7`。
+在 Releases 的 Assets 中直接下载 `IPv6SubnetCalculator_V1.8.exe`。标签：`v1.8`。
 
 ---
 
-## 🐛 Localized Excel Export
+## ✨ Address Range to CIDR
 
-- Fixed Chinese column headers and worksheet names in English Excel exports. English output uses `No.`, `IPv6 Subnet` and worksheet `IPv6 Subnets`.
-- Chinese output retains its existing headers and worksheet name.
-- Each file uses the interface language at export start, even if the interface language changes during export. Completion feedback uses the current interface language.
-- Preserves actual indices for selected ranges, exact large integers and cancellation protection for existing files.
+- Converts inclusive IPv6 ranges into minimal CIDRs covering exactly the input range, with an exact address count.
+- Copies the CIDR list or full report and invalidates stale results after input edits.
+- Sends results to Subnet List for checking, confirming replacement of existing content and protecting busy tasks.
+- Supports both languages, themes and the minimum window size with icons and tooltips.
 
-## 🌐 Text and Documentation
+## 🐛 English Examples and Screenshots
 
-- Added the English separator for size-estimate ranges and refreshed Qt tab-scroll tooltips.
-- Audited interface and dialog text, adding catalog-coverage and actual-workbook regression checks.
-- TXT remains one CIDR per line without headers; JSON plans remain compatible.
-- Updated bilingual READMEs, offline help and application screenshots.
+- Fixed English planning screenshots using Chinese sample comments.
+- Added English subnet-list, planning-list and calculation-plan samples. The planning comment now reads `# Parent network: 2026:1015:abcd::/48`.
+- Recaptured English list, free-space, aggregation and plan-related views, updating screenshots in both READMEs.
+- Paired samples retain matching networks, calculation parameters and view state. Language switching continues to preserve user-entered text.
+
+## 📖 Documentation
+
+- Added a bilingual sample-file guide and updated offline help.
+- Retains V1.7 calculation and export behavior, including localized Excel output, exact indices and cancellation protection.
 
 ## 📦 Download
 
-Download `IPv6SubnetCalculator_V1.7.exe` directly from Assets on Releases. Tag: `v1.7`.
+Download `IPv6SubnetCalculator_V1.8.exe` directly from Assets on Releases. Tag: `v1.8`.

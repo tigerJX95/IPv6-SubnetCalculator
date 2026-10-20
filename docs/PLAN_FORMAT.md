@@ -1,4 +1,4 @@
-# V1.7 计算方案格式 / Calculation Plan Format
+# V1.8 计算方案格式 / Calculation Plan Format
 
 方案采用 UTF-8 JSON（读取兼容 BOM），格式标识 `IPv6SubnetCalculator.plan`，格式版本 `1`，上限 64 KiB。只保存参数与稀疏视图数据，不存储派生统计或子网列表。/ UTF-8 JSON (BOM accepted on read), format version 1, maximum 64 KiB, with parameters and sparse view state only.
 

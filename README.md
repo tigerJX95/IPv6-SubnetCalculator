@@ -1,4 +1,4 @@
-# 🌐 IPv6 子网计算器 V1.7
+# 🌐 IPv6 子网计算器 V1.8
 
 **简体中文** | [English](README_EN.md)
 
@@ -15,6 +15,7 @@ IPv6SubnetCalculator 是一款适用于 Windows 的离线 IPv6 子网计算工�
 - **外观主题**：提供浅色和深色主题，点击右上角月亮／太阳图标切换，或按 Ctrl+Shift+T；自动记住选择。
 - **四个功能页**：“子网计算”展示参数、摘要和地址用途；“子网结果”展示表格和操作工具；“地址工具”提供格式转换及双网段分析；“子网清单”检查已有 CIDR 的格式与批量关系。切换标签保留各页状态。
 - **地址格式转换**：输出压缩／小写规范化、8 组完整展开和 128 位二进制，支持逐项或全部复制；接受 IPv4 映射的 IPv6 写法。
+- **地址范围转 CIDR**：输入包含首末地址的 IPv6 范围，生成精确覆盖该范围的最简 CIDR 清单，显示精确地址总数；可复制清单或报告，并转入“子网清单”继续检查，替换已有内容前确认。
 - **双网段关系分析**：输入两个 IPv6 CIDR，判断相同、A 包含 B、B 包含 A、相邻或完全独立，显示精确重叠／间隔地址数，支持复制完整报告。
 - **分页与定位**：每页 25、50、100、200 条，支持页码跳转，以及按 IPv6 地址、子网序号或对应范围定位。巨大结果集仅加载当前页，范围高亮跨页保留。
 - **选择统计与复制**：显示本页选中数量、首末序号、连续性和地址总量；可复制所选记录、当前页、指定序号范围及完整精确统计。支持 Ctrl/Shift 多选、Ctrl+A、Ctrl+C 和 Esc。
@@ -65,7 +66,7 @@ IPv6SubnetCalculator 是一款适用于 Windows 的离线 IPv6 子网计算工�
 
 ## 📸 运行截图
 
-截图版本：**V1.7**。
+截图版本：**V1.8**。
 
 ### 简体中文
 
@@ -81,11 +82,13 @@ IPv6SubnetCalculator 是一款适用于 Windows 的离线 IPv6 子网计算工�
 
 ![English address tools](docs/screenshots/en_tools_light.png)
 
-![English subnet planning](docs/screenshots/en_aggregate_dark.png)
+![English subnet planning with English sample comments](docs/screenshots/en_aggregate_dark.png)
+
+![IPv6 address range to CIDR](docs/screenshots/en_address_range_dark.png)
 
 ## 📦 下载与使用
 
-从 GitHub [Releases](../../releases/latest) 的 Assets 中直接下载 `IPv6SubnetCalculator_V1.7.exe`，下载后即可运行，无需另行配置运行环境。输入 IPv6 网络地址与目标前缀，点击计算图标；完成后自动切换到结果页。
+从 GitHub [Releases](../../releases/latest) 的 Assets 中直接下载 `IPv6SubnetCalculator_V1.8.exe`，下载后即可运行，无需另行配置运行环境。输入 IPv6 网络地址与目标前缀，点击计算图标；完成后自动切换到结果页。
 
 按 F1 或点击顶部“ⓘ”可查看内置帮助、许可原文与法律责任说明。
 

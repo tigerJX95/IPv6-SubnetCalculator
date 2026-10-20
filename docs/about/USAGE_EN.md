@@ -55,3 +55,15 @@ The moon/sun icon or Ctrl+Shift+T switches Light/Dark and remembers the theme. F
 ## 9. Input feedback
 
 Invalid input receives a red border, warning indicator and specific explanation; bottom errors are bold. Editing clears the corresponding field marker and the next action validates again. List errors retain physical line numbers. Copy/export range errors appear inside their dialogs. A plan-file error marks the file status rather than valid current parameters.
+
+
+## 9. English samples
+
+The source examples include `SubnetList_EN.txt`, `PlanningNetworks_EN.txt` and `OfficeNetwork_EN.json`. Their CIDRs, calculation parameters and view state match the Chinese samples; comments, names and notes use English. Choose a file according to your reading preference. Switching interface languages preserves imported text.
+
+
+## 10. Address range to CIDR
+
+In Address Tools, enter inclusive first and last IPv6 addresses, then use the conversion icon or press Enter. Supports one address through the complete IPv6 space. The last address must be at least the first; omit CIDR prefixes and zone identifiers. Results cover exactly the range using minimal CIDRs and show an exact address count. Editing either address invalidates old results.
+
+Icons copy the CIDR list or full report, or send the results to Subnet List for automatic checking. Different existing input requires confirmation with No as the default. Busy list tasks block transfer. Calculator results and calculation plans are preserved.

@@ -1,4 +1,4 @@
-# V1.7 开发说明 / Development Notes
+# V1.8 开发说明 / Development Notes
 
 ## 运行与构建 / Run and Build
 
@@ -11,13 +11,13 @@ python -m pip install -r requirements.txt
 python main.py
 ```
 
-Windows 下运行 `build.cmd`，会安装固定版本的界面依赖和 PyInstaller，生成 `dist/IPv6SubnetCalculator_V1.7.exe`。构建需要联网下载依赖；生成后的程序离线运行，不要求目标电脑安装 Python。EXE 的架构取决于所用 Python 的架构，建议使用 Windows x64 Python。
+Windows 下运行 `build.cmd`，会安装固定版本的界面依赖和 PyInstaller，生成 `dist/IPv6SubnetCalculator_V1.8.exe`。构建需要联网下载依赖；生成后的程序离线运行，不要求目标电脑安装 Python。EXE 的架构取决于所用 Python 的架构，建议使用 Windows x64 Python。
 
-On Windows, `build.cmd` installs the pinned interface dependencies and PyInstaller, then creates `dist/IPv6SubnetCalculator_V1.7.exe`. Building requires internet access to download dependencies. The resulting application works offline without Python on the target computer. Its architecture follows the Python interpreter used; Windows x64 Python is recommended.
+On Windows, `build.cmd` installs the pinned interface dependencies and PyInstaller, then creates `dist/IPv6SubnetCalculator_V1.8.exe`. Building requires internet access to download dependencies. The resulting application works offline without Python on the target computer. Its architecture follows the Python interpreter used; Windows x64 Python is recommended.
 
-可选运行 `python tools/package_release.py` 生成 `dist/IPv6SubnetCalculator_V1.7_Windows.zip`，包含 EXE、项目 `LICENSE`／`NOTICE` 及第三方许可文件。Windows 用户默认直接下载 EXE；ZIP 仅为可选归档，源码包单独提供。发布前运行 `verify.cmd` 检查本次 EXE。
+可选运行 `python tools/package_release.py` 生成 `dist/IPv6SubnetCalculator_V1.8_Windows.zip`，包含 EXE、项目 `LICENSE`／`NOTICE` 及第三方许可文件。Windows 用户默认直接下载 EXE；ZIP 仅为可选归档，源码包单独提供。发布前运行 `verify.cmd` 检查本次 EXE。
 
-Optionally run `python tools/package_release.py` to create `dist/IPv6SubnetCalculator_V1.7_Windows.zip`, containing the EXE, project LICENSE/NOTICE, and third-party license files. Publish the EXE as the default Windows download; the ZIP is optional and source is provided separately. Run `verify.cmd` before publishing to check the executable from this build.
+Optionally run `python tools/package_release.py` to create `dist/IPv6SubnetCalculator_V1.8_Windows.zip`, containing the EXE, project LICENSE/NOTICE, and third-party license files. Publish the EXE as the default Windows download; the ZIP is optional and source is provided separately. Run `verify.cmd` before publishing to check the executable from this build.
 
 ## 模块职责 / Module Responsibilities
 
@@ -86,15 +86,15 @@ Widget colors come from one stylesheet, without mixing in global `setPalette`. C
 
 Project-authored content uses `GPL-3.0-or-later`. The root `LICENSE` contains the unmodified GPLv3 text; `NOTICE` identifies the versions, scope, and lack of warranty. Third-party license files are retained separately.
 
-`build.cmd` 会将项目与第三方许可嵌入程序，并在 `dist/IPv6SubnetCalculator_V1.7_Licenses/` 输出可直接阅读的副本。该目录可作为独立许可附件保留；EXE 已嵌入许可文件。发布时提供与 EXE 对应版本的完整源码及构建材料（包括 `build.cmd`、`requirements.txt`、资源和开发说明）。源码可放在同一 Release 的源码附件中；确保该 Release 对应正确的提交和标签，不要仅链接到持续变化的主分支。
+`build.cmd` 会将项目与第三方许可嵌入程序，并在 `dist/IPv6SubnetCalculator_V1.8_Licenses/` 输出可直接阅读的副本。该目录可作为独立许可附件保留；EXE 已嵌入许可文件。发布时提供与 EXE 对应版本的完整源码及构建材料（包括 `build.cmd`、`requirements.txt`、资源和开发说明）。源码可放在同一 Release 的源码附件中；确保该 Release 对应正确的提交和标签，不要仅链接到持续变化的主分支。
 
-`build.cmd` embeds project and third-party license files in the application and also writes readable copies to `dist/IPv6SubnetCalculator_V1.7_Licenses/`. Retain that folder as an optional standalone license attachment; licenses are also embedded in the EXE. Provide the complete matching application source and build materials, including `build.cmd`, `requirements.txt`, assets, and these instructions. A source archive can accompany the same Release; use the matching commit and tag rather than linking only to a changing main branch.
+`build.cmd` embeds project and third-party license files in the application and also writes readable copies to `dist/IPv6SubnetCalculator_V1.8_Licenses/`. Retain that folder as an optional standalone license attachment; licenses are also embedded in the EXE. Provide the complete matching application source and build materials, including `build.cmd`, `requirements.txt`, assets, and these instructions. A source archive can accompany the same Release; use the matching commit and tag rather than linking only to a changing main branch.
 
 程序包含的第三方组件仍须按各自许可履行源码、版权和再分发义务。完整源码的提供范围包括适用许可证要求的依赖源码；仅附上项目的 Python 文件或上游主页链接并不自动满足所有第三方二进制分发条件。组件版本及获取入口见 `THIRD_PARTY_NOTICES.md`，发布时应保留所用版本的依赖源码及构建信息。
 
 Bundled third-party components retain their own source, attribution, and redistribution obligations. The source offer must also cover dependency source where required by the applicable licenses; providing only the application's Python files or an upstream home-page link does not automatically satisfy all third-party binary distribution conditions. Versions and upstream entry points are listed in `THIRD_PARTY_NOTICES.md`. Retain the dependency sources and build information for the versions actually shipped.
 
-## V1.7 自动验证 / Automated Verification
+## V1.8 自动验证 / Automated Verification
 
 Windows 下先运行 `build.cmd`，再运行 `verify.cmd`。验证入口执行回归测试、性能测量、源码程序检查和本次构建的 EXE 检查，将结果保存在 `verification/`，不加入 Git。
 
@@ -109,7 +109,7 @@ python tools/verify.py --report-dir verification
 指定打包程序可运行： / To include a packaged application:
 
 ```console
-python tools/verify.py --exe dist/IPv6SubnetCalculator_V1.7.exe --report-dir verification
+python tools/verify.py --exe dist/IPv6SubnetCalculator_V1.8.exe --report-dir verification
 ```
 
 `summary.json` 保存环境、逐阶段结果及性能数据；`SUMMARY.md` 为简要结果，`tests.log` 保存回归日志；`source.json` 和 `executable.json` 分别记录源码与打包程序检查。源码检查通过时，未提供的 EXE 仍标记为 `not_run`。只有在 Windows 上执行且 EXE 检查通过后，`windows_automated_checks` 才标记为通过；人工验收始终独立登记，见 [Windows 验收](WINDOWS_ACCEPTANCE.md)。
@@ -128,13 +128,13 @@ A pre-build `build_manifest.json` records a SHA-256 fingerprint of runtime sourc
 
 Performance timings are measurements of the current machine, without fixed hardware-dependent speed thresholds. Export memory is measured with `tracemalloc` and covers Python allocations only, excluding native Qt allocations and total process memory. A coarse guard detects unexpected export-memory growth.
 
-本轮环境与测量记录见 [V1.7 验证记录](VALIDATION.md)。 / See the [V1.7 validation record](VALIDATION.md) for this run and its environment.
+本轮环境与测量记录见 [V1.8 验证记录](VALIDATION.md)。 / See the [V1.8 validation record](VALIDATION.md) for this run and its environment.
 
-## V1.7 发布范围 / Release Scope
+## V1.8 发布范围 / Release Scope
 
-V1.7 完善导出国际化：Excel 表头和工作表名跟随任务开始时的界面语言，修复 Qt 页签滚动提示及容量范围分隔符，保留全部既有计算与规划功能；核心数据和方案格式不变。结构与维护说明见 [I18N_PLAN.md](I18N_PLAN.md)，本版更新见 [RELEASE_NOTES.md](RELEASE_NOTES.md)，验证记录见 [VALIDATION.md](VALIDATION.md)。Git 标签使用 v1.7。
+V1.8 新增 IPv6 地址范围转 CIDR 及安全转入清单检查，同时提供英文示例并更新截图。既有计算、导出及用户输入保留规则沿用 V1.7。结构与维护说明见 [I18N_PLAN.md](I18N_PLAN.md)，本版更新见 [RELEASE_NOTES.md](RELEASE_NOTES.md)，验证记录见 [VALIDATION.md](VALIDATION.md)。Git 标签使用 v1.8。
 
-V1.7 localizes Excel column headers and worksheet names using a task-start language snapshot and improves translation coverage while preserving calculations and plan-format compatibility. Refer to the implementation, release and validation documents above.
+V1.8 adds address-range conversion and safe transfer to Subnet List, alongside English examples and refreshed screenshots. Existing calculation and export behavior are retained from V1.7. Refer to the implementation, release and validation documents above.
 
 ## 计算摘要复制 / Calculation Summary Copying
 
@@ -168,7 +168,7 @@ The full suite repeatedly creates/closes windows, switches themes, resizes, and 
 
 `ui/fonts.py` centralizes 12 pt interface text, 12 pt monospaced text, 11 pt dense binary text, and the 28 px title. Pages, the data model, shared value labels, and tooltips use these settings; dialogs inherit the application font. Index-column sizing uses font metrics, with a default row height of 38. Calculation and Address Tools use scrolling/wrapping in smaller windows.
 
-## V1.7 方案文件 / Plan Files
+## V1.8 方案文件 / Plan Files
 
 `core/calculation_plan.py` 定义格式与校验；`services/plan_storage.py` 负责有大小上限的 UTF-8 JSON 读写及原子替换；`ui/plan_controller.py` 协调文件选择、未保存提示和界面恢复。保存后只在参数、名称或备注变化时提示未保存，浏览变化仅随下一次保存记录。
 
@@ -197,7 +197,7 @@ Networks are grouped and sorted by start address/prefix. CIDRs form laminar inte
 Validation is shared. Sorted closed intervals are merged, free gaps are obtained by a linear scan, and aligned CIDRs are emitted by bit operations without address enumeration or coverage expansion. Free-space totals are exact while at most 5,000 CIDR objects are retained; gap intervals are bounded by input count plus one. Aggregated CIDRs cannot outnumber the input. Capacities remain integers. Source/frozen checks cover both planners and existing worker lifecycle protections apply.
 
 
-## V1.7 导入与展示边界
+## V1.8 导入与展示边界
 
 - ui/plan_drop_controller.py：仅拦截主窗口中的文件 URL，QTimer 结束原生拖放回调后调用 PlanController.open_path；不处理其他弹窗或普通文本拖放。
 - ui/plan_controller.py：打开与拖放共用加载、先校验、未保存决策及恢复流程；拖放额外确认未修改工作的替换；不调用 MainWindow.calculate。
@@ -230,3 +230,19 @@ Keep README user-facing: capabilities, usage, screenshots, downloads and licensi
 当前提供 XLSX 与 TXT 导出，未实现 CSV；TXT 是可重新导入的纯 CIDR 清单，不加入语言相关表头。`tests/test_export_language.py` 检查实际工作簿内容、两方向中途切换、文件选择器中途切换、超长序号、取消保护及模板目录覆盖。
 
 The supported export formats are XLSX and TXT. CSV is not implemented. TXT remains a reimportable CIDR list without localized headers. Regression tests inspect actual workbook XML and cover language changes, precision and cancellation.
+
+
+## 示例与截图语言 / Sample and Screenshot Languages
+
+英文截图须使用 `examples/*_EN.txt` 及 `OfficeNetwork_EN.json`；中文使用原有示例。英文规划清单首行应为 `# Parent network: 2026:1015:abcd::/48`。检查编辑区、方案名称、备注和临时文件名，不能只检查界面标签。更换示例内容后重新运行、拍摄，不直接修改图片中文字。原始输入中的注释属于用户数据，语言切换不得自动翻译。
+
+Use the English examples for English captures, including comments, plan names, notes and temporary filenames. Recapture the running application rather than editing text in images. Language switching must preserve user-entered content.
+
+
+## 地址范围模块 / Address Range Modules
+
+- `core/address_range.py`：无 Qt 依赖，校验两端地址及顺序，使用整数区间的标准 CIDR 汇总，保留精确计数；不枚举地址。
+- `ui/address_range_panel.py`：独立输入、错误定位、结果失效、复制和发送信号。
+- `ui/range_transfer_controller.py`：忙碌检查、默认“否”的替换确认、确认后状态复核及自动检查；不修改计算方案。
+
+The core uses `ipaddress.summarize_address_range` without enumerating addresses. The separate panel handles validation, result invalidation and copying. A controller protects existing list input before transfer and starts validation; calculation plans remain unchanged.

@@ -1,4 +1,4 @@
-# 🌐 IPv6 Subnet Calculator V1.7
+# 🌐 IPv6 Subnet Calculator V1.8
 
 [简体中文](README.md) | **English**
 
@@ -20,6 +20,8 @@ IPv6SubnetCalculator is an offline IPv6 subnet calculator for Windows. It analyz
 - **Selection and copying:** Current-page counts, first and last indices, continuity, and total address capacity. Copy selected subnets, the current page, an index range, or exact statistics. Supports Ctrl/Shift selection, Ctrl+A, Ctrl+C, and Esc.
 - **Subnet details:** Double-click or press Enter to inspect full address ranges and capacity, browse adjacent subnets, and copy details.
 - **File export:** Export all subnets or a range to TXT or Excel (XLSX), with size estimates, progress, and cancellation. The destination is replaced only after its temporary file is written successfully. Excel column headers and the worksheet name use the interface language at export start; TXT keeps one CIDR per line.
+
+- **Address range to CIDR**: Convert inclusive first/last IPv6 addresses to minimal CIDRs covering exactly the range, with an exact address count. Copy the list or report, or send it to Subnet List for checking with confirmation before replacing existing input.
 
 ## 💾 Calculation Plans
 
@@ -65,7 +67,7 @@ IPv6SubnetCalculator is an offline IPv6 subnet calculator for Windows. It analyz
 
 ## 📸 Screenshots
 
-Version: **V1.7**.
+Version: **V1.8**.
 
 ### English
 
@@ -75,7 +77,9 @@ Version: **V1.7**.
 
 ![English address tools](docs/screenshots/en_tools_light.png)
 
-![English subnet planning](docs/screenshots/en_aggregate_dark.png)
+![English subnet planning with English sample comments](docs/screenshots/en_aggregate_dark.png)
+
+![IPv6 address range to CIDR](docs/screenshots/en_address_range_dark.png)
 
 ### 简体中文
 
@@ -85,7 +89,7 @@ Version: **V1.7**.
 
 ## 📦 Download and Usage
 
-Download `IPv6SubnetCalculator_V1.7.exe` directly from Assets on GitHub [Releases](../../releases/latest). Run the downloaded executable; no additional runtime setup is required. Enter a network and target prefix, then click the calculation icon; the application switches to Results when complete.
+Download `IPv6SubnetCalculator_V1.8.exe` directly from Assets on GitHub [Releases](../../releases/latest). Run the downloaded executable; no additional runtime setup is required. Enter a network and target prefix, then click the calculation icon; the application switches to Results when complete.
 
 Press F1 or use the top-bar information icon for built-in help, license texts and legal notices.
 

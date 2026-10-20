@@ -2327,7 +2327,7 @@ File: </translation>
 
 面向 Windows 的离线 IPv6 子网计算与地址分析工具。
 
-- **主要功能**：网络范围与容量计算、分页定位、方案保存与恢复、地址格式转换、双网段关系分析、已有 CIDR 清单检查、空闲空间、等价 CIDR 整理、TXT／Excel 导出。
+- **主要功能**：网络范围与容量计算、分页定位、方案保存与恢复、地址格式转换、地址范围转 CIDR、双网段关系分析、已有 CIDR 清单检查、空闲空间、等价 CIDR 整理、TXT／Excel 导出。
 - **项目许可**：GNU GPL v3.0 或任何后续版本（GPL-3.0-or-later）。
 - **版权**：Copyright © 2026 IPv6SubnetCalculator contributors。
 - **致谢**：感谢 PyQt6、Qt 6 和 SIP 上游项目及其贡献者。
@@ -2347,7 +2347,7 @@ File: </translation>
 
 An offline IPv6 subnet calculator and address-analysis tool for Windows.
 
-- **Features**: network ranges and capacities, pagination and location, calculation plans, address formats, two-network relationships, CIDR list validation, free space, equivalent aggregation and TXT/Excel export.
+- **Features**: network ranges and capacities, pagination and location, calculation plans, address formats, address-range conversion, two-network relationships, CIDR list validation, free space, equivalent aggregation and TXT/Excel export.
 - **Project license**: GNU GPL v3.0 or any later version (GPL-3.0-or-later).
 - **Copyright**: Copyright © 2026 IPv6SubnetCalculator contributors.
 - **Acknowledgments**: PyQt6, Qt 6, SIP and their contributors.
@@ -2471,6 +2471,86 @@ This application provides mathematical results and planning assistance. It does 
     <message>
       <source>{0:,.2f}～{1:,.2f} {2}</source>
       <translation>{0:,.2f}–{1:,.2f} {2}</translation>
+    </message>
+    <message>
+      <source>IPv6 地址范围转 CIDR</source>
+      <translation>IPv6 Address Range to CIDR</translation>
+    </message>
+    <message>
+      <source>起始地址：{0}</source>
+      <translation>First address: {0}</translation>
+    </message>
+    <message>
+      <source>结束地址：{0}</source>
+      <translation>Last address: {0}</translation>
+    </message>
+    <message>
+      <source>地址总数：{0:,}；CIDR 数量：{1:,}</source>
+      <translation>Addresses: {0:,}; CIDRs: {1:,}</translation>
+    </message>
+    <message>
+      <source>结束地址不能小于起始地址。</source>
+      <translation>The last address must not be smaller than the first address.</translation>
+    </message>
+    <message>
+      <source>起始地址（包含）</source>
+      <translation>First address (inclusive)</translation>
+    </message>
+    <message>
+      <source>结束地址（包含）</source>
+      <translation>Last address (inclusive)</translation>
+    </message>
+    <message>
+      <source>将起止地址转换为精确覆盖范围的最简 CIDR（Enter）</source>
+      <translation>Convert the inclusive range to minimal exact CIDRs (Enter)</translation>
+    </message>
+    <message>
+      <source>复制转换后的完整 CIDR 清单</source>
+      <translation>Copy the complete converted CIDR list</translation>
+    </message>
+    <message>
+      <source>复制地址范围及 CIDR 转换报告</source>
+      <translation>Copy the address range and CIDR conversion report</translation>
+    </message>
+    <message>
+      <source>将转换结果送入子网清单并检查；替换已有输入前确认</source>
+      <translation>Send results to Subnet List and check; confirm before replacing existing input</translation>
+    </message>
+    <message>
+      <source>输入首末 IPv6 地址，生成不超出范围的最简 CIDR 清单。</source>
+      <translation>Enter the first and last IPv6 addresses to generate minimal CIDRs covering exactly that range.</translation>
+    </message>
+    <message>
+      <source>地址范围 CIDR 结果</source>
+      <translation>Address range CIDR results</translation>
+    </message>
+    <message>
+      <source>地址范围转换完成。</source>
+      <translation>Address range conversion complete.</translation>
+    </message>
+    <message>
+      <source>范围 CIDR 清单已复制。</source>
+      <translation>Range CIDR list copied.</translation>
+    </message>
+    <message>
+      <source>范围转换报告已复制。</source>
+      <translation>Range conversion report copied.</translation>
+    </message>
+    <message>
+      <source>子网清单正在处理任务，请完成或取消后再发送。</source>
+      <translation>Subnet List is busy. Finish or cancel its task before sending.</translation>
+    </message>
+    <message>
+      <source>替换子网清单</source>
+      <translation>Replace Subnet List</translation>
+    </message>
+    <message>
+      <source>将使用地址范围转换结果替换当前清单，并重新检查。是否继续？</source>
+      <translation>Replace the current list with the converted address range and run the check again. Continue?</translation>
+    </message>
+    <message>
+      <source>子网清单状态已变化，请重新发送。</source>
+      <translation>The subnet list state changed. Send the results again.</translation>
     </message>
   </context>
   <context>

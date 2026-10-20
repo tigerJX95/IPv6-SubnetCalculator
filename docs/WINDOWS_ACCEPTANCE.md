@@ -1,8 +1,8 @@
-# V1.7 Windows 验收 / Windows Acceptance
+# V1.8 Windows 验收 / Windows Acceptance
 
-V1.7 完善 Excel 导出语言、页签滚动提示及容量估算显示。需要在 Windows 中验证语言切换、显示缩放及打包资源，既有功能验收继续保留。
+V1.8 新增地址范围转 CIDR，并更新英文示例与截图。需要在 Windows 中验证语言切换、显示缩放及打包资源，既有功能验收继续保留。
 
-V1.7 localizes Excel output and improves tab-scroll tooltips and size estimates. Verify switching, DPI and packaged resources on Windows alongside existing workflows.
+V1.8 adds address-range conversion and refreshes English examples and screenshots. Verify switching, DPI and packaged resources on Windows alongside existing workflows.
 
 ## 自动检查 / Automated Checks
 
@@ -48,7 +48,7 @@ Automated checks open/close windows, switch themes, resize and minimize/restore.
 Use a temporary test folder and keep copies of originals for overwrite/cancellation checks. Record timings from the actual machine. Linux checks and short operation loops are recorded separately from Windows manual and extended-session acceptance.
 
 
-## V1.7 导出专项 / Export Acceptance
+## 导出专项 / Export Acceptance
 
 - [ ] 中文 XLSX：表头“序号”“IPv6 子网”，工作表“IPv6子网”；英文为“No.”“IPv6 Subnet”，工作表“IPv6 Subnets”。在实际 Excel 中打开确认。
 - [ ] 从第 100 项开始导出，确认保留实际序号及对应 CIDR；完整 IPv6 空间的末两项序号保留全部数字。
@@ -58,3 +58,22 @@ Use a temporary test folder and keep copies of originals for overwrite/cancellat
 - [ ] 最小窗口和两种主题下，页签滚动按钮悬停分别为中文或英文。
 
 Check actual Excel opening, both header languages and sheet names, non-first ranges and exact large indices. Switch languages in the picker and during export; verify task-start file language and current-language feedback. Reimport TXT, cancel an export and inspect tab-scroll tooltips in both themes.
+
+
+## V1.8 示例 / Examples
+
+- [ ] 打开 `PlanningNetworks_EN.txt`，确认首行是英文 Parent network，五条网段及规划结果与中文样例一致。
+- [ ] 英文清单和方案示例的注释、名称、备注使用英文；切换语言不修改已导入内容。
+- [ ] README 中英文规划截图显示英文注释。
+
+Open the English examples and compare matching CIDRs and results. Confirm switching languages preserves their original text and the README planning image uses English comments.
+
+
+## V1.8 地址范围 / Address Ranges
+
+- [ ] 范围 `2026:1015:abcd::1`～`2026:1015:abcd::ff`：255 个地址，精确 CIDR 清单；单地址为 `/128`，完整 IPv6 空间为 `::/0`，精确计数为 2^128。
+- [ ] 非法／反向地址定位正确字段，修改后清除错误并禁用旧结果操作。
+- [ ] 两主题、最小窗口及中英文切换下可阅读、复制并保留结果。
+- [ ] 发送至空清单自动检查；已有内容时“否”保留原文，“是”替换并检查；忙碌时不覆盖。
+
+Check inclusive bounds, exact counts, invalid-order recovery, copy/report language, minimum-size access and safe transfer to existing/busy lists.

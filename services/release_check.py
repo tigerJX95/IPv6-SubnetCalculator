@@ -212,6 +212,16 @@ class ReleaseCheck(QObject):
         self.window.calculation_page.network_input.setText(DEFAULT_NETWORK)
         self.window.calculation_page.target_input.setText('64')
         self.window.calculate()
+        panel=self.window.address_tools_page.range_panel
+        panel.start_input.setText('::1');panel.end_input.setText('::ff');panel.convert()
+        self.require(panel.result.address_count==255,'Range address count mismatch')
+        self.require(sum(n.num_addresses for n in panel.result.cidrs)==255,'Range coverage mismatch')
+        original=panel.result
+        self.application.language_manager.apply('en_US',persist=False)
+        self.require(panel.result is original and 'CIDRs:' in panel.summary.text(),'Range state/translation mismatch')
+        self.application.language_manager.apply('zh_CN',persist=False)
+        panel.start_input.setText('2026:1015:abcd::1');panel.end_input.setText('2026:1015:abcd::ff')
+        self.checks.append('address_range_exact_coverage_and_bilingual_state')
         self.check_language_state()
         self.schedule(self.start_list_check)
 

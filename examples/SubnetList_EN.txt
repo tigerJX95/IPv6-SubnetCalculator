@@ -1,0 +1,6 @@
+# IPv6 CIDR list example: containment, duplicates and adjacency
+2026:1015:abcd::/48
+2026:1015:abcd:1::/64
+2026:1015:abcd:1::1/64
+2026:1015:abcd:2::/64
+fd12:3456:789a::/48

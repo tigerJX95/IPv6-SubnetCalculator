@@ -1,4 +1,4 @@
-# V1.7 国际化实现 / Internationalization Implementation
+# V1.8 国际化实现 / Internationalization Implementation
 
 ## 已实现 / Implemented
 
@@ -23,7 +23,7 @@
 
 测试检查源模板与译文占位符、TS/QM 一致、语言偏好及重启恢复、非法偏好、保存失败、语言无关方案、精确整数、错误恢复、已有关于窗口、异步任务及最小窗口。Windows 人工验收、DPI、实际拖放与持续使用结果在完成后记录，不以 Linux offscreen 代替。
 
-V1.7 后续重点为国际化后的布局、翻译完整性和兼容收敛；按实际反馈调整，不为版本数量堆叠功能。
+V1.8 后续重点为国际化后的布局、翻译完整性和兼容收敛；按实际反馈调整，不为版本数量堆叠功能。
 
 
 ## V1.7 导出国际化 / Export Localization
@@ -34,3 +34,10 @@ V1.7 后续重点为国际化后的布局、翻译完整性和兼容收敛；按
 - Qt 页签内部滚动按钮的悬停提示需要显式刷新，不能只重译页签标题。
 
 The `Export` context separates file wording (“No.”) from UI wording (“Index”). Resolve labels at actual task start on the GUI thread and pass an immutable snapshot to the Qt-free writer. Completion feedback follows the current interface language. Refresh internal tab-scroll tooltips explicitly; keep TXT and JSON language-independent.
+
+
+## V1.8 示例语言 / Sample Language
+
+示例注释不是界面翻译键。增加独立英文示例供文档和截图使用，保持 CIDR、顺序、计算与规划结果一致；用户输入和已导入文件不因切换语言被改写。
+
+Sample comments are data, not translation keys. English example files provide appropriate documentation content while preserving matching CIDRs, ordering and results. Switching language never rewrites imported or entered text.

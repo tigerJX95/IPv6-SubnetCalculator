@@ -28,6 +28,7 @@ from services.export_service import ExportService
 from ui.calculation_page import CalculationPage
 from ui.results_page import ResultsPage
 from ui.address_tools_page import AddressToolsPage
+from ui.range_transfer_controller import RangeTransferController
 from ui.subnet_list_page import SubnetListPage
 from ui.export_controller import ExportController
 from ui.plan_controller import PlanController
@@ -96,6 +97,7 @@ class MainWindow(QMainWindow):
         self.feedback = FeedbackLabel()
         layout.addWidget(self.feedback)
 
+        self.range_transfer_controller=RangeTransferController(self)
         self.plan_controller = PlanController(self)
         self.plan_drop_controller = PlanDropController(self)
         self.export_controller = ExportController(self, self.export_service)
