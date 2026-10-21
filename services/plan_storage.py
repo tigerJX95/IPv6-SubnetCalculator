@@ -41,24 +41,24 @@ def _invalid_constant(value):
     raise InputError(tx('方案 JSON 包含无效数值：')+value)
 
 
-def load_plan(path):
+def _load_document(path, parser, maximum, limit_message):
     with Path(path).open('rb') as stream:
-        data = stream.read(MAX_PLAN_BYTES+1)
-    if len(data) > MAX_PLAN_BYTES:
-        raise InputError(tx('方案文件超过 64 KiB，请选择计算方案 JSON，而不是子网列表。'))
+        data = stream.read(maximum+1)
+    if len(data) > maximum:
+        raise InputError(limit_message)
     try:
         payload = json.loads(data.decode('utf-8-sig'), object_pairs_hook=_unique_object,
                              parse_constant=_invalid_constant)
-        return plan_from_payload(payload)
+        return parser(payload)
     except (UnicodeError, ValueError, RecursionError) as exc:
         if isinstance(exc, InputError):
             raise
         raise InputError(tx('方案文件不是有效的 UTF-8 JSON。')) from exc
 
 
-def save_plan(path, plan, *, expected=None):
-    data = (json.dumps(plan_to_payload(plan), ensure_ascii=False, indent=2, allow_nan=False)+'\n').encode('utf-8')
-    if len(data) > MAX_PLAN_BYTES:
+def _save_document(path, payload, maximum, *, expected=None):
+    data = (json.dumps(payload, ensure_ascii=False, indent=2, allow_nan=False)+'\n').encode('utf-8')
+    if len(data) > maximum:
         raise InputError(tx('方案文件内容过大，请缩短名称或备注。'))
     path = Path(path)
     expected=expected if expected is not None else capture_file(path)
@@ -75,3 +75,12 @@ def save_plan(path, plan, *, expected=None):
     finally:
         if temporary is not None and os.path.exists(temporary):
             os.unlink(temporary)
+
+
+def load_plan(path):
+    return _load_document(path, plan_from_payload, MAX_PLAN_BYTES,
+        tx('方案文件超过 64 KiB，请选择计算方案 JSON，而不是子网列表。'))
+
+
+def save_plan(path, plan, *, expected=None):
+    return _save_document(path, plan_to_payload(plan), MAX_PLAN_BYTES, expected=expected)

@@ -16,6 +16,7 @@
 # along with IPv6SubnetCalculator. If not, see <https://www.gnu.org/licenses/>.
 
 """可由源码和打包程序调用的隔离检查，不更改用户偏好或剪贴板。"""
+from core.localized_text import text as tx
 import json
 import os
 import platform
@@ -214,6 +215,29 @@ class ReleaseCheck(QObject):
         else:
             raise AssertionError('Save conflict was not detected')
         self.checks.append('save_conflict_preserves_other_writer_and_complete_output')
+        from unittest.mock import patch
+        from services.project_storage import save_project
+        from core.planning_project import PlanningProject
+        from ui.standard_dialogs import QMessageBox
+        project = PlanningProject('# preserved comment\n::/128', '::/0', '128', '2', 4)
+        project_path = self.directory/'规划项目.json'
+        save_project(project_path, project)
+        controller = self.window.subnet_list_page.project_controller
+        previous = controller.snapshot()
+        with patch('ui.project_controller.QFileDialog.getOpenFileName', return_value=(str(project_path), '')), patch('ui.project_controller.QMessageBox.question', return_value=QMessageBox.StandardButton.Yes):
+            self.require(controller.open(), 'Planning project restore failed')
+        self.require(controller.snapshot() == project, 'Planning inputs changed during round trip')
+        self.require(self.window.subnet_list_page.planning.free_result is None, 'Stale planning result retained')
+        list_page = self.window.subnet_list_page
+        list_page.editor.setPlainText(previous.text)
+        list_page.planning.parent_input.setText(previous.parent)
+        list_page.planning.allocation.prefix_input.setText(previous.prefix)
+        list_page.planning.allocation.count_input.setText(previous.count)
+        list_page.result_tabs.setCurrentIndex(previous.tab)
+        controller.path = controller.saved = None
+        controller.label.setText(tx('规划项目：未保存'))
+        self.checks.append('planning_project_inputs_restore_without_stale_results')
+
         self.window.calculation_page.network_input.setText('::/0')
         self.window.calculation_page.target_input.setText('128')
         self.window.calculate()

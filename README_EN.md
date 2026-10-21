@@ -1,4 +1,16 @@
-# 🌐 IPv6 Subnet Calculator V1.10
+# 🌐 IPv6 Subnet Calculator V1.11
+
+
+## ✨ V1.11 Planning Project Save and Restore
+
+- New open/save-as icons at the top of Subnet List remain accessible on the Allocation Suggestions tab.
+- Separate JSON preserves the original list (comments and blank lines included), parent network, allocation prefix, requested count and result tab. Unfinished drafts are supported.
+- Files are validated before replacement confirmation. Restoring clears derived results; run checks or planning again. This format is separate from calculation plans; Ctrl+S/Ctrl+O still operate calculation plans.
+- Reuses save conflict protection and rejects stale actions when inputs or tasks change during dialogs. Changes to saved projects are marked as unsaved.
+- Projects require manual saving. Closing does not yet auto-save or prompt for unsaved planning projects.
+- Qt pins retain the verified baseline. The pending security upgrade is not resolved by this feature release.
+
+An offline tool for IPv6 subnet calculation, analysis and lightweight planning.
 
 [简体中文](README.md) | **English**
 
@@ -85,7 +97,7 @@ Plan, TXT and Excel saves check destination changes before committing. Detected 
 
 ## 📸 Screenshots
 
-Version: **V1.10**.
+Version: **V1.11**.
 
 ### English
 
@@ -111,7 +123,7 @@ Version: **V1.10**.
 
 ## 📦 Download and Usage
 
-Download `IPv6SubnetCalculator_V1.10.exe` directly from Assets on GitHub [Releases](../../releases/latest). Run the downloaded executable; no additional runtime setup is required. Enter a network and target prefix, then click the calculation icon; the application switches to Results when complete.
+Download `IPv6SubnetCalculator_V1.11.exe` directly from Assets on GitHub [Releases](../../releases/latest). Run the downloaded executable; no additional runtime setup is required. Enter a network and target prefix, then click the calculation icon; the application switches to Results when complete.
 
 Press F1 or use the top-bar information icon for built-in help, license texts and legal notices.
 
@@ -145,3 +157,5 @@ Third-party components retain their own copyrights and licenses; this project's 
 ## 🙏 Third-Party Components
 
 The interface uses PyQt6 and Qt 6. Copyright, license information, and upstream links are listed in [Third-Party Notices](THIRD_PARTY_NOTICES.md).
+
+![Planning project](docs/screenshots/planning_project_en.png)

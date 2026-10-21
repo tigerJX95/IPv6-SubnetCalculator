@@ -1,5 +1,15 @@
 # User Guide
 
+## ✨ V1.11 Planning Project Save and Restore
+
+- New open/save-as icons at the top of Subnet List remain accessible on the Allocation Suggestions tab.
+- Separate JSON preserves the original list (comments and blank lines included), parent network, allocation prefix, requested count and result tab. Unfinished drafts are supported.
+- Files are validated before replacement confirmation. Restoring clears derived results; run checks or planning again. This format is separate from calculation plans; Ctrl+S/Ctrl+O still operate calculation plans.
+- Reuses save conflict protection and rejects stale actions when inputs or tasks change during dialogs. Changes to saved projects are marked as unsaved.
+- Projects require manual saving. Closing does not yet auto-save or prompt for unsaved planning projects.
+- Qt pins retain the verified baseline. The pending security upgrade is not resolved by this feature release.
+
+
 ## 1. Calculate a network
 
 Enter an IPv6 CIDR such as **2026:1015:abcd::/48**, then a target prefix such as **64** without a slash. Source and target prefixes range from 0 to 128; the target must be at least the source prefix. Click Calculate or press Enter in either input. Uppercase hexadecimal is normalized to lowercase; host bits are normalized to the containing network.

@@ -57,7 +57,7 @@ class MainWindow(QMainWindow):
         title = QLabel(APP_NAME)
         title.setObjectName('AppTitle')
         title.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        subtitle = QLabel(tx('网络范围 · 子网划分 · 容量计算'))
+        subtitle = QLabel(tx('离线 IPv6 子网计算、分析与轻量规划工具。'))
         subtitle.setObjectName('AppSubtitle')
         subtitle.setAlignment(Qt.AlignmentFlag.AlignCenter)
         heading = QHBoxLayout()

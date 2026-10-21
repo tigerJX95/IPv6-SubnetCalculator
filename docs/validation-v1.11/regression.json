@@ -1,0 +1,15 @@
+{
+  "app_version": "1.11",
+  "source_sha256": "5d15cdd59ab708e00a784f54f92f9b286d432de1211500d51c0a20a94f4ef5a8",
+  "run_id": "v111-release",
+  "status": "passed",
+  "complete": true,
+  "expected_tests": 457,
+  "tests_run": 457,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "expected_failures": 0,
+  "unexpected_successes": 0,
+  "elapsed_seconds": 273.067
+}

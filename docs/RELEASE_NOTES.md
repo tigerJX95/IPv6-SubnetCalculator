@@ -1,3 +1,25 @@
+# V1.11
+
+## ✨ V1.11 规划项目保存与恢复
+
+- “子网清单”顶部新增打开／另存规划项目图标，分配建议页也可使用。
+- 独立 JSON 保存清单原文（含注释和空行）、父网段、分配目标前缀、请求数量和结果页签；支持保存未完成的草稿。
+- 恢复前验证文件并确认替换，恢复后清除派生结果，请重新检查或规划。此文件与原有“计算方案”格式分开；Ctrl+S／Ctrl+O 仍操作计算方案。
+- 沿用保存冲突保护；对话框期间输入或任务变化时拒绝过期操作。已有项目修改后显示未保存状态。
+- 规划项目需手动保存，退出时暂不提供规划项目自动保存或未保存确认。
+- Qt 依赖维持经验证基线，安全升级仍待处理；本版功能更新不代表漏洞已修复。
+
+## ✨ V1.11 Planning Project Save and Restore
+
+- New open/save-as icons at the top of Subnet List remain accessible on the Allocation Suggestions tab.
+- Separate JSON preserves the original list (comments and blank lines included), parent network, allocation prefix, requested count and result tab. Unfinished drafts are supported.
+- Files are validated before replacement confirmation. Restoring clears derived results; run checks or planning again. This format is separate from calculation plans; Ctrl+S/Ctrl+O still operate calculation plans.
+- Reuses save conflict protection and rejects stale actions when inputs or tasks change during dialogs. Changes to saved projects are marked as unsaved.
+- Projects require manual saving. Closing does not yet auto-save or prompt for unsaved planning projects.
+- Qt pins retain the verified baseline. The pending security upgrade is not resolved by this feature release.
+
+---
+
 # V1.10 — 子网分配建议 / Subnet Allocation Suggestions
 
 ## 简体中文

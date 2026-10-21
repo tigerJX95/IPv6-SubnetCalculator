@@ -121,7 +121,7 @@ class SubnetListPage(QWidget):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(12,12,12,12)
         layout.setSpacing(8)
-        hint = self.hint = QLabel(tx('每行一个 IPv6 CIDR：校验与关系检查、父网段空闲空间、等价 CIDR 整理。'))
+        hint = self.hint = QLabel(tx('离线 IPv6 子网计算、分析与轻量规划工具。'))
         hint.setWordWrap(True)
         hint.setObjectName('Hint')
         layout.addWidget(hint)
@@ -184,6 +184,8 @@ class SubnetListPage(QWidget):
         self.shortcut.setContext(Qt.ShortcutContext.WidgetWithChildrenShortcut)
         self.shortcut.activated.connect(self.analyze)
         self._invalidate()
+        from ui.project_controller import ProjectController
+        self.project_controller = ProjectController(self, layout)
 
     def _result_tab_changed(self, index):
         allocation=self.result_tabs.widget(index) is self.planning.allocation

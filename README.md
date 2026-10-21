@@ -1,4 +1,16 @@
-# 🌐 IPv6 子网计算器 V1.10
+# 🌐 IPv6 子网计算器 V1.11
+
+
+## ✨ V1.11 规划项目保存与恢复
+
+- “子网清单”顶部新增打开／另存规划项目图标，分配建议页也可使用。
+- 独立 JSON 保存清单原文（含注释和空行）、父网段、分配目标前缀、请求数量和结果页签；支持保存未完成的草稿。
+- 恢复前验证文件并确认替换，恢复后清除派生结果，请重新检查或规划。此文件与原有“计算方案”格式分开；Ctrl+S／Ctrl+O 仍操作计算方案。
+- 沿用保存冲突保护；对话框期间输入或任务变化时拒绝过期操作。已有项目修改后显示未保存状态。
+- 规划项目需手动保存，退出时暂不提供规划项目自动保存或未保存确认。
+- Qt 依赖维持经验证基线，安全升级仍待处理；本版功能更新不代表漏洞已修复。
+
+离线 IPv6 子网计算、分析与轻量规划工具。
 
 **简体中文** | [English](README_EN.md)
 
@@ -81,7 +93,7 @@ IPv6SubnetCalculator 是一款适用于 Windows 的离线 IPv6 子网计算工�
 
 ## 📸 运行截图
 
-截图版本：**V1.10**。
+下方旧功能截图沿用 V1.10；规划项目截图为 V1.11。
 
 ### 简体中文
 
@@ -107,7 +119,7 @@ IPv6SubnetCalculator 是一款适用于 Windows 的离线 IPv6 子网计算工�
 
 ## 📦 下载与使用
 
-从 GitHub [Releases](../../releases/latest) 的 Assets 中直接下载 `IPv6SubnetCalculator_V1.10.exe`，下载后即可运行，无需另行配置运行环境。输入 IPv6 网络地址与目标前缀，点击计算图标；完成后自动切换到结果页。
+从 GitHub [Releases](../../releases/latest) 的 Assets 中直接下载 `IPv6SubnetCalculator_V1.11.exe`，下载后即可运行，无需另行配置运行环境。输入 IPv6 网络地址与目标前缀，点击计算图标；完成后自动切换到结果页。
 
 按 F1 或点击顶部“ⓘ”可查看内置帮助、许可原文与法律责任说明。
 
@@ -140,3 +152,5 @@ IPv6SubnetCalculator 是一款适用于 Windows 的离线 IPv6 子网计算工�
 ## 🙏 第三方组件
 
 界面使用 PyQt6 和 Qt 6。相关版权、许可及上游链接见 [第三方组件说明](THIRD_PARTY_NOTICES.md)。
+
+![Planning project](docs/screenshots/planning_project_zh.png)

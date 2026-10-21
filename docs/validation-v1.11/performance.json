@@ -1,0 +1,101 @@
+{
+  "calculation": {
+    "iterations_per_sample": 1000,
+    "samples": 5,
+    "median_ms": 0.017387,
+    "maximum_sample_mean_ms": 0.017703
+  },
+  "maximum_space_last_page": {
+    "iterations_per_sample": 100,
+    "samples": 5,
+    "median_ms": 0.977393,
+    "maximum_sample_mean_ms": 1.54934
+  },
+  "maximum_space_location": {
+    "iterations_per_sample": 1000,
+    "samples": 5,
+    "median_ms": 0.00979,
+    "maximum_sample_mean_ms": 0.01995
+  },
+  "address_conversion": {
+    "iterations_per_sample": 1000,
+    "samples": 5,
+    "median_ms": 0.022375,
+    "maximum_sample_mean_ms": 0.023172
+  },
+  "network_relation": {
+    "iterations_per_sample": 1000,
+    "samples": 5,
+    "median_ms": 0.061657,
+    "maximum_sample_mean_ms": 0.065581
+  },
+  "memory_scope": "Python allocations tracked by tracemalloc; excludes native Qt allocations and process RSS",
+  "speed_threshold": "Informational measurements; no hardware-dependent pass/fail limit",
+  "subnet_list_5000_unique": {
+    "iterations_per_sample": 1,
+    "samples": 5,
+    "median_ms": 148.475396,
+    "maximum_sample_mean_ms": 185.127528
+  },
+  "subnet_list_5000_duplicates": {
+    "iterations_per_sample": 1,
+    "samples": 5,
+    "median_ms": 98.16637,
+    "maximum_sample_mean_ms": 108.98171
+  },
+  "free_space_5000": {
+    "iterations_per_sample": 1,
+    "samples": 5,
+    "median_ms": 444.140235,
+    "maximum_sample_mean_ms": 816.607084
+  },
+  "aggregate_5000": {
+    "iterations_per_sample": 1,
+    "samples": 5,
+    "median_ms": 200.836404,
+    "maximum_sample_mean_ms": 275.56628
+  },
+  "exports": {
+    "txt": {
+      "rows": 100000,
+      "seconds": 3.42695,
+      "rows_per_second": 29180,
+      "bytes": 1160191
+    },
+    "xlsx": {
+      "rows": 20000,
+      "seconds": 0.69212,
+      "rows_per_second": 28897,
+      "bytes": 263189
+    }
+  },
+  "export_memory": {
+    "txt": {
+      "sample_rows": [
+        1000,
+        10000
+      ],
+      "peak_python_bytes": [
+        13962,
+        8839
+      ],
+      "growth_bytes": -5123
+    },
+    "xlsx": {
+      "sample_rows": [
+        1000,
+        10000
+      ],
+      "peak_python_bytes": [
+        312985,
+        342033
+      ],
+      "growth_bytes": 29048
+    }
+  },
+  "cancellation": {
+    "seconds": 0.03811,
+    "original_preserved": true,
+    "temporary_files_removed": true
+  }
+}

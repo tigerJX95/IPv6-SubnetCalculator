@@ -1,0 +1,9 @@
+{
+  "format": "IPv6SubnetCalculator.planning",
+  "version": 1,
+  "text": "# Parent network: 2026:1015:abcd::/48\n# Reserved infrastructure\n2026:1015:abcd::/64\n",
+  "parent": "2026:1015:abcd::/48",
+  "prefix": "64",
+  "count": "4",
+  "tab": 2
+}

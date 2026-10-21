@@ -2892,6 +2892,82 @@ Check the destination, then save using another filename.</translation>
       <source>保存目标错误</source>
       <translation>Invalid Save Destination</translation>
     </message>
+    <message>
+      <source>这不是有效的 IPv6 规划项目。</source>
+      <translation>This is not a valid IPv6 planning project.</translation>
+    </message>
+    <message>
+      <source>规划项目格式版本不支持。</source>
+      <translation>Unsupported planning project version.</translation>
+    </message>
+    <message>
+      <source>规划项目包含无效字段。</source>
+      <translation>The planning project contains invalid fields.</translation>
+    </message>
+    <message>
+      <source>规划项目超过 7 MiB，无法打开。</source>
+      <translation>The planning project exceeds 7 MiB and cannot be opened.</translation>
+    </message>
+    <message>
+      <source>打开规划项目 JSON（清单、父网段及分配参数）</source>
+      <translation>Open planning project JSON (list, parent network and allocation parameters)</translation>
+    </message>
+    <message>
+      <source>另存规划项目 JSON（保留清单原文及注释）</source>
+      <translation>Save planning project as JSON (preserve original list and comments)</translation>
+    </message>
+    <message>
+      <source>规划项目：未保存</source>
+      <translation>Planning project: not saved</translation>
+    </message>
+    <message>
+      <source>规划项目：{0}{1}</source>
+      <translation>Planning project: {0}{1}</translation>
+    </message>
+    <message>
+      <source>规划项目操作失败：{0}</source>
+      <translation>Planning project operation failed: {0}</translation>
+    </message>
+    <message>
+      <source>保存规划项目</source>
+      <translation>Save Planning Project</translation>
+    </message>
+    <message>
+      <source>IPv6 规划项目 (*.json)</source>
+      <translation>IPv6 Planning Projects (*.json)</translation>
+    </message>
+    <message>
+      <source>覆盖规划项目</source>
+      <translation>Overwrite Planning Project</translation>
+    </message>
+    <message>
+      <source>规划内容或任务状态已变化，请重新操作。</source>
+      <translation>Planning inputs or task state changed. Please try again.</translation>
+    </message>
+    <message>
+      <source>规划项目已保存。</source>
+      <translation>Planning project saved.</translation>
+    </message>
+    <message>
+      <source>打开规划项目</source>
+      <translation>Open Planning Project</translation>
+    </message>
+    <message>
+      <source>恢复规划项目</source>
+      <translation>Restore Planning Project</translation>
+    </message>
+    <message>
+      <source>恢复将替换当前清单和规划参数。请先保存需要保留的内容，是否继续？</source>
+      <translation>Restoring replaces the current list and planning parameters. Save any work you want to keep first. Continue?</translation>
+    </message>
+    <message>
+      <source>规划项目已恢复；请重新检查清单或计算空闲空间，再生成分配建议。</source>
+      <translation>Planning project restored. Check the list or recalculate free space before generating suggestions.</translation>
+    </message>
+    <message>
+      <source>离线 IPv6 子网计算、分析与轻量规划工具。</source>
+      <translation>An offline tool for IPv6 subnet calculation, analysis and lightweight planning.</translation>
+    </message>
   </context>
   <context>
     <name>Export</name>
