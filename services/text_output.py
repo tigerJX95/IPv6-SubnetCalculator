@@ -18,17 +18,22 @@
 """将已经确定的 UTF-8 文本写入临时文件，成功后原子替换目标。"""
 import os
 import tempfile
+from core.file_commit import capture_file,commit_file,SaveConflict
 from pathlib import Path
 
 
-def save_text_atomic(destination, text):
+def save_text_atomic(destination, text, *, expected=None):
     path=Path(destination)
+    expected=expected if expected is not None else capture_file(path)
     data=text.encode('utf-8')
-    fd,temporary=tempfile.mkstemp(prefix='.ipv6-text-',suffix='.tmp',dir=str(path.parent))
+    fd,temporary=tempfile.mkstemp(prefix='.ipv6-text-',suffix='.tmp',dir=str(expected.path.parent))
     try:
         with os.fdopen(fd,'wb') as stream:
             stream.write(data)
-        os.replace(temporary,path)
+        commit_file(temporary,path,expected)
+    except SaveConflict:
+        temporary=None
+        raise
     finally:
-        if os.path.exists(temporary):os.unlink(temporary)
+        if temporary is not None and os.path.exists(temporary):os.unlink(temporary)
     return path

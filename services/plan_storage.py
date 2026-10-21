@@ -20,6 +20,7 @@ from core.localized_text import text as tx, join_text as jt
 import json
 import os
 import tempfile
+from core.file_commit import capture_file,commit_file,SaveConflict
 from pathlib import Path
 from core.ipv6_core import InputError
 from core.calculation_plan import plan_from_payload, plan_to_payload
@@ -55,18 +56,22 @@ def load_plan(path):
         raise InputError(tx('方案文件不是有效的 UTF-8 JSON。')) from exc
 
 
-def save_plan(path, plan):
+def save_plan(path, plan, *, expected=None):
     data = (json.dumps(plan_to_payload(plan), ensure_ascii=False, indent=2, allow_nan=False)+'\n').encode('utf-8')
     if len(data) > MAX_PLAN_BYTES:
         raise InputError(tx('方案文件内容过大，请缩短名称或备注。'))
     path = Path(path)
-    fd, temporary = tempfile.mkstemp(prefix='.ipv6-plan-', suffix='.json', dir=str(path.parent))
+    expected=expected if expected is not None else capture_file(path)
+    fd, temporary = tempfile.mkstemp(prefix='.ipv6-plan-', suffix='.json', dir=str(expected.path.parent))
     try:
         with os.fdopen(fd, 'wb') as stream:
             stream.write(data)
             stream.flush()
             os.fsync(stream.fileno())
-        os.replace(temporary, path)
+        commit_file(temporary,path,expected)
+    except SaveConflict:
+        temporary=None
+        raise
     finally:
-        if os.path.exists(temporary):
+        if temporary is not None and os.path.exists(temporary):
             os.unlink(temporary)

@@ -81,3 +81,9 @@ The Free Space and Aggregation save icons offer complete CIDRs or planning repor
 Reports use the interface language at actual save time; original input stays unchanged. Overwriting requires confirmation, and failed writes preserve the existing file. If input/results change while a dialog is open, start saving again.
 
 The Send Back for Checking icon returns complete planning results to Subnet List. Different existing input requires confirmation with No as the default. Accepted transfer clears old analysis and starts a new check. Busy tasks block transfer.
+
+## 12. Subnet allocation suggestions
+
+Calculate the parent and occupied list in Free Space, then open Allocation. Enter a target prefix (64 or /64) and a count from 1 to 5,000. Click the calculation icon or press Enter. The target prefix must be at least as long as the parent prefix. Capacity counts aligned CIDR blocks; candidates start at the lowest available address. Insufficient capacity produces an exact count without partial suggestions.
+
+Suggestions are not reserved. Copy CIDRs or a report, or save TXT. Confirm the append icon to retain existing content and comments, append candidates as occupied networks and recalculate free space. Record, byte and physical-line limits reject the append without changing input. Changes to the list, parent or request parameters invalidate old suggestions. Calculation plans and network device configuration are unaffected.

@@ -19,6 +19,7 @@
 from ui.localized_widgets import QDialog
 from core.localized_text import text as tx, join_text as jt
 import shutil
+from core.file_commit import capture_file
 from pathlib import Path
 from ui.standard_dialogs import QFileDialog, QMessageBox
 from PyQt6.QtCore import QObject, pyqtSignal, QTimer
@@ -72,7 +73,11 @@ class ExportController(QObject):
         if count > 100_000 and not self._confirm(tx('确认导出'),
                 tx('将导出序号 {0:,}～{1:,}，共 {2:,} 个子网。\n预计占用磁盘空间约 {3}（范围估算）。\n实际大小取决于地址长度、压缩格式及文件内容。\n数据量较大，导出可能耗时较长。\n\n是否继续？', start, end, count, disk_hint)):
             return
-        if path.exists() and not self._confirm(tx('覆盖确认'), tx('文件已存在，是否覆盖？\n{0}', path)):
+        try:expected=capture_file(path)
+        except (OSError,ValueError) as exc:
+            from services.error_messages import describe_error
+            QMessageBox.warning(self.window,tx('保存目标错误'),describe_error(exc));return
+        if expected.exists and not self._confirm(tx('覆盖确认'), tx('文件已存在，是否覆盖？\n{0}', path)):
             return
         try:
             usage = shutil.disk_usage(path.parent)
@@ -82,14 +87,14 @@ class ExportController(QObject):
                 return
         except OSError:
             pass
-        self.start_export(path, fmt, result, start, end)
+        self.start_export(path, fmt, result, start, end,expected=expected)
 
     def _confirm(self, title, text):
         return QMessageBox.question(self.window, title, text,
                                     QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
                                     QMessageBox.StandardButton.No) == QMessageBox.StandardButton.Yes
 
-    def start_export(self, path, fmt, result, start, end):
+    def start_export(self, path, fmt, result, start, end, *, expected=None):
         if self.service.busy:
             return
         dialog = ExportProgressDialog(Path(path).name, end-start+1, self.window)
@@ -99,7 +104,7 @@ class ExportController(QObject):
         self.feedback.emit(tx('正在导出子网…'), 'info')
         dialog.open()
         try:
-            self.service.start(path, result, fmt, start, end)
+            self.service.start(path, result, fmt, start, end,expected=expected)
         except Exception as exc:
             self._completed(('error', str(exc)))
 

@@ -1,0 +1,11 @@
+{
+  "checked_date": "2026-10-21",
+  "source": "https://pypi.org/pypi/PyQt6-Qt6/json",
+  "latest": "6.11.2",
+  "qt_6_11_3_available": false,
+  "qt_6_12_0_available": false,
+  "windows_latest_wheels": [
+    "pyqt6_qt6-6.11.2-py3-none-win_amd64.whl",
+    "pyqt6_qt6-6.11.2-py3-none-win_arm64.whl"
+  ]
+}

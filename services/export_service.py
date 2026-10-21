@@ -28,11 +28,12 @@ from services.language_service import export_labels
 class _ExportThread(QThread):
     progress = pyqtSignal(object, object)
 
-    def __init__(self, path, result, fmt, start, end, parent=None, *, labels=None):
+    def __init__(self, path, result, fmt, start, end, parent=None, *, labels=None,expected=None):
         super().__init__(parent)
         self.path, self.result, self.fmt = path, result, fmt
         self.start_index, self.end_index = start, end
         self.labels = labels or ExportLabels()
+        self.expected=expected
         self.stop_event = Event()
         self.outcome = None
         self._last_progress = 0.0
@@ -47,7 +48,7 @@ class _ExportThread(QThread):
         try:
             report = export_all(self.path, self.result.network, self.result.target_prefix, self.fmt,
                                 start=self.start_index, end=self.end_index,
-                                stop=self.stop_event, progress=self.report_progress, labels=self.labels)
+                                stop=self.stop_event, progress=self.report_progress, labels=self.labels,expected=self.expected)
             self.outcome = ('ok', report)
         except ExportCancelled:
             self.outcome = ('cancel', None)
@@ -68,10 +69,10 @@ class ExportService(QObject):
         # 即使 run 已返回，也等 GUI 线程处理 finished 后再允许启动新任务。
         return self._thread is not None
 
-    def start(self, path, result, fmt, start, end):
+    def start(self, path, result, fmt, start, end, *, expected=None):
         if self.busy:
             raise RuntimeError(tx('已有导出任务正在运行。'))
-        thread = _ExportThread(path, result, fmt, start, end, self, labels=export_labels())
+        thread = _ExportThread(path, result, fmt, start, end, self, labels=export_labels(),expected=expected)
         self._thread = thread
         thread.progress.connect(self.progress)
         thread.finished.connect(self._finish)

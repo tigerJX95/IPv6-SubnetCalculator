@@ -17,6 +17,7 @@
 
 """清单／规划的保存与回流入口；对话框后复核结果快照。"""
 from pathlib import Path
+from core.file_commit import capture_file
 from PyQt6.QtCore import QObject,pyqtSignal
 from PyQt6.QtWidgets import QMenu,QToolButton
 from core.localized_text import text as tx
@@ -41,6 +42,9 @@ class ListOutputController(QObject):
             self._menu(button,[
                 (task+'_cidrs',tx('保存完整 CIDR 清单为 TXT'),lambda checked=False,task=task:self.save_planning(task)),
                 (task+'_report',tx('保存规划报告为 TXT'),lambda checked=False,task=task:self.save_planning(task,report=True))])
+        self._menu(p.allocation.save_button,[
+            ('allocation_cidrs',tx('保存建议 CIDR 为 TXT'),lambda:self.save_allocation()),
+            ('allocation_report',tx('保存分配建议报告为 TXT'),lambda:self.save_allocation(report=True))])
         p.send_free_button.clicked.connect(lambda:self.send_planning('free'))
         p.send_aggregate_button.clicked.connect(lambda:self.send_planning('aggregate'))
         self.refresh()
@@ -59,6 +63,9 @@ class ListOutputController(QObject):
         self.actions['networks'].setEnabled(ready and analysis is not None and bool(analysis.unique_networks))
         self.actions['list_report'].setEnabled(ready and analysis is not None)
         page.save_button.setEnabled(any(self.actions[key].isEnabled() for key in ('input','networks','list_report')))
+        allocation=p.allocation.result
+        self.actions['allocation_cidrs'].setEnabled(ready and allocation is not None and bool(allocation.cidrs))
+        self.actions['allocation_report'].setEnabled(ready and allocation is not None)
         for task,button,send in [('free',p.save_free_button,p.send_free_button),('aggregate',p.save_aggregate_button,p.send_aggregate_button)]:
             result=getattr(p,task+'_result')
             complete=result is not None and (task!='free' or result.complete)
@@ -92,6 +99,13 @@ class ListOutputController(QObject):
         filename=('IPv6_FreeSpace' if task=='free' else 'IPv6_Aggregation')+('_Report.txt' if report else '_CIDRs.txt')
         self._save(filename,result.as_text() if report else str(result.cidr_text())+'\n',lambda:self._current(p,task+'_result',result))
 
+    def save_allocation(self,report=False):
+        view=self.page.planning.allocation;result=view.result
+        if result is None or self.page.service.busy or not report and not result.cidrs:return
+        self._save('IPv6_Allocation'+('_Report.txt' if report else '_CIDRs.txt'),
+            result.as_text() if report else str(result.cidr_text())+'\n',
+            lambda:self._current(view,'result',result) and view.planning.free_result is result.free)
+
     def _save(self,filename,value,current):
         path,_=QFileDialog.getSaveFileName(self.page,tx('保存清单或规划文本'),filename,tx('文本文件 (*.txt)'),options=QFileDialog.Option.DontConfirmOverwrite)
         if not path:return
@@ -101,14 +115,17 @@ class ListOutputController(QObject):
             self.page.feedback.emit(tx('请使用 .txt 扩展名保存文本文件。'),'error');return
         if not current():
             self.page.feedback.emit(tx('输入、结果或任务状态已变化，请重新选择保存。'),'info');return
-        if destination.exists():
+        try:expected=capture_file(destination)
+        except (OSError,ValueError) as exc:
+            self.page.feedback.emit(tx('保存文本失败：')+describe_error(exc),'error');return
+        if expected.exists:
             answer=QMessageBox.question(self.page,tx('覆盖确认'),tx('文件已存在，是否覆盖？\n{0}',destination),
                 QMessageBox.StandardButton.Yes|QMessageBox.StandardButton.No,QMessageBox.StandardButton.No)
             if answer!=QMessageBox.StandardButton.Yes:return
         if not current():
             self.page.feedback.emit(tx('输入、结果或任务状态已变化，请重新选择保存。'),'info');return
         # 报告使用实际保存时的界面语言，原始输入和纯 CIDR 保留原文。
-        try:save_text_atomic(destination,display(value))
+        try:save_text_atomic(destination,display(value),expected=expected)
         except Exception as exc:
             self.page.feedback.emit(tx('保存文本失败：')+describe_error(exc),'error');return
         self.page.feedback.emit(tx('文本已保存：{0}',destination),'success')

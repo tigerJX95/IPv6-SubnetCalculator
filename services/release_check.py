@@ -200,6 +200,20 @@ class ReleaseCheck(QObject):
         self.checks.append('shared_plan_import_chinese_catalog_and_input_error_recovery')
 
         self.checks.append('default_calculation_and_resources')
+        from core.file_commit import SaveConflict
+        from core.subnet_export import export_all
+        from ipaddress import IPv6Network
+        destination=self.directory/'collision.txt'
+        def concurrent_write(done,total):
+            destination.write_text('external writer',encoding='utf-8')
+        try:
+            export_all(destination,IPv6Network('::/126'),128,'txt',progress=concurrent_write)
+        except SaveConflict as exc:
+            self.require(destination.read_text()=='external writer','Conflicting destination was overwritten')
+            self.require(exc.recovery.read_text()=='::/128\n::1/128\n::2/128\n::3/128\n','Complete export recovery missing')
+        else:
+            raise AssertionError('Save conflict was not detected')
+        self.checks.append('save_conflict_preserves_other_writer_and_complete_output')
         self.window.calculation_page.network_input.setText('::/0')
         self.window.calculation_page.target_input.setText('128')
         self.window.calculate()
@@ -324,6 +338,17 @@ class ReleaseCheck(QObject):
                 self.require(result.cidr_text() == '::4/126\n::8/125', '空闲 CIDR 覆盖不正确')
                 self.require(page.planning.copy_free_button.isEnabled(), '完整空闲结果无法复制')
                 self.checks.append('parent_free_space_exact_union_and_difference')
+                allocation=page.planning.allocation
+                allocation.prefix_input.setText('126');allocation.count_input.setText('2')
+                allocation.generate()
+                suggested=allocation.result
+                self.require(suggested.capacity==3 and suggested.cidr_text()=='::4/126\n::8/126','Allocation alignment or count mismatch')
+                self.application.language_manager.apply('en_US',persist=False)
+                from services.language_service import display
+                self.require('Total available subnets: 3' in display(suggested.as_text()),'English allocation report missing')
+                self.require(allocation.result is suggested and page.editor.toPlainText()=='::/127\n::2/127','Language switch changed allocation state')
+                self.application.language_manager.apply('zh_CN',persist=False)
+                self.checks.append('aligned_allocation_exact_capacity_bilingual_snapshot')
                 self.phase = 'planning_aggregate'
                 page.start_planning('aggregate')
             elif self.phase == 'planning_aggregate':

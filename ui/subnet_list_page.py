@@ -121,7 +121,7 @@ class SubnetListPage(QWidget):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(12,12,12,12)
         layout.setSpacing(8)
-        hint = QLabel(tx('每行一个 IPv6 CIDR：校验与关系检查、父网段空闲空间、等价 CIDR 整理。'))
+        hint = self.hint = QLabel(tx('每行一个 IPv6 CIDR：校验与关系检查、父网段空闲空间、等价 CIDR 整理。'))
         hint.setWordWrap(True)
         hint.setObjectName('Hint')
         layout.addWidget(hint)
@@ -151,7 +151,10 @@ class SubnetListPage(QWidget):
         self.source_label.setTextFormat(Qt.TextFormat.PlainText)
         self.source_label.setWordWrap(True)
         actions.addWidget(self.source_label,1)
-        layout.addLayout(actions)
+        self.action_bar=QWidget()
+        self.action_bar.setLayout(actions)
+        actions.setContentsMargins(0,0,0,0)
+        layout.addWidget(self.action_bar)
         self.summary = QLabel()
         self.summary.setWordWrap(True)
         self.summary.setTextFormat(Qt.TextFormat.PlainText)
@@ -183,6 +186,10 @@ class SubnetListPage(QWidget):
         self._invalidate()
 
     def _result_tab_changed(self, index):
+        allocation=self.result_tabs.widget(index) is self.planning.allocation
+        self.hint.setVisible(not allocation)
+        self.editor.setVisible(not allocation)
+        self.action_bar.setVisible(not allocation or self.service.busy)
         planning=index>=2
         self.summary.setVisible(not planning)
         self.editor.setMinimumHeight(70 if planning else 100)
@@ -202,6 +209,7 @@ class SubnetListPage(QWidget):
         self.output_controller.refresh()
 
     def _busy(self, busy):
+        self.action_bar.setVisible(busy or self.result_tabs.currentWidget() is not self.planning.allocation)
         self.editor.setReadOnly(busy)
         self.import_button.setEnabled(not busy)
         self.analyze_button.setEnabled(not busy)

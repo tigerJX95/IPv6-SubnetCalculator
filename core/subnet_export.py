@@ -29,6 +29,7 @@ import zipfile
 from xml.sax.saxutils import escape, quoteattr
 from ipaddress import IPv6Address, IPv6Network
 from .ipv6_core import validate_subnet_parameters
+from .file_commit import capture_file, commit_file, SaveConflict
 
 XLSX_MAX_RECORDS = 1_048_575  # 工作表总行数为 1,048,576，其中一行用于表头。
 BATCH_SIZE = 1024
@@ -120,7 +121,8 @@ def export_all(destination: str | Path, network: IPv6Network, target_prefix: int
                format_type: str, *, stop: Event | None = None,
                progress: Callable[[int, int], None] | None = None,
                start: int = 1, end: int | None = None,
-               labels: ExportLabels | None = None) -> ExportReport:
+               labels: ExportLabels | None = None,
+               expected=None) -> ExportReport:
     """先写入临时文件，成功后再替换目标文件。
 
     调用前须在界面确认超大导出和覆盖现有文件。
@@ -142,8 +144,9 @@ def export_all(destination: str | Path, network: IPv6Network, target_prefix: int
     path = Path(destination)
     if path.suffix.lower() != '.' + format_type:
         raise ValueError(tx('文件扩展名与导出格式不一致'))
+    expected=expected if expected is not None else capture_file(path)
     progress = progress or (lambda current, maximum: None)
-    fd, temp = tempfile.mkstemp(prefix='.ipv6-export-', suffix='.'+format_type+'.tmp', dir=str(path.parent))
+    fd, temp = tempfile.mkstemp(prefix='.ipv6-export-', suffix='.'+format_type+'.tmp', dir=str(expected.path.parent))
     try:
         with os.fdopen(fd, 'wb') as out:
             if format_type == 'txt':
@@ -152,8 +155,11 @@ def export_all(destination: str | Path, network: IPv6Network, target_prefix: int
                 _write_xlsx(out, network, target_prefix, total, stop, progress, start - 1, labels)
         if stop is not None and stop.is_set():
             raise ExportCancelled()
-        os.replace(temp, path)
+        commit_file(temp,path,expected)
         return ExportReport(path, total)
+    except SaveConflict:
+        temp=None
+        raise
     finally:
-        if os.path.exists(temp):
+        if temp is not None and os.path.exists(temp):
             os.unlink(temp)

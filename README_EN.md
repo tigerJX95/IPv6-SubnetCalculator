@@ -1,4 +1,4 @@
-# 🌐 IPv6 Subnet Calculator V1.9
+# 🌐 IPv6 Subnet Calculator V1.10
 
 [简体中文](README.md) | **English**
 
@@ -71,9 +71,21 @@ IPv6SubnetCalculator is an offline IPv6 subnet calculator for Windows. It analyz
 
 - **Save and reuse planning results**: Save complete free/aggregated CIDRs or planning reports as TXT, or send complete results back to Subnet List with replacement confirmation. Truncated free-space details still support reports containing all address intervals.
 
+## 🧩 Subnet Allocation Suggestions
+
+- **Capacity by prefix**: Calculate the parent network and occupied list in Subnet List → Free Space, then open Allocation and enter a target prefix and requested count. Capacity counts complete, aligned CIDR blocks rather than dividing total free addresses by block size.
+- **Bounded suggestions**: Generate 1–5,000 candidate CIDRs in ascending address order. Requests exceeding capacity produce no partial suggestions. Exact integer counts support the full IPv6 space without enumerating addresses.
+- **Copy and save**: Icons copy suggested CIDRs or a capacity report, or save TXT files. Reports use the interface language at save time.
+- **Confirmed append**: After confirmation, retain the existing list and comments, append the suggestions as occupied networks and recalculate remaining free space. Cancellation, changed state or list limits preserve existing content.
+- **Snapshot protection**: Changing the occupied list, parent, prefix or count invalidates suggestions. Candidates support planning; they do not configure a network or establish authorization.
+
+## 🛡️ Save Conflict Protection
+
+Plan, TXT and Excel saves check destination changes before committing. Detected conflicts stop replacement and preserve complete recovery output with its path. New destinations use atomic no-overwrite publication. See [protection details](docs/SAVE_CONFLICTS.md) and the [pending Qt dependency status](docs/DEPENDENCY_STATUS.md).
+
 ## 📸 Screenshots
 
-Version: **V1.9**.
+Version: **V1.10**.
 
 ### English
 
@@ -89,17 +101,17 @@ Version: **V1.9**.
 
 ![Planning TXT save and transfer](docs/screenshots/free_light.png)
 
-![English list save menu](docs/screenshots/en_list_save_menu_light.png)
-
 ### 简体中文
 
 ![Chinese calculation, light](docs/screenshots/calculation_light.png)
 
 ![Chinese results, dark](docs/screenshots/results_dark.png)
 
+![Allocation suggestions](docs/screenshots/en_allocation_light.png)
+
 ## 📦 Download and Usage
 
-Download `IPv6SubnetCalculator_V1.9.exe` directly from Assets on GitHub [Releases](../../releases/latest). Run the downloaded executable; no additional runtime setup is required. Enter a network and target prefix, then click the calculation icon; the application switches to Results when complete.
+Download `IPv6SubnetCalculator_V1.10.exe` directly from Assets on GitHub [Releases](../../releases/latest). Run the downloaded executable; no additional runtime setup is required. Enter a network and target prefix, then click the calculation icon; the application switches to Results when complete.
 
 Press F1 or use the top-bar information icon for built-in help, license texts and legal notices.
 

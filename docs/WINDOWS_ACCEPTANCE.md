@@ -1,8 +1,8 @@
-# V1.9 Windows 验收 / Windows Acceptance
+# V1.10 Windows 验收 / Windows Acceptance
 
-V1.9 增加清单／规划 TXT 保存与结果回流。需要在 Windows 中验证语言切换、显示缩放及打包资源，既有功能验收继续保留。
+V1.10 增加清单／规划 TXT 保存与结果回流。需要在 Windows 中验证语言切换、显示缩放及打包资源，既有功能验收继续保留。
 
-V1.9 adds list/planning TXT saves and protected result transfer. Verify switching, DPI and packaged resources on Windows alongside existing workflows.
+V1.10 adds list/planning TXT saves and protected result transfer. Verify switching, DPI and packaged resources on Windows alongside existing workflows.
 
 ## 自动检查 / Automated Checks
 
@@ -79,7 +79,7 @@ Open the English examples and compare matching CIDRs and results. Confirm switch
 Check inclusive bounds, exact counts, invalid-order recovery, copy/report language, minimum-size access and safe transfer to existing/busy lists.
 
 
-## V1.9 文本保存与回流 / Text Output and Transfer
+## V1.10 文本保存与回流 / Text Output and Transfer
 
 - [ ] 中英文、两主题：保存菜单文案、悬停提示及启用状态正确。
 - [ ] 原始输入保留空行、注释与中文内容；有效 CIDR 文件可重新导入，报告包含错误行及精确数量。
@@ -91,7 +91,7 @@ Check inclusive bounds, exact counts, invalid-order recovery, copy/report langua
 Verify output content, reimport, incomplete/empty results, overwrite and failure recovery, dialog-time changes, save-time language and protected planning transfer on Windows.
 
 
-## V1.9 双语审计修订 / Bilingual Revision
+## V1.10 双语审计修订 / Bilingual Revision
 
 - [ ] 简体中文模式：导出／打开／保存等文件选择器中，普通文件夹类型为“文件夹”，其他类型、大小单位及日期不受 Windows 显示语言影响。
 - [ ] English 模式：Folder、文件类型与日期均使用英文展示。
@@ -100,3 +100,22 @@ Verify output content, reimport, incomplete/empty results, overwrite and failure
 - [ ] 文件不存在提示、保存／放弃／取消确认及输入框右键菜单语言一致。
 
 Verify these cases on Windows in both OS display languages where available; Linux offscreen and simulated native-type strings do not replace Windows acceptance.
+
+
+## V1.10 分配建议 / Allocation
+
+- 两主题、中英文、900×620 与高 DPI 下检查新页签、标签、五个操作图标和悬停提示。 / Check both themes/languages, minimum size and high DPI.
+- 空清单计算 /48，查询 /64 的容量应为 65,536；占用一个 /64 后应为 65,535。 / Verify exact aligned capacity.
+- 生成两个候选，拒绝追加时保持全部内容；接受后保留注释并增加两条占用，重算后容量减少两个。 / Verify decline, append and recalculation.
+- 修改清单、父网段或数量，旧建议不得复制、保存或追加；超过限制时保留输入。 / Verify stale-state and limit protection.
+- 复制、保存 CIDR 和报告，切换语言后内容准确，原有计算方案不变。 / Verify outputs, language switching and calculator independence.
+
+
+## V1.10 保存冲突修订 / Save Conflict Revision
+
+- 用两个程序实例同时保存新文件、同时覆盖同一旧版本，确认只有一个提交，另一份完整内容可恢复。 / Two instances, new/existing targets: one commit, one recoverable output.
+- 长 TXT/XLSX 导出期间用编辑器新建、修改或替换同名目标；确认不静默覆盖，恢复 TXT/XLSX/JSON 内容可用。 / Detect rival writes during export and verify complete recovery files.
+- 覆盖确认期间目标变化、方案内容变化、取消、文件占用和权限失败均须保留原内容；取消不留下未完成恢复文件。 / Check confirmation changes, cancellation, locking and permission failures.
+- 核对浅深主题、中英文冲突提示及恢复路径。 / Verify both themes/languages and recovery paths.
+- 确认新验证报告具有 regression.json、非零测试数、匹配运行标识和完整工作流。Windows 命名互斥、NTFS/exFAT 与网络目录行为仍须实机验收。 / Verify structured evidence and native Windows/filesystem behavior.
+- Qt 升级尚未完成，不将 Qt 6.11.2 自检通过记为 D01 已修复。 / Functional checks on Qt 6.11.2 do not close D01.

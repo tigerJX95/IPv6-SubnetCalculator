@@ -24,6 +24,7 @@ import re
 import subprocess
 import sys
 import time
+import uuid
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -31,6 +32,7 @@ sys.path.insert(0, str(ROOT))
 from app_info import APP_VERSION
 from tools.performance import measure_performance
 from services.build_info import source_digest
+from services.release_contract import REQUIRED_RELEASE_CHECKS
 
 
 def run(command, logfile, environment, timeout):
@@ -47,8 +49,29 @@ def read_check(report, returncode, require_frozen, expected_digest):
     if (returncode != 0 or payload.get('status') != 'passed'
             or payload.get('environment', {}).get('app_version') != APP_VERSION
             or payload.get('environment', {}).get('source_sha256') != expected_digest
-            or payload.get('environment', {}).get('frozen') is not require_frozen):
+            or payload.get('environment', {}).get('frozen') is not require_frozen
+            or not isinstance(payload.get('checks'),list)
+            or not REQUIRED_RELEASE_CHECKS.issubset(payload.get('checks',[]))):
         raise RuntimeError('Check failed or version/build type mismatch: '+report.name)
+    return payload
+
+
+def read_regression(report,returncode,expected_digest,run_id):
+    try:payload=json.loads(Path(report).read_text(encoding='utf-8'))
+    except (OSError,ValueError) as exc:
+        raise RuntimeError('Regression evidence missing or invalid; see tests.log') from exc
+    if not isinstance(payload,dict):
+        raise RuntimeError('Regression evidence is not an object')
+    total=payload.get('tests_run')
+    if (returncode!=0 or payload.get('status')!='passed' or payload.get('complete') is not True
+            or type(total) is not int or total<=0 or type(payload.get('expected_tests')) is not int
+            or payload.get('expected_tests')!=total
+            or any(type(payload.get(key)) is not int or payload[key]<0 for key in ('failures','errors','unexpected_successes','skipped'))
+            or payload.get('skipped',0)>total
+            or payload.get('failures')!=0 or payload.get('errors')!=0 or payload.get('unexpected_successes')!=0
+            or payload.get('app_version')!=APP_VERSION or payload.get('source_sha256')!=expected_digest
+            or payload.get('run_id')!=run_id):
+        raise RuntimeError('Regression evidence incomplete, failed or stale; see tests.log')
     return payload
 
 
@@ -74,13 +97,14 @@ def main():
     save()
     try:
         print('1/4 Running regression tests...', flush=True)
-        code = run([sys.executable, '-m', 'unittest', 'discover', '-s', 'tests', '-v'], output/'tests.log', env, 240)
-        log = (output/'tests.log').read_text(encoding='utf-8')
-        match = re.search(r'Ran (\d+) tests?', log)
-        result['steps']['regression'] = dict(status='passed' if code == 0 else 'failed',
-                                             tests=int(match.group(1)) if match else None)
-        if code:
-            raise RuntimeError('Regression tests failed; see tests.log')
+        token=uuid.uuid4().hex
+        regression_report=output/'regression.json'
+        regression_report.unlink(missing_ok=True)
+        code=run([sys.executable,'tools/run_regression.py','--report',str(regression_report),
+                  '--run-id',token],output/'tests.log',env,240)
+        payload=read_regression(regression_report,code,expected_digest,token)
+        result['steps']['regression']=dict(status='passed',tests=payload['tests_run'],
+            skipped=payload['skipped'],complete=True,run_id=token)
         save()
         print('2/4 Measuring calculation, pagination, export and memory...', flush=True)
         result['steps']['performance'] = dict(status='passed', metrics=measure_performance())

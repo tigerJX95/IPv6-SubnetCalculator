@@ -24,6 +24,7 @@ from app_info import DEFAULT_NETWORK
 from ui.input_feedback import bind_input, mark_invalid
 from ui.fonts import data_font
 from ui.widgets import IconButton
+from ui.allocation_view import AllocationView
 
 
 class PlanningViews:
@@ -85,6 +86,8 @@ class PlanningViews:
         layout.addWidget(self.aggregate_table,1)
         owner.result_tabs.addTab(self.free_page,tx('空闲空间'))
         owner.result_tabs.addTab(self.aggregate_page,tx('CIDR 整理'))
+        self.allocation=AllocationView(self,model_class,table_factory)
+        owner.result_tabs.addTab(self.allocation,tx('分配建议'))
         self.free_button.clicked.connect(lambda:owner.start_planning('free'))
         self.parent_input.returnPressed.connect(lambda:owner.start_planning('free'))
         self.aggregate_button.clicked.connect(lambda:owner.start_planning('aggregate'))
@@ -97,6 +100,7 @@ class PlanningViews:
 
     def clear_free(self, *_args):
         self.free_result=None
+        if hasattr(self,"allocation"):self.allocation.clear()
         self.free_status.setToolTip('')
         self.free_model.set_rows([])
         self.free_status.setText(tx('填写父网段后计算。所有占用记录须有效且完全位于父网段内。'))
@@ -113,6 +117,7 @@ class PlanningViews:
         self.clear_aggregate()
 
     def refresh_buttons(self):
+        self.allocation.refresh()
         busy=self.owner.service.busy
         self.parent_input.setReadOnly(busy)
         self.free_button.setEnabled(not busy)

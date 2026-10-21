@@ -24,6 +24,7 @@ from pathlib import Path
 from unittest.mock import patch
 from app_info import APP_VERSION
 from tools.verify import read_check
+from services.release_contract import REQUIRED_RELEASE_CHECKS
 from services.build_info import source_digest
 
 
@@ -31,7 +32,7 @@ class ReleaseValidationTests(unittest.TestCase):
     def test_matching_report_is_accepted(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory)/'report.json'
-            payload = dict(status='passed', environment=dict(app_version=APP_VERSION,
+            payload = dict(status='passed', checks=sorted(REQUIRED_RELEASE_CHECKS), environment=dict(app_version=APP_VERSION,
                            frozen=True, source_sha256='expected'))
             path.write_text(json.dumps(payload), encoding='utf-8')
             self.assertEqual(read_check(path, 0, True, 'expected'), payload)
@@ -41,7 +42,7 @@ class ReleaseValidationTests(unittest.TestCase):
             path = Path(directory)/'report.json'
             for field, value in (('status', 'running'), ('app_version', '0.8'),
                                  ('frozen', False), ('source_sha256', 'stale')):
-                payload = dict(status='passed', environment=dict(app_version=APP_VERSION,
+                payload = dict(status='passed', checks=sorted(REQUIRED_RELEASE_CHECKS), environment=dict(app_version=APP_VERSION,
                                frozen=True, source_sha256='expected'))
                 (payload if field == 'status' else payload['environment'])[field] = value
                 path.write_text(json.dumps(payload), encoding='utf-8')

@@ -53,3 +53,13 @@ Protocol/product names and native language names remain recognizable. User conte
 
 本轮新增 18 项双语审计测试，完整回归总数为 393 项。最终运行结果、源码／单文件指纹及环境记录见 [VALIDATION.md](VALIDATION.md)。本地 Windows 应重点复核截图中的文件夹类型、两种系统显示语言、文件占用、DPI 和连续使用；步骤见 WINDOWS_ACCEPTANCE.md。
 18 new audit tests bring the regression suite to 393. See VALIDATION.md for actual results, source/frozen fingerprints and environment. Windows verification should cover native display-language combinations, file locking, DPI and extended use.
+
+
+## V1.10 扩展检查 / Extended Audit — 2026-10-21
+
+新增“分配建议”页的标签、图标悬停、容量状态、错误、表头、确认框、TXT 保存菜单及报告均加入 English 资源。双向切换保留建议快照和用户清单；用户注释不翻译。新报告在实际保存时使用界面语言。新增结果页在两主题、中英文及 900×620 下检查文字与首条候选可见性。原 V1.9 修复及其回归保留。
+
+The Allocation page localizes labels, tooltips, capacity status, errors, table headers, confirmation, TXT menus and reports. Live switching preserves suggestions and raw user content. Reports use the language at save time. Both languages and themes are checked at 900×620, including status and candidate-row visibility. V1.9 fixes and regression coverage are retained.
+
+英文翻译资源共 682 条完成、0 条未完成。Windows 实机验收仍按独立清单执行。
+The English catalog contains 682 finished entries and no unfinished entries. Windows acceptance remains a separate task.

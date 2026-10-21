@@ -2712,6 +2712,186 @@ This application provides mathematical results and planning assistance. It does 
       <source>当前：{0}主题，切换到{1}主题（Ctrl+Shift+T）</source>
       <translation>Current: {0} theme, switch to {1} theme (Ctrl+Shift+T)</translation>
     </message>
+    <message>
+      <source>目标前缀须为 /{0} 至 /128 的整数。</source>
+      <translation>Target prefix must be an integer from /{0} to /128.</translation>
+    </message>
+    <message>
+      <source>请求数量须为 1 至 {0:,} 的整数。</source>
+      <translation>Requested count must be an integer from 1 to {0:,}.</translation>
+    </message>
+    <message>
+      <source>IPv6 子网分配建议报告</source>
+      <translation>IPv6 Subnet Allocation Suggestions</translation>
+    </message>
+    <message>
+      <source>目标前缀：/{0}</source>
+      <translation>Target prefix: /{0}</translation>
+    </message>
+    <message>
+      <source>可分配子网总数：{0:,}</source>
+      <translation>Total available subnets: {0:,}</translation>
+    </message>
+    <message>
+      <source>请求数量：{0:,}</source>
+      <translation>Requested count: {0:,}</translation>
+    </message>
+    <message>
+      <source>建议数量：{0:,}</source>
+      <translation>Suggested count: {0:,}</translation>
+    </message>
+    <message>
+      <source>按地址从小到大选择完整且对齐的空闲子网；请求超过容量时不生成部分建议。</source>
+      <translation>Select complete, aligned free subnets in ascending address order. No partial suggestions are generated when the request exceeds capacity.</translation>
+    </message>
+    <message>
+      <source>建议尚未占用；追加到清单前请确认用途、授权及实际网络状态。</source>
+      <translation>Suggestions are not reserved. Confirm their purpose, authorization and actual network state before appending them to the list.</translation>
+    </message>
+    <message>
+      <source>建议 CIDR：</source>
+      <translation>Suggested CIDRs:</translation>
+    </message>
+    <message>
+      <source>先在“空闲空间”计算父网段及占用清单，再按目标前缀生成建议。</source>
+      <translation>Calculate the parent and occupied list in Free Space first, then generate suggestions for the target prefix.</translation>
+    </message>
+    <message>
+      <source>填写目标前缀（例如 64 或 /64），不得短于父网段前缀。</source>
+      <translation>Enter the target prefix (such as 64 or /64), at least as long as the parent prefix.</translation>
+    </message>
+    <message>
+      <source>单次建议 1 至 5,000 个子网；容量统计保留精确整数。</source>
+      <translation>Request 1 to 5,000 subnets at a time. Capacity uses exact integers.</translation>
+    </message>
+    <message>
+      <source>统计可分配容量并生成按地址升序排列的子网建议</source>
+      <translation>Count available subnets and suggest subnets in ascending address order</translation>
+    </message>
+    <message>
+      <source>复制本次建议 CIDR；不会自动占用地址</source>
+      <translation>Copy suggested CIDRs without reserving addresses</translation>
+    </message>
+    <message>
+      <source>复制分配建议报告，包含精确容量和请求数量</source>
+      <translation>Copy the allocation report with exact capacity and requested count</translation>
+    </message>
+    <message>
+      <source>保存分配建议 CIDR 或报告为 TXT</source>
+      <translation>Save suggested CIDRs or the allocation report as TXT</translation>
+    </message>
+    <message>
+      <source>确认后将建议追加到占用清单，并重新计算剩余空闲空间</source>
+      <translation>Confirm to append suggestions to the occupied list and recalculate remaining free space</translation>
+    </message>
+    <message>
+      <source>建议尚未生成；修改占用清单、父网段或请求参数后须重新生成。</source>
+      <translation>No suggestions yet. Regenerate after changing the occupied list, parent network or request parameters.</translation>
+    </message>
+    <message>
+      <source>追加分配建议</source>
+      <translation>Append Allocation Suggestions</translation>
+    </message>
+    <message>
+      <source>将 {0:,} 个建议子网追加到当前占用清单，保留已有内容，并重新计算空闲空间。是否继续？</source>
+      <translation>Append {0:,} suggested subnets to the occupied list, retain existing content and recalculate free space. Continue?</translation>
+    </message>
+    <message>
+      <source>目标前缀：</source>
+      <translation>Target prefix:</translation>
+    </message>
+    <message>
+      <source>请求数量：</source>
+      <translation>Requested count:</translation>
+    </message>
+    <message>
+      <source>建议 CIDR</source>
+      <translation>Suggested CIDR</translation>
+    </message>
+    <message>
+      <source>可分配 /{0} 子网仅 {1:,} 个，少于请求的 {2:,} 个；未生成部分建议。</source>
+      <translation>Only {1:,} /{0} subnets are available, fewer than the requested {2:,}. No partial suggestions were generated.</translation>
+    </message>
+    <message>
+      <source>分配建议 CIDR 已复制。</source>
+      <translation>Suggested CIDRs copied.</translation>
+    </message>
+    <message>
+      <source>分配建议报告已复制。</source>
+      <translation>Allocation report copied.</translation>
+    </message>
+    <message>
+      <source>清单、参数或规划结果已变化，请重新生成建议后再追加。</source>
+      <translation>The list, parameters or planning result changed. Regenerate suggestions before appending.</translation>
+    </message>
+    <message>
+      <source>{0:,}</source>
+      <translation>{0:,}</translation>
+    </message>
+    <message>
+      <source>父网段：{0}
+可分配 /{1} 子网 {2:,} 个；请求 {3:,} 个，建议 {4:,} 个。</source>
+      <translation>Parent network: {0}
+Available /{1} subnets: {2:,}; requested: {3:,}; suggested: {4:,}.</translation>
+    </message>
+    <message>
+      <source>
+建议尚未占用；确认追加后才更新当前占用清单。</source>
+      <translation>
+Suggestions are not reserved. The occupied list is updated only after you confirm appending.</translation>
+    </message>
+    <message>
+      <source>无法追加建议：</source>
+      <translation>Cannot append suggestions: </translation>
+    </message>
+    <message>
+      <source>分配建议</source>
+      <translation>Allocation</translation>
+    </message>
+    <message>
+      <source>保存建议 CIDR 为 TXT</source>
+      <translation>Save suggested CIDRs as TXT</translation>
+    </message>
+    <message>
+      <source>保存分配建议报告为 TXT</source>
+      <translation>Save allocation report as TXT</translation>
+    </message>
+    <message>
+      <source>目标文件已变化或正在由其他保存任务使用，已停止覆盖：{0}</source>
+      <translation>The destination changed or is in use by another save operation. Overwriting stopped: {0}</translation>
+    </message>
+    <message>
+      <source>保存目标不是普通文件，请选择其他文件名。</source>
+      <translation>The save destination is not a regular file. Choose another filename.</translation>
+    </message>
+    <message>
+      <source>
+本次完整内容已保留在：{0}
+请检查目标文件，再选择其他文件名保存。</source>
+      <translation>
+The complete output has been preserved at: {0}
+Check the destination, then save using another filename.</translation>
+    </message>
+    <message>
+      <source>保存目标与确认的文件不一致，请重新选择。</source>
+      <translation>The save destination differs from the approved file. Select it again.</translation>
+    </message>
+    <message>
+      <source>方案内容或任务状态已变化，请重新保存。</source>
+      <translation>The plan content or task state changed. Save again.</translation>
+    </message>
+    <message>
+      <source>{0}-{1}</source>
+      <translation>{0}-{1}</translation>
+    </message>
+    <message>
+      <source>IPv6Subnets.{0}</source>
+      <translation>IPv6Subnets.{0}</translation>
+    </message>
+    <message>
+      <source>保存目标错误</source>
+      <translation>Invalid Save Destination</translation>
+    </message>
   </context>
   <context>
     <name>Export</name>

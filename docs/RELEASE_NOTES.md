@@ -1,3 +1,47 @@
+# V1.10 — 子网分配建议 / Subnet Allocation Suggestions
+
+## 简体中文
+
+### 🐛 审计修复（统一并入 V1.10）
+
+- 🐛 A01：方案、TXT 保存与批量 TXT/XLSX 导出增加确认时文件快照及提交前冲突检测。原本不存在的目标采用原子无覆盖新建；同程序并发保存协调提交。
+- 🐛 检出冲突时保留目标文件，并保留本次完整恢复输出，提示路径；取消仍清理未完成文件。拒绝覆盖目录、符号链接等非普通目标。
+- 🐛 A02：修复方案保存快照与“已保存”状态不一致；对话框期间状态变化时拒绝旧保存，后续修改保留未保存标记。
+- 🐛 A03：验证改用带运行标识的结构化 unittest 结果，拒绝缺失、截断、零测试、未完成、失败或旧证据；自检须完成全部约定工作流。
+- 🌐 新增冲突、恢复路径及错误提示同步提供中英文。
+- 📸 删除独立保存菜单截图及中英文 README 的相应引用，保留完整程序窗口截图。
+- ⏳ D01 / Qt：核实官方 PyPI 最新可安装 Qt wheel 仍为 6.11.2，6.11.3 尚未发布；兼容升级暂未完成，不虚写已修复或已升级。详见 [依赖状态](DEPENDENCY_STATUS.md)。
+
+保存保护的实际边界和恢复方法见 [保存冲突保护](SAVE_CONFLICTS.md)。
+
+✨ 新增按目标前缀统计可分配子网数量；基于全部空闲区间计算，考虑 CIDR 对齐和碎片，不依赖被截断的空闲 CIDR 明细。
+✨ 按数量生成最多 5,000 个候选网段，支持复制和 TXT 保存、完整容量报告；容量不足时不生成部分建议。
+✨ 确认后将建议追加到原占用清单，保留已有内容及注释，自动重新计算剩余空闲空间。
+🛡️ 追加前后检查状态快照，遵守清单原有的记录、字节与物理行限制；修改输入后清除旧建议。
+🌐 新界面、提示、报告、帮助及截图同步提供简体中文和 English。保留 V1.9 双语修订。
+
+## English
+
+### 🐛 Audit fixes merged into V1.10
+
+- 🐛 A01: plans, TXT saves and bulk TXT/XLSX exports retain the approval-time destination revision and check for conflicts at commit. Initially absent targets use atomic no-overwrite publication; cooperating application processes coordinate existing-file commits.
+- 🐛 Conflicts preserve the destination and complete recovery output, with a reported recovery path. Cancellation still removes incomplete files. Directories, symbolic links and other nonregular targets cannot be overwritten.
+- 🐛 A02: fixed saved-plan snapshot tracking. Changes during dialogs invalidate the save; later changes remain dirty.
+- 🐛 A03: verification now requires structured unittest evidence bound to a run identifier. Missing, truncated, zero-test, incomplete, failed or stale evidence is rejected. Self-checks must include every required workflow.
+- 🌐 Conflict and recovery messages support both interface languages.
+- 📸 Removed standalone save-menu screenshots and their Chinese/English README references, retaining full application-window screenshots.
+- ⏳ D01 / Qt: official PyPI still provides Qt 6.11.2 as the latest installable wheel, with no 6.11.3 distribution. The compatible upgrade remains pending; it is not reported as completed. See [dependency status](DEPENDENCY_STATUS.md).
+
+See [save conflict protection](SAVE_CONFLICTS.md) for recovery steps and concurrency limits.
+
+✨ Count available subnets for a target prefix using all free intervals, including alignment and fragmentation, independently of truncated free CIDR details.
+✨ Generate up to 5,000 candidates on request. Copy or save CIDRs and capacity reports as TXT. Insufficient capacity produces no partial suggestions.
+✨ Confirm to append candidates to the occupied list, retain existing content and comments, and recalculate remaining free space.
+🛡️ Recheck snapshots around confirmation and enforce existing record, byte and physical-line limits. Input changes invalidate old suggestions.
+🌐 New controls, tooltips, reports, help and screenshots support Simplified Chinese and English. V1.9 bilingual fixes are retained.
+
+---
+
 # IPv6SubnetCalculator V1.9
 
 ## 🐛 双语一致性修订

@@ -18,6 +18,7 @@
 """方案文件对话框、快照与恢复协调；损坏文件不改变当前工作。"""
 from core.localized_text import text as tx, join_text as jt
 from pathlib import Path
+from core.file_commit import capture_file
 from ui.standard_dialogs import QFileDialog, QMessageBox
 from PyQt6.QtCore import QSignalBlocker, QItemSelectionModel
 from PyQt6.QtGui import QShortcut, QKeySequence
@@ -79,11 +80,15 @@ class PlanController:
             return False
         try:
             plan = self.snapshot()
+            document = self.document()
         except InputError as exc:
             self._error(tx('保存方案'), exc)
             return False
         if self.path is not None and not save_as:
             path = self.path
+            try:expected=capture_file(path)
+            except (OSError,InputError) as exc:
+                self._error(tx('保存方案'),exc);return False
         else:
             selected, _ = QFileDialog.getSaveFileName(self.window, tx('保存计算方案'),
                 str(self.path) if self.path else 'IPv6Plan.json', tx('IPv6 计算方案 (*.json)'),
@@ -96,18 +101,23 @@ class PlanController:
             if path.suffix.lower() != '.json':
                 self._error(tx('保存方案'), InputError(tx('方案文件扩展名须为 .json。')))
                 return False
-            if path.exists() and QMessageBox.question(self.window, tx('覆盖方案'),
+            try:expected=capture_file(path)
+            except (OSError,InputError) as exc:
+                self._error(tx('保存方案'),exc);return False
+            if expected.exists and QMessageBox.question(self.window, tx('覆盖方案'),
                     tx('目标文件已存在，是否覆盖？'), QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
                     QMessageBox.StandardButton.No) != QMessageBox.StandardButton.Yes:
                 return False
+        if self.document()!=document or self.window.export_service.busy:
+            self.window.feedback.set_message(tx('方案内容或任务状态已变化，请重新保存。'),'info');return False
         try:
-            save_plan(path, plan)
+            save_plan(path, plan,expected=expected)
         except (OSError, InputError) as exc:
             self._error(tx('保存方案'), exc)
             return False
         clear_invalid(self.window.calculation_page.plan_file_label)
         self.path = path
-        self.saved_document = self.document()
+        self.saved_document = document
         self._status()
         self.window.feedback.set_message(tx('计算方案已保存。'), 'success')
         return True
