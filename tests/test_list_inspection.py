@@ -191,4 +191,3 @@ class InspectionUiTests(unittest.TestCase):
         with patch.object(self.page.clipboard, 'copy_text', return_value=True) as copied:
             self.p.copy()
         self.assertIn('IPv6 清单覆盖差异报告', str(copied.call_args.args[0]))
-
