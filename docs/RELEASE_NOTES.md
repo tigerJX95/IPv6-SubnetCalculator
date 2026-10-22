@@ -1,3 +1,27 @@
+# V1.12 清单查询与覆盖比较 / List Lookup and Coverage Comparison
+
+- 新增地址归属查询：输入 IPv6 地址，按最长前缀优先列出清单中所有匹配网段及原始行号，保留重复及包含项。
+- 新增覆盖差异比较：当前清单作为基准，与粘贴或导入的 TXT／规划项目清单比较，精确统计新增、移除和共同覆盖的地址数与全部范围；等价 CIDR 拆分不产生虚假变化。
+- 两项功能位于“子网清单”顶部查询图标，使用打开窗口时的清单快照；支持复制及 TXT 报告保存，沿用保存冲突保护。输入变化后清除旧结果。
+- 单份清单继续限制为 5,000 条、1 MiB、20,000 行；空清单可用于比较全部新增或移除。错误行需修正后再查询或比较。
+
+- Added address membership lookup: list all containing networks and original line numbers, longest prefix first, including duplicates and containing entries.
+- Added coverage comparison: compare the current list with pasted or imported TXT / planning project lists, with exact added, removed and common address counts and complete ranges. Equivalent CIDR splits do not create false changes.
+- Open both tools from the lookup icon at the top of Subnet List. They use a snapshot from when the window opened and support copying and conflict-safe TXT report saving. Editing inputs clears old results.
+- Each list retains the 5,000-record, 1 MiB and 20,000-line limits. Empty lists support all-added or all-removed comparisons. Correct invalid records before querying or comparing.
+
+# V1.12
+
+✨ 规划项目未保存保护 / Planning draft protection
+
+- 关闭程序、打开其他规划项目之前，可保存、放弃或取消未保存内容。
+- 新草稿显示修改标记；单独切换结果页签不触发未保存提醒。
+- 保存取消、失败或发生冲突时保留工作；确认期间内容变化会中止操作。
+
+- Save, discard or cancel planning changes before closing or replacing a project.
+- Modified indicators also cover new drafts; tab navigation alone does not mark a project as modified.
+- Cancelled or failed saves and save conflicts preserve current work. Changes during confirmation abort the action.
+
 # V1.11
 
 ## ✨ V1.11 规划项目保存与恢复

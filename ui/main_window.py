@@ -182,6 +182,11 @@ class MainWindow(QMainWindow):
             self.closing_after_export = False
             event.ignore()
             return
+        if not self.subnet_list_page.project_controller.confirm_discard():
+            self.closing_after_export = False
+            self.closing_after_list_check = False
+            event.ignore()
+            return
         if self.about_dialog is not None:
             self.about_dialog.close()
         event.accept()

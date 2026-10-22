@@ -58,6 +58,7 @@ class ImportFeedbackTests(unittest.TestCase):
         QApplication.processEvents()
 
     def tearDown(self):
+        self.window.subnet_list_page.project_controller.saved = self.window.subnet_list_page.project_controller.snapshot()
         self.window.plan_controller.path=None
         self.window.calculation_page.plan_name_input.clear()
         self.window.calculation_page.plan_notes_input.clear()

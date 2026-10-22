@@ -60,6 +60,7 @@ class I18nTests(unittest.TestCase):
         QApplication.processEvents()
 
     def tearDown(self):
+        self.window.subnet_list_page.project_controller.saved = self.window.subnet_list_page.project_controller.snapshot()
         page=self.window.subnet_list_page
         if page.service.busy:
             page.cancel();self.wait(lambda:not page.service.busy)

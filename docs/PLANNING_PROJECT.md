@@ -12,4 +12,4 @@
 
 Exact fields only; no duplicate keys, NUL, invalid Unicode, nonfinite JSON constants or unsupported versions. File input is capped at 7 MiB to allow JSON escaping of the bounded source text. CIDR correctness is checked when running analysis, not when saving a draft. Derived results are never persisted or trusted. Calculation JSON v1 remains compatible and separate.
 
-仅保存输入；恢复后重新运行清单检查、空闲空间计算及分配建议。使用顶部图标手动保存，关闭不会自动保存或提示规划项目未保存。文件写入沿用 V1.10 冲突保护与恢复文件机制。
+仅保存输入；恢复后重新运行清单检查、空闲空间计算及分配建议。使用顶部图标手动保存，关闭或打开其他项目时，如有未保存更改，可选择保存、放弃或取消；取消或保存失败会保留当前工作。文件写入沿用 V1.10 冲突保护与恢复文件机制。

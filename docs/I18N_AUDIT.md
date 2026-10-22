@@ -2,8 +2,8 @@
 
 日期 / Date: 2026-10-20
 
-本次为 V1.9 的双语一致性修订，版本号保持 V1.9。检查包含简体中文、English，以及窗口打开时双向切换。实际环境为 Linux Qt offscreen；另以相反系统语言的文件类型说明进行模拟验证。Windows 实机验收单独保留。
-This revision retains V1.9 and checks Chinese, English and live switching. Tests run with Linux Qt offscreen, including simulated native file-type strings in the opposite language. Windows acceptance remains separate.
+本次为 V1.9 的双语一致性修订，版本号保持 V1.9。检查包含简体中文、English，以及窗口打开时双向切换。实际环境为 Linux Qt offscreen；另以相反系统语言的文件类型说明进行模拟验证。Windows 实机验证单独保留。
+This revision retains V1.9 and checks Chinese, English and live switching. Tests run with Linux Qt offscreen, including simulated native file-type strings in the opposite language. Windows verification remains separate.
 
 ## 本轮修复 / Fixes
 
@@ -61,5 +61,5 @@ Protocol/product names and native language names remain recognizable. User conte
 
 The Allocation page localizes labels, tooltips, capacity status, errors, table headers, confirmation, TXT menus and reports. Live switching preserves suggestions and raw user content. Reports use the language at save time. Both languages and themes are checked at 900×620, including status and candidate-row visibility. V1.9 fixes and regression coverage are retained.
 
-英文翻译资源共 682 条完成、0 条未完成。Windows 实机验收仍按独立清单执行。
-The English catalog contains 682 finished entries and no unfinished entries. Windows acceptance remains a separate task.
+英文翻译资源共 682 条完成、0 条未完成。Windows 实机验证仍按独立清单执行。
+The English catalog contains 682 finished entries and no unfinished entries. Windows verification remains a separate task.

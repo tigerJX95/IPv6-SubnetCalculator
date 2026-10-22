@@ -1,6 +1,21 @@
-# V1.10 Windows 验收 / Windows Acceptance
+# V1.12 清单查询与覆盖比较 / List Lookup and Coverage Comparison
 
-V1.10 增加清单／规划 TXT 保存与结果回流。需要在 Windows 中验证语言切换、显示缩放及打包资源，既有功能验收继续保留。
+- 点击子网清单顶部查询图标；确认地址归属查询列出全部匹配网段和原始行号，最长前缀优先。
+- 对比 TXT 和规划项目 JSON；确认新增／移除方向、空清单与等价拆分，原规划项目不变。
+- 检查中英、深浅主题、最小窗口、键盘操作、报告复制和 TXT 保存；取消覆盖或目标冲突时保留已有文件。
+- Verify all matches and line numbers, exact comparison direction, imports, unchanged source projects, themes, languages, minimum size, clipboard and conflict-safe saving on Windows.
+
+# V1.12 手工检查 / Manual checks
+
+1. 新建规划草稿后关闭，分别选择保存、放弃、取消；取消或保存失败应保留窗口与原文。
+2. 仅切换结果页签再关闭，不应出现规划修改提示。
+3. 打开其他项目时先保存当前草稿；取消文件选择或保存冲突时保留原工作。
+4. 后台检查中关闭，任务取消后应出现未保存提示；取消退出后窗口可继续使用。
+5. 在简体中文、English、浅色、深色和高 DPI 下检查提示按钮、状态标签与窗口布局。
+
+# V1.10 Windows 验证 / Windows Verification
+
+V1.10 增加清单／规划 TXT 保存与结果回流。需要在 Windows 中验证语言切换、显示缩放及打包资源，既有功能验证继续保留。
 
 V1.10 adds list/planning TXT saves and protected result transfer. Verify switching, DPI and packaged resources on Windows alongside existing workflows.
 
@@ -20,35 +35,35 @@ Automated checks open/close windows, switch themes, resize and minimize/restore.
 
 ## 人工检查 / Manual Checks
 
-| 场景 / Scenario | 验收内容 / Expected behavior | 结果 / Result |
+| 场景 / Scenario | 验证内容 / Expected behavior | 结果 / Result |
 |---|---|---|
-| 中英切换 / Languages | 地球入口位置、两语言浅深主题、错误／悬停／弹窗／表格／帮助即时更新；保留结果、页码、选择、定位、清单、规划及关于阅读状态 / Verify all translated surfaces and retained work | 待验收 / Pending |
-| 重启与兼容 / Restart and compatibility | 重启恢复语言；中文名称备注及方案跨语言保存一致；后台任务完成采用当前语言；标准文件选择器输入文件名不变 / Verify persistence, data compatibility and asynchronous completion | 待验收 / Pending |
-| 方案拖放 / Plan drops | 中文路径 JSON 拖到标题、输入框、编辑区和表格；确认／取消及未保存的保存／不保存／取消；坏文件、多文件、文件夹和 TXT 明确拒绝；不改源文件，不额外执行计算或导出；后台任务时阻止 / Check whole-window drops, transaction safety and busy handling | 待验收 / Pending |
-| 输入提示 / Input feedback | 两种主题测试网络、目标前缀、地址工具、定位、范围、父网段及清单错误；红框、警示图标、加粗原因，编辑后恢复 / Verify visible errors and recovery in both themes | 待验收 / Pending |
-| 中文弹窗 / Chinese dialogs | 英文 Windows 显示语言下检查打开／保存、覆盖、未保存、错误、导出确认、文件浏览和右键菜单；所有标准按钮为中文 / Check standard dialog text/buttons with English Windows display language | 待验收 / Pending |
-| Windows 环境 / Environment | 记录 Windows 版本、Python 架构、显示缩放比例 / Record Windows version, Python architecture and display scaling | 待验收 / Pending |
-| 独立启动 / Portable startup | EXE 在未安装 Python 的 Windows 机器上启动；路径含空格或中文时资源完整 / Launch on Windows without Python, including paths with spaces or Unicode | 待验收 / Pending |
-| 显示与主题 / Display and themes | 在常用缩放比例及最小窗口下查看四个页面、详情和导出弹窗；内容可读、无异常黑底、提示完整 / Check all four pages and dialogs at normal scaling and minimum size | 待验收 / Pending |
-| 状态保留 / State retention | 定位、选择后切换主题／标签及最小化恢复，页码、范围和滚动位置符合预期；重启记住主题 / Verify navigation, selections, scrolling and saved theme | 待验收 / Pending |
-| 计算边界 / Calculation boundaries | 默认示例、原前缀等于目标前缀、`::/0 → /128`、单地址 `/128` 及非法输入均正确 / Check default, equal prefixes, full space, single address and invalid input | 待验收 / Pending |
-| 摘要复制 / Summary copying | 两种主题复制到记事本，检查网络、目标前缀、范围、精确容量和用途提示；编辑输入后复制旧摘要，重算后更新；非法重算禁用 / Paste in Notepad in both themes, verify exact data and guidance, edited-input snapshot behavior, valid update and invalid-input disabling | 待验收 / Pending |
-| 计算方案 / Calculation plans | 中文名称备注、最大空间末页、多选和范围高亮往返；损坏文件保留当前工作；文件锁定保存失败保留原文件；关闭和打开前保存／放弃／取消均正确 / Unicode metadata, maximum-space views, selections, corruption, locked files and unsaved prompts | 待验收 / Pending |
-| 子网清单 / Subnet lists | UTF-8／BOM 中文文件路径、错误行号、规范化与去重复制、重复／包含／相邻计数；5,000 条与海量关系明细上限；取消和退出安全；两种主题及最小窗口正常 / Check Unicode import, exact counts, bounded details, clipboard, cancellation, closing and themes | 待验收 / Pending |
-| 空闲空间与整理 / Planning | 检查空清单、完全占用、重复包含、越界拒绝、精确容量、整理覆盖不变、明细截断禁用复制、取消退出、浅深色透明关于图标 / Check empty/full occupancy, overlap, rejection, exact counts/coverage, bounded-copy protection, cancellation and transparent icon | 待验收 / Pending |
-| 关于与许可 / About and licenses | 顶部图标／F1 打开；四页完整；七份许可文档离线可读；版本正确；两种主题与缩放正常；Esc 关闭；不改变当前计算与方案 / Verify entry, pages, seven offline documents, version, themes/scaling, Esc and retained calculation/plan | 待验收 / Pending |
-| 地址格式 / Address formats | 转换大写、展开、全零、全一和 IPv4 映射地址；逐项及全部粘贴到记事本，二进制完整 128 位 / Verify case, expansion, zero/max/mapped addresses, individual/all copy and exact 128-bit binary | 待验收 / Pending |
-| 双网段关系 / Network relationships | 检查相同、双向包含、相邻、独立、主机位规范化与非法输入；复制报告包含双方范围、精确重叠和间隔数 / Check all relationships, normalization, invalid inputs and complete report copying | 待验收 / Pending |
-| 文件与 Excel / Files and Excel | 中文路径保存成功；Excel 可打开；超长序号完整；覆盖已被 Excel 占用的文件时明确报错且原文件保留 / Verify Unicode paths, workbook opening, exact long indices and locked destinations | 待验收 / Pending |
-| 取消与退出 / Cancellation and exit | 导出中取消或关闭程序，正常结束并清理临时文件；失败后可以重新导出 / Verify cleanup and retry after cancellation, close and errors | 待验收 / Pending |
-| 持续使用 / Extended session | 至少一次 30 分钟日常计算、翻页、定位、复制和导出使用，记录卡顿、崩溃或资源异常 / Record any hangs, crashes or resource anomalies during a 30-minute normal-use session | 待验收 / Pending |
+| 中英切换 / Languages | 地球入口位置、两语言浅深主题、错误／悬停／弹窗／表格／帮助即时更新；保留结果、页码、选择、定位、清单、规划及关于阅读状态 / Verify all translated surfaces and retained work | 待验证 / Pending |
+| 重启与兼容 / Restart and compatibility | 重启恢复语言；中文名称备注及方案跨语言保存一致；后台任务完成采用当前语言；标准文件选择器输入文件名不变 / Verify persistence, data compatibility and asynchronous completion | 待验证 / Pending |
+| 方案拖放 / Plan drops | 中文路径 JSON 拖到标题、输入框、编辑区和表格；确认／取消及未保存的保存／不保存／取消；坏文件、多文件、文件夹和 TXT 明确拒绝；不改源文件，不额外执行计算或导出；后台任务时阻止 / Check whole-window drops, transaction safety and busy handling | 待验证 / Pending |
+| 输入提示 / Input feedback | 两种主题测试网络、目标前缀、地址工具、定位、范围、父网段及清单错误；红框、警示图标、加粗原因，编辑后恢复 / Verify visible errors and recovery in both themes | 待验证 / Pending |
+| 中文弹窗 / Chinese dialogs | 英文 Windows 显示语言下检查打开／保存、覆盖、未保存、错误、导出确认、文件浏览和右键菜单；所有标准按钮为中文 / Check standard dialog text/buttons with English Windows display language | 待验证 / Pending |
+| Windows 环境 / Environment | 记录 Windows 版本、Python 架构、显示缩放比例 / Record Windows version, Python architecture and display scaling | 待验证 / Pending |
+| 独立启动 / Portable startup | EXE 在未安装 Python 的 Windows 机器上启动；路径含空格或中文时资源完整 / Launch on Windows without Python, including paths with spaces or Unicode | 待验证 / Pending |
+| 显示与主题 / Display and themes | 在常用缩放比例及最小窗口下查看四个页面、详情和导出弹窗；内容可读、无异常黑底、提示完整 / Check all four pages and dialogs at normal scaling and minimum size | 待验证 / Pending |
+| 状态保留 / State retention | 定位、选择后切换主题／标签及最小化恢复，页码、范围和滚动位置符合预期；重启记住主题 / Verify navigation, selections, scrolling and saved theme | 待验证 / Pending |
+| 计算边界 / Calculation boundaries | 默认示例、原前缀等于目标前缀、`::/0 → /128`、单地址 `/128` 及非法输入均正确 / Check default, equal prefixes, full space, single address and invalid input | 待验证 / Pending |
+| 摘要复制 / Summary copying | 两种主题复制到记事本，检查网络、目标前缀、范围、精确容量和用途提示；编辑输入后复制旧摘要，重算后更新；非法重算禁用 / Paste in Notepad in both themes, verify exact data and guidance, edited-input snapshot behavior, valid update and invalid-input disabling | 待验证 / Pending |
+| 计算方案 / Calculation plans | 中文名称备注、最大空间末页、多选和范围高亮往返；损坏文件保留当前工作；文件锁定保存失败保留原文件；关闭和打开前保存／放弃／取消均正确 / Unicode metadata, maximum-space views, selections, corruption, locked files and unsaved prompts | 待验证 / Pending |
+| 子网清单 / Subnet lists | UTF-8／BOM 中文文件路径、错误行号、规范化与去重复制、重复／包含／相邻计数；5,000 条与海量关系明细上限；取消和退出安全；两种主题及最小窗口正常 / Check Unicode import, exact counts, bounded details, clipboard, cancellation, closing and themes | 待验证 / Pending |
+| 空闲空间与整理 / Planning | 检查空清单、完全占用、重复包含、越界拒绝、精确容量、整理覆盖不变、明细截断禁用复制、取消退出、浅深色透明关于图标 / Check empty/full occupancy, overlap, rejection, exact counts/coverage, bounded-copy protection, cancellation and transparent icon | 待验证 / Pending |
+| 关于与许可 / About and licenses | 顶部图标／F1 打开；四页完整；七份许可文档离线可读；版本正确；两种主题与缩放正常；Esc 关闭；不改变当前计算与方案 / Verify entry, pages, seven offline documents, version, themes/scaling, Esc and retained calculation/plan | 待验证 / Pending |
+| 地址格式 / Address formats | 转换大写、展开、全零、全一和 IPv4 映射地址；逐项及全部粘贴到记事本，二进制完整 128 位 / Verify case, expansion, zero/max/mapped addresses, individual/all copy and exact 128-bit binary | 待验证 / Pending |
+| 双网段关系 / Network relationships | 检查相同、双向包含、相邻、独立、主机位规范化与非法输入；复制报告包含双方范围、精确重叠和间隔数 / Check all relationships, normalization, invalid inputs and complete report copying | 待验证 / Pending |
+| 文件与 Excel / Files and Excel | 中文路径保存成功；Excel 可打开；超长序号完整；覆盖已被 Excel 占用的文件时明确报错且原文件保留 / Verify Unicode paths, workbook opening, exact long indices and locked destinations | 待验证 / Pending |
+| 取消与退出 / Cancellation and exit | 导出中取消或关闭程序，正常结束并清理临时文件；失败后可以重新导出 / Verify cleanup and retry after cancellation, close and errors | 待验证 / Pending |
+| 持续使用 / Extended session | 至少一次 30 分钟日常计算、翻页、定位、复制和导出使用，记录卡顿、崩溃或资源异常 / Record any hangs, crashes or resource anomalies during a 30-minute normal-use session | 待验证 / Pending |
 
-测试文件建议放在临时目录，保留原文件副本用于覆盖与取消检查。报告中记录实际机器的耗时；Linux 自动检查及短时操作循环不计作 Windows 人工或长时间稳定性验收。
+测试文件建议放在临时目录，保留原文件副本用于覆盖与取消检查。报告中记录实际机器的耗时；Linux 自动检查及短时操作循环不计作 Windows 人工或长时间稳定性验证。
 
-Use a temporary test folder and keep copies of originals for overwrite/cancellation checks. Record timings from the actual machine. Linux checks and short operation loops are recorded separately from Windows manual and extended-session acceptance.
+Use a temporary test folder and keep copies of originals for overwrite/cancellation checks. Record timings from the actual machine. Linux checks and short operation loops are recorded separately from Windows manual and extended-session verification.
 
 
-## 导出专项 / Export Acceptance
+## 导出专项 / Export Verification
 
 - [ ] 中文 XLSX：表头“序号”“IPv6 子网”，工作表“IPv6子网”；英文为“No.”“IPv6 Subnet”，工作表“IPv6 Subnets”。在实际 Excel 中打开确认。
 - [ ] 从第 100 项开始导出，确认保留实际序号及对应 CIDR；完整 IPv6 空间的末两项序号保留全部数字。
@@ -99,7 +114,7 @@ Verify output content, reimport, incomplete/empty results, overwrite and failure
 - [ ] 关于中的程序信息、帮助、法律说明和组件概览对应当前语言，许可证原文不变。
 - [ ] 文件不存在提示、保存／放弃／取消确认及输入框右键菜单语言一致。
 
-Verify these cases on Windows in both OS display languages where available; Linux offscreen and simulated native-type strings do not replace Windows acceptance.
+Verify these cases on Windows in both OS display languages where available; Linux offscreen and simulated native-type strings do not replace Windows verification.
 
 
 ## V1.10 分配建议 / Allocation
@@ -117,5 +132,5 @@ Verify these cases on Windows in both OS display languages where available; Linu
 - 长 TXT/XLSX 导出期间用编辑器新建、修改或替换同名目标；确认不静默覆盖，恢复 TXT/XLSX/JSON 内容可用。 / Detect rival writes during export and verify complete recovery files.
 - 覆盖确认期间目标变化、方案内容变化、取消、文件占用和权限失败均须保留原内容；取消不留下未完成恢复文件。 / Check confirmation changes, cancellation, locking and permission failures.
 - 核对浅深主题、中英文冲突提示及恢复路径。 / Verify both themes/languages and recovery paths.
-- 确认新验证报告具有 regression.json、非零测试数、匹配运行标识和完整工作流。Windows 命名互斥、NTFS/exFAT 与网络目录行为仍须实机验收。 / Verify structured evidence and native Windows/filesystem behavior.
+- 确认新验证报告具有 regression.json、非零测试数、匹配运行标识和完整工作流。Windows 命名互斥、NTFS/exFAT 与网络目录行为仍须实机验证。 / Verify structured evidence and native Windows/filesystem behavior.
 - Qt 升级尚未完成，不将 Qt 6.11.2 自检通过记为 D01 已修复。 / Functional checks on Qt 6.11.2 do not close D01.

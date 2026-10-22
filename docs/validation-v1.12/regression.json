@@ -1,0 +1,15 @@
+{
+  "app_version": "1.12",
+  "source_sha256": "ef0a74d7a8f15c56823b59d803676560224ea9a0eae849c583c6ff5b79e52b75",
+  "run_id": "v112-final-20261022",
+  "status": "passed",
+  "complete": true,
+  "expected_tests": 492,
+  "tests_run": 492,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "expected_failures": 0,
+  "unexpected_successes": 0,
+  "elapsed_seconds": 72.032
+}

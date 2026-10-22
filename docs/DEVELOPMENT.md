@@ -1,3 +1,13 @@
+# V1.12 清单分析扩展 / List Analysis Extensions
+
+新增模块 `core/list_inspection.py`、`ui/list_inspection_dialog.py`。地址归属查询保留重复及包含记录，最长前缀优先；覆盖比较先归并区间，再做差集和交集，不枚举地址。独立窗口持有只读清单快照；查询和比较输入不持久化，导出报告复用现有保存冲突保护。JSON 格式不变。
+
+New membership and coverage comparison modules use bounded parsing, interval unions and differences without enumerating addresses. The dialog holds a read-only source snapshot; reports reuse conflict-safe text saving. Project JSON remains unchanged.
+
+# V1.12 开发说明 / Development Notes
+
+规划项目在关闭和恢复前检查未保存输入。比较清单、父网段及分配参数，不把结果页签浏览视为内容修改；确认期间检查快照，保存取消或失败时中止操作。
+
 # V1.11 开发说明 / Development Notes
 
 新增 `core/planning_project.py`、`services/project_storage.py`、`ui/project_controller.py`。规划项目格式与计算方案分离，共用受限 JSON 读取和冲突保护写入。未完成的字段按草稿保留，恢复不信任派生结果。
@@ -15,9 +25,9 @@ python -m pip install -r requirements.txt
 python main.py
 ```
 
-Windows 下运行 `build.cmd`，会安装固定版本的界面依赖和 PyInstaller，生成 `dist/IPv6SubnetCalculator_V1.11.exe`。构建需要联网下载依赖；生成后的程序离线运行，不要求目标电脑安装 Python。EXE 的架构取决于所用 Python 的架构，建议使用 Windows x64 Python。
+Windows 下运行 `build.cmd`，会安装固定版本的界面依赖和 PyInstaller，生成 `dist/IPv6SubnetCalculator_V1.12.exe`。构建需要联网下载依赖；生成后的程序离线运行，不要求目标电脑安装 Python。EXE 的架构取决于所用 Python 的架构，建议使用 Windows x64 Python。
 
-On Windows, `build.cmd` installs the pinned interface dependencies and PyInstaller, then creates `dist/IPv6SubnetCalculator_V1.11.exe`. Building requires internet access to download dependencies. The resulting application works offline without Python on the target computer. Its architecture follows the Python interpreter used; Windows x64 Python is recommended.
+On Windows, `build.cmd` installs the pinned interface dependencies and PyInstaller, then creates `dist/IPv6SubnetCalculator_V1.12.exe`. Building requires internet access to download dependencies. The resulting application works offline without Python on the target computer. Its architecture follows the Python interpreter used; Windows x64 Python is recommended.
 
 可选运行 `python tools/package_release.py` 生成 `dist/IPv6SubnetCalculator_V1.11_Windows.zip`，包含 EXE、项目 `LICENSE`／`NOTICE` 及第三方许可文件。Windows 用户默认直接下载 EXE；ZIP 仅为可选归档，源码包单独提供。发布前运行 `verify.cmd` 检查本次 EXE。
 
@@ -113,12 +123,12 @@ python tools/verify.py --report-dir verification
 指定打包程序可运行： / To include a packaged application:
 
 ```console
-python tools/verify.py --exe dist/IPv6SubnetCalculator_V1.11.exe --report-dir verification
+python tools/verify.py --exe dist/IPv6SubnetCalculator_V1.12.exe --report-dir verification
 ```
 
-`summary.json` 保存环境、逐阶段结果及性能数据；`SUMMARY.md` 为简要结果，`tests.log` 保存回归日志；`source.json` 和 `executable.json` 分别记录源码与打包程序检查。源码检查通过时，未提供的 EXE 仍标记为 `not_run`。只有在 Windows 上执行且 EXE 检查通过后，`windows_automated_checks` 才标记为通过；人工验收始终独立登记，见 [Windows 验收](WINDOWS_ACCEPTANCE.md)。
+`summary.json` 保存环境、逐阶段结果及性能数据；`SUMMARY.md` 为简要结果，`tests.log` 保存回归日志；`source.json` 和 `executable.json` 分别记录源码与打包程序检查。源码检查通过时，未提供的 EXE 仍标记为 `not_run`。只有在 Windows 上执行且 EXE 检查通过后，`windows_automated_checks` 才标记为通过；人工验证始终独立登记，见 [Windows 验证](WINDOWS_ACCEPTANCE.md)。
 
-`summary.json` records the environment, stage results, and performance metrics. `SUMMARY.md` is a short summary, and `tests.log` contains regression output. `source.json` and `executable.json` hold application checks. Without an executable, its stage remains `not_run`. Windows automated checks are marked passed only on Windows after a matching executable passes. Manual acceptance remains separate; see [Windows Acceptance](WINDOWS_ACCEPTANCE.md).
+`summary.json` records the environment, stage results, and performance metrics. `SUMMARY.md` is a short summary, and `tests.log` contains regression output. `source.json` and `executable.json` hold application checks. Without an executable, its stage remains `not_run`. Windows automated checks are marked passed only on Windows after a matching executable passes. Manual verification remains separate; see [Windows Verification](WINDOWS_ACCEPTANCE.md).
 
 自检通过 `--self-check REPORT_JSON` 启动，使用临时偏好与临时导出目录，不修改正常主题设置或剪贴板。覆盖默认计算、完整 IPv6 空间末页、100 轮导航／选择、两种主题与许可资源、中文路径后台导出，以及取消后的原文件保留和临时文件清理。性能记录包括后台导出期间事件循环采样间隔，不将其解释为整个程序的帧率或响应时间上限。
 
@@ -208,21 +218,21 @@ Validation is shared. Sorted closed intervals are merged, free gaps are obtained
 - ui/input_feedback.py：字段错误属性、警示 action、辅助说明及编辑后清除；ui/theme.py 统一两主题红框和加粗错误。
 - ui/standard_dialogs.py：标准弹窗中文按钮、纯文本内容、Qt 非原生文件选择器；app.py 安装随包 Qt 中文资源，英文系统同样中文。
 - services/error_messages.py：常见文件系统错误以中文原因、原路径和系统错误码展示。
-- 后续 i18n 的阶段、状态保留与验收要求见 [I18N_PLAN.md](I18N_PLAN.md)。
+- 后续 i18n 的阶段、状态保留与验证要求见 [I18N_PLAN.md](I18N_PLAN.md)。
 
 
 ## 国际化 / Internationalization
 
 翻译目录和控件绑定说明见 [I18N_PLAN.md](I18N_PLAN.md)。QTranslator 仅位于 services/UI，core/localized_text.py 不依赖 Qt。业务错误与报告保留模板参数，Qt 消息信号使用 object 传递源消息，防止切换前展开为固定语言。普通用户文本不会按译文表替换。UI 逻辑使用源标签或稳定索引／数据，不依赖可见译文。
 
-维护环境使用 Qt Linguist/lrelease 编译 TS；交付源码包含已编译 QM，Windows build.cmd 无需 PySide 或其他 GUI 框架。
+维护环境使用 Qt Linguist/lrelease 编译 TS；提供源码包含已编译 QM，Windows build.cmd 无需 PySide 或其他 GUI 框架。
 
 
 ## README 写作规范 / README Style
 
-README 面向使用者，保留功能、使用方法、运行截图、下载入口与许可证。删除交付式表达、助手与用户之间的对话、源码覆盖指示、测试安排、验收待办，以及类似“不会在当前电脑执行生成脚本”的额外解释。开发、构建和验证信息分别放入开发说明与验证文档；确实影响使用判断的功能边界和输入上限仍应准确说明。中英文采用同一规则。
+README 面向使用者，保留功能、使用方法、运行截图、下载入口与许可证。删除过程性表达、助手与用户之间的对话、源码覆盖指示、测试安排、验证待办，以及类似“不会在当前电脑执行生成脚本”的额外解释。开发、构建和验证信息分别放入开发说明与验证文档；确实影响使用判断的功能边界和输入上限仍应准确说明。中英文采用同一规则。
 
-Keep README user-facing: capabilities, usage, screenshots, downloads and licensing. Put handoff instructions, development/build details, testing arrangements and acceptance tasks in dedicated documents. Avoid conversational or unnecessary defensive wording. Retain limits and functional boundaries that users need for informed use. Apply the same rule in both languages.
+Keep README user-facing: capabilities, usage, screenshots, downloads and licensing. Put handoff instructions, development/build details, testing arrangements and verification tasks in dedicated documents. Avoid conversational or unnecessary defensive wording. Retain limits and functional boundaries that users need for informed use. Apply the same rule in both languages.
 
 
 ## 导出语言快照 / Export Language Snapshot

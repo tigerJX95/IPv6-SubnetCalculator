@@ -119,6 +119,7 @@ class AllocationUiTests(unittest.TestCase):
         self.v.count_input.setText('2');self.v.generate()
 
     def tearDown(self):
+        self.w.subnet_list_page.project_controller.saved = self.w.subnet_list_page.project_controller.snapshot()
         self.wait_idle()
         self.app.language_manager.apply('zh_CN',persist=False)
         self.w.plan_controller.path=None;self.w.close();self.w.deleteLater()

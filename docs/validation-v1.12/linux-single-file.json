@@ -1,0 +1,59 @@
+{
+  "environment": {
+    "app_version": "1.12",
+    "source_sha256": "ef0a74d7a8f15c56823b59d803676560224ea9a0eae849c583c6ff5b79e52b75",
+    "python": "3.12.14",
+    "os": "Linux",
+    "platform": "Linux-6.18.55-x86_64-with-glibc2.39",
+    "architecture": "x86_64",
+    "qt": "6.11.2",
+    "pyqt": "6.11.0",
+    "frozen": true
+  },
+  "status": "passed",
+  "checks": [
+    "about_help_licenses_legal_offline",
+    "calculation_summary_snapshot",
+    "address_formats_and_network_relations",
+    "plan_save_and_restore_with_unicode_path",
+    "shared_plan_import_chinese_catalog_and_input_error_recovery",
+    "default_calculation_and_resources",
+    "save_conflict_preserves_other_writer_and_complete_output",
+    "planning_unsaved_cancel_preserves_draft",
+    "planning_project_inputs_restore_without_stale_results",
+    "list_address_membership_preserves_all_matches",
+    "list_coverage_comparison_exact_delta_and_invalidation",
+    "maximum_ipv6_space_and_last_page",
+    "address_range_exact_coverage_and_bilingual_state",
+    "bilingual_live_switch_preserves_calculation_view_and_license_originals",
+    "file_metadata_and_component_overview_follow_language",
+    "subnet_list_unicode_import_and_background_relations",
+    "list_txt_output_and_localized_report",
+    "parent_free_space_exact_union_and_difference",
+    "aligned_allocation_exact_capacity_bilingual_snapshot",
+    "cidr_aggregation_preserves_coverage_and_input",
+    "planning_txt_output_and_transfer_actions",
+    "subnet_list_cancel_preserves_input",
+    "100_navigation_selection_cycles",
+    "background_txt_export_with_unicode_path",
+    "english_xlsx_headers_and_frozen_export_language",
+    "background_xlsx_export_with_unicode_path",
+    "cancel_preserves_original_and_cleans_temporary_file"
+  ],
+  "navigation_cycles": 100,
+  "elapsed_seconds": 7.5185,
+  "event_loop": {
+    "ticks": 147,
+    "maximum_observed_gap_ms": 799.038
+  },
+  "background_event_loop": {
+    "txt": {
+      "ticks": 81,
+      "maximum_observed_gap_ms": 309.193
+    },
+    "xlsx": {
+      "ticks": 2,
+      "maximum_observed_gap_ms": 371.968
+    }
+  }
+}

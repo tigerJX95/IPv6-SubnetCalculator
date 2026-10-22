@@ -224,6 +224,14 @@ class ReleaseCheck(QObject):
         save_project(project_path, project)
         controller = self.window.subnet_list_page.project_controller
         previous = controller.snapshot()
+        self.window.subnet_list_page.editor.setPlainText('# unsaved draft')
+        draft = controller.snapshot()
+        with patch('ui.project_controller.QMessageBox.question', return_value=QMessageBox.StandardButton.Cancel):
+            self.require(not controller.confirm_discard(), 'Unsaved draft cancellation failed')
+        self.require(controller.snapshot() == draft, 'Unsaved confirmation changed inputs')
+        self.checks.append('planning_unsaved_cancel_preserves_draft')
+        self.window.subnet_list_page.editor.setPlainText(previous.text)
+        controller.saved = previous
         with patch('ui.project_controller.QFileDialog.getOpenFileName', return_value=(str(project_path), '')), patch('ui.project_controller.QMessageBox.question', return_value=QMessageBox.StandardButton.Yes):
             self.require(controller.open(), 'Planning project restore failed')
         self.require(controller.snapshot() == project, 'Planning inputs changed during round trip')
@@ -237,6 +245,24 @@ class ReleaseCheck(QObject):
         controller.path = controller.saved = None
         controller.label.setText(tx('规划项目：未保存'))
         self.checks.append('planning_project_inputs_restore_without_stale_results')
+
+        from ui.list_inspection_dialog import ListInspectionDialog
+        inspection = ListInspectionDialog(list_page)
+        inspection.lookup.source = '::/0\n::/127'
+        inspection.lookup.input.setText('::1')
+        self.require(inspection.lookup.run(), 'Membership lookup failed')
+        self.require(len(inspection.lookup.result.matches) == 2, 'Membership omitted a containing network')
+        self.checks.append('list_address_membership_preserves_all_matches')
+        inspection.comparison.source = '::/127'
+        inspection.comparison.input.setPlainText('::1/128\n::2/128')
+        self.require(inspection.comparison.run(), 'Coverage comparison failed')
+        result = inspection.comparison.result
+        self.require(result.added == ((2, 2),) and result.removed == ((0, 0),), 'Coverage delta incorrect')
+        inspection.comparison.input.setPlainText('::/0')
+        self.require(inspection.comparison.result is None, 'Edited comparison retained stale result')
+        inspection.deleteLater()
+        self.checks.append('list_coverage_comparison_exact_delta_and_invalidation')
+
 
         self.window.calculation_page.network_input.setText('::/0')
         self.window.calculation_page.target_input.setText('128')
@@ -508,6 +534,7 @@ class ReleaseCheck(QObject):
         self.finished = True
         self.timeout.stop()
         self.heartbeat.stop()
+        self.window.subnet_list_page.project_controller.saved = self.window.subnet_list_page.project_controller.snapshot()
         self.window.close()
         self.window.deleteLater()
         payload = dict(environment=environment_info(), status='failed' if self.error else 'passed',

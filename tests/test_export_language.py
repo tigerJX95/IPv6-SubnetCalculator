@@ -130,6 +130,7 @@ class ExportLanguageUiTests(unittest.TestCase):
         self.service=self.window.export_service
 
     def tearDown(self):
+        self.window.subnet_list_page.project_controller.saved = self.window.subnet_list_page.project_controller.snapshot()
         if self.service.busy:self.service.cancel();self.wait(lambda:not self.service.busy)
         self.app.language_manager.apply('zh_CN',persist=False)
         self.window.plan_controller.path=None

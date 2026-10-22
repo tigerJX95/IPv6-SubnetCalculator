@@ -1,5 +1,19 @@
-# 🌐 IPv6 Subnet Calculator V1.11
+# 🌐 IPv6 Subnet Calculator V1.12
 
+## ✨ V1.12 List Lookup, Coverage Comparison and Draft Protection
+
+- Added address membership lookup: list all containing networks and original line numbers, longest prefix first, including duplicates and containing entries.
+- Added coverage comparison: compare the current list with pasted or imported TXT / planning project lists, with exact added, removed and common address counts and complete ranges. Equivalent CIDR splits do not create false changes.
+- Open both tools from the lookup icon at the top of Subnet List. They use a snapshot from when the window opened and support copying and conflict-safe TXT report saving. Editing inputs clears old results.
+- Each list retains the 5,000-record, 1 MiB and 20,000-line limits. Empty lists support all-added or all-removed comparisons. Correct invalid records before querying or comparing.
+
+
+- Save, discard or cancel unsaved planning changes before closing or opening another project.
+- New drafts and saved projects display their modified state. Switching result tabs alone does not trigger a reminder.
+- Cancelled, conflicting or failed saves preserve current work. Changes during confirmation abort the action.
+
+
+![List lookup and coverage comparison](docs/screenshots/comparison_en_US_light.png)
 
 ## ✨ V1.11 Planning Project Save and Restore
 
@@ -7,7 +21,7 @@
 - Separate JSON preserves the original list (comments and blank lines included), parent network, allocation prefix, requested count and result tab. Unfinished drafts are supported.
 - Files are validated before replacement confirmation. Restoring clears derived results; run checks or planning again. This format is separate from calculation plans; Ctrl+S/Ctrl+O still operate calculation plans.
 - Reuses save conflict protection and rejects stale actions when inputs or tasks change during dialogs. Changes to saved projects are marked as unsaved.
-- Projects require manual saving. Closing does not yet auto-save or prompt for unsaved planning projects.
+- Projects require manual saving; closing or replacing a project prompts for unsaved work.
 - Qt pins retain the verified baseline. The pending security upgrade is not resolved by this feature release.
 
 An offline tool for IPv6 subnet calculation, analysis and lightweight planning.
@@ -97,7 +111,7 @@ Plan, TXT and Excel saves check destination changes before committing. Detected 
 
 ## 📸 Screenshots
 
-Version: **V1.11**.
+Version: **V1.12**.
 
 ### English
 
@@ -123,7 +137,7 @@ Version: **V1.11**.
 
 ## 📦 Download and Usage
 
-Download `IPv6SubnetCalculator_V1.11.exe` directly from Assets on GitHub [Releases](../../releases/latest). Run the downloaded executable; no additional runtime setup is required. Enter a network and target prefix, then click the calculation icon; the application switches to Results when complete.
+Download `IPv6SubnetCalculator_V1.12.exe` directly from Assets on GitHub [Releases](../../releases/latest). Run the downloaded executable; no additional runtime setup is required. Enter a network and target prefix, then click the calculation icon; the application switches to Results when complete.
 
 Press F1 or use the top-bar information icon for built-in help, license texts and legal notices.
 

@@ -100,6 +100,7 @@ class AddressRangeUiTests(unittest.TestCase):
         self.w=MainWindow();self.w.show();self.w.calculate();self.p=self.w.address_tools_page.range_panel
 
     def tearDown(self):
+        self.w.subnet_list_page.project_controller.saved = self.w.subnet_list_page.project_controller.snapshot()
         if self.w.subnet_list_page.service.busy:self.w.subnet_list_page.cancel();self.wait(lambda:not self.w.subnet_list_page.service.busy)
         self.app.language_manager.apply('zh_CN',persist=False)
         self.w.plan_controller.path=None;self.w.close();self.w.deleteLater()
