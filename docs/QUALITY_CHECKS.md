@@ -45,3 +45,9 @@ On headless Linux, set `QT_QPA_PLATFORM=offscreen`. CI uses Python 3.12 and UTF-
 - 新增工作流不等于启用合并限制。若要强制合并前通过检查，需要在仓库规则中另外选择这些检查。
 
 These checks produce pass/fail results rather than SonarQube A–E ratings. The selected Ruff rules do not constitute a full style, complexity or security audit. pip-audit cannot establish the security of all native libraries bundled with Qt; the open concerns in [dependency status](DEPENDENCY_STATUS.md) remain separate. Headless tests do not replace manual desktop checks. Requiring successful checks before merging is a separate repository-rule setting.
+
+## Qt 测试迁移 / Qt test migration
+
+旧 `test_v06.py` 和 `test_v07.py` 为 Tk 版本的重复测试，已由 `test_selection_summary.py`、`test_excel_precision.py` 和 `test_qt_workflow.py` 覆盖：选择容量、Ctrl/Shift 选择、复制顺序、跨页高亮、分页锚点、无效输入恢复、剪贴板失败重试及 Excel 大整数精度。弹窗定位及图标测试改为检查真实 Qt 对象。
+
+The duplicate Tk-era suites are superseded by the existing selection-summary, Excel-precision and Qt-workflow suites. Dialog positioning and icon checks now exercise the actual Qt objects. Cross-platform tests compare address values and file identity rather than platform-specific string spellings; application-localized file labels remain covered independently of OS MIME descriptions. No failing checks are ignored.
