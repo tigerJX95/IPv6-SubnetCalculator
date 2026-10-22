@@ -145,6 +145,7 @@ class SaveConflictUiTests(unittest.TestCase):
         self.app.language_manager.apply('zh_CN',persist=False);self.w=MainWindow();self.w.calculate();self.page=self.w.subnet_list_page
         self.temp=tempfile.TemporaryDirectory();self.path=Path(self.temp.name)/'output.txt'
     def tearDown(self):
+        self.w.subnet_list_page.project_controller.saved = self.w.subnet_list_page.project_controller.snapshot()
         deadline=monotonic()+6
         while self.w.export_service.busy:
             QApplication.processEvents();QTest.qWait(3)

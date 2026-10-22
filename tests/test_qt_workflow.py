@@ -78,6 +78,7 @@ class QtWorkflowTests(unittest.TestCase):
         QApplication.processEvents()
 
     def tearDown(self):
+        self.window.subnet_list_page.project_controller.saved = self.window.subnet_list_page.project_controller.snapshot()
         if self.window.subnet_list_page.service.busy:
             self.window.subnet_list_page.cancel()
             wait_until(lambda: not self.window.subnet_list_page.service.busy)
@@ -269,7 +270,7 @@ class QtWorkflowTests(unittest.TestCase):
             raise ListCheckCancelled()
         page=self.window.subnet_list_page
         page.editor.setPlainText('::/0')
-        with patch('services.subnet_list_service.analyze_subnet_list',side_effect=blocked):
+        with patch('services.subnet_list_service.analyze_subnet_list',side_effect=blocked), patch('ui.project_controller.QMessageBox.question', return_value=QMessageBox.StandardButton.Discard):
             page.analyze()
             self.assertTrue(page.service.busy)
             self.assertTrue(page.editor.isReadOnly())
@@ -369,7 +370,7 @@ class QtWorkflowTests(unittest.TestCase):
             raise ListCheckCancelled()
         page=self.window.subnet_list_page
         page.editor.setPlainText('::/128')
-        with patch('services.subnet_list_service.free_space',side_effect=blocked):
+        with patch('services.subnet_list_service.free_space',side_effect=blocked), patch('ui.project_controller.QMessageBox.question', return_value=QMessageBox.StandardButton.Discard):
             page.start_planning('free')
             self.assertTrue(page.service.busy)
             self.assertTrue(page.planning.parent_input.isReadOnly())

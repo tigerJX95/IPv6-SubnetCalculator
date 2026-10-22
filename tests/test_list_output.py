@@ -81,6 +81,7 @@ class ListOutputUiTests(unittest.TestCase):
         self.tmp=tempfile.TemporaryDirectory();self.path=Path(self.tmp.name)/'输出.txt'
 
     def tearDown(self):
+        self.w.subnet_list_page.project_controller.saved = self.w.subnet_list_page.project_controller.snapshot()
         if self.page.service.busy:self.page.cancel();self.wait(lambda:not self.page.service.busy)
         self.app.language_manager.apply('zh_CN',persist=False)
         self.w.plan_controller.path=None;self.w.close();self.w.deleteLater()

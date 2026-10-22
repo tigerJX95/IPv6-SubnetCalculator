@@ -1,24 +1,16 @@
-# V1.11 验证记录 / Validation
+# V1.12 修订验证记录 / Enhanced Revision Validation
 
-日期 / Date: 2026-10-21
+日期 / Date: 2026-10-22
 
-- 最终源码完整回归：457 项通过，0 失败、0 错误、0 跳过；新增规划项目专项测试 17 项。
-- Source and Linux single-file build: 24 self-check workflows passed in each; version and source fingerprint match.
-- 实际运行环境 / Runtime: Python 3.12.14, PyQt6 6.11.0, Qt 6.11.2, Linux x64.
-- Full regression finished in 273.067 seconds. Calculation, last-page browsing, TXT/XLSX export and memory measurements are in `validation-v1.11/performance.json`.
-- 草稿原文与注释、空清单、1 MiB 边界、严格字段、重复 JSON 键、坏文件、Unicode、外部新建文件冲突及恢复副本均已验证。
-- 取消替换、对话框期间输入变化、忙碌保护、双语状态、两种主题和 900×620 窗口均已覆盖。另用中文字体重新检查新功能窗口布局及截图。
-- 规划项目需手动保存；关闭窗口暂不自动保存或提示规划项目未保存。Ctrl+S/Ctrl+O 仍属于计算方案。
-- Qt dependency pins unchanged: PyQt6 6.11.0, PyQt6-Qt6 6.11.2, PyQt6-sip 13.13.0. Pending security upgrade is NOT completed or claimed fixed.
-- Windows EXE build, Windows file dialogs, high DPI rendering and manual acceptance remain pending. Linux binary is validation-only and is not included in the source archive.
+- 完整回归：492 项通过，0 失败、0 错误、0 跳过；新增 21 项清单查询与覆盖比较测试，保留原有草稿保护。
+- 300 组固定种子随机集合对照验证新增、移除及交集；覆盖 /0 精确整数、边界地址、5,000 条上限、非法清单、等价拆分及重复包含。
+- 界面测试覆盖双语来回切换、原始输入保留、报告失效、导入 JSON 不改变项目、损坏导入、复制、取消覆盖、保存期间输入变化及文件冲突。
+- 源码与 Linux 单文件程序各通过 27 项自检，版本和源码指纹一致。
+- 运行环境：Python 3.12.14、PyQt6 6.11.0、Qt 6.11.2，Linux x64。
+- 实际控件截图检查了中英文、深浅主题、默认与最小窗口。截图环境临时加载 Noto Sans CJK 字体以显示中文；字体不随程序分发。
+- Qt 依赖保持原基线，安全升级仍待处理。
+- Windows EXE、高 DPI、系统文件窗口和本机文件占用行为仍待 Windows 验证；Linux 二进制未加入源码包。
 
-Source SHA-256: `5d15cdd59ab708e00a784f54f92f9b286d432de1211500d51c0a20a94f4ef5a8`
+Source SHA-256: `ef0a74d7a8f15c56823b59d803676560224ea9a0eae849c583c6ff5b79e52b75`
 
-## Windows 验收 / Acceptance
-
-1. 完整解压，运行 `build.cmd`；确认产物名为 `IPv6SubnetCalculator_V1.11.exe`。
-2. 在子网清单输入注释、清单及父网段和分配参数，点击顶部保存图标保存 JSON。
-3. 修改输入，再点击顶部打开图标，取消时保留当前内容；确认时恢复原文，旧结果清空。
-4. 重新计算空闲空间并生成建议，检查中英文及浅深色主题。
-5. 覆盖已有项目时取消应保留原文件；冲突时检查提示及完整恢复文件。
-6. 检查旧计算方案 JSON、TXT/XLSX 导出及原有快捷键仍正常。
+Structured evidence: `validation-v1.12/`.

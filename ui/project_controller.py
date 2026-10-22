@@ -35,18 +35,24 @@ class ProjectController:
         self.page = page
         self.path = None
         self.saved = None
+        self.initial = self.snapshot()
+        self.confirming = False
         row = QHBoxLayout()
         self.open_button = IconButton('open_plan', tx('打开规划项目 JSON（清单、父网段及分配参数）'))
         self.save_button = IconButton('save_plan', tx('另存规划项目 JSON（保留清单原文及注释）'))
+        self.inspect_button = IconButton('locate_small', tx('地址归属查询与清单覆盖差异比较'))
         self.label = QLabel(tx('规划项目：未保存'))
         self.label.setTextFormat(Qt.TextFormat.PlainText)
         self.label.setWordWrap(True)
         row.addWidget(self.open_button)
         row.addWidget(self.save_button)
+        row.addWidget(self.inspect_button)
         row.addWidget(self.label, 1)
         layout.insertLayout(0, row)
         self.open_button.clicked.connect(self.open)
         self.save_button.clicked.connect(self.save)
+        from ui.list_inspection_dialog import show_inspection
+        self.inspect_button.clicked.connect(lambda: show_inspection(page))
         for edit in (page.editor, page.planning.parent_input,
                      page.planning.allocation.prefix_input, page.planning.allocation.count_input):
             edit.textChanged.connect(self.refresh)
@@ -61,11 +67,39 @@ class ProjectController:
 
     def refresh(self, *_):
         self.open_button.setEnabled(not self.page.service.busy)
+        self.inspect_button.setEnabled(not self.page.service.busy)
         self.save_button.setEnabled(not self.page.service.busy)
-        if self.path is not None:
-            self.label.setText(tx('规划项目：{0}{1}', self.path.name,
-                tx('（有未保存更改）') if self.snapshot() != self.saved else ''))
-            self.label.setToolTip(str(self.path))
+        self.label.setText(tx('规划项目：{0}{1}', self.path.name if self.path else tx('未保存'),
+            tx('（有未保存更改）') if self.dirty() else ''))
+        self.label.setToolTip(str(self.path) if self.path else '')
+
+    def document(self, snapshot=None):
+        value = self.snapshot() if snapshot is None else snapshot
+        return value.text, value.parent, value.prefix, value.count
+
+    def dirty(self):
+        return self.document() != self.document(self.saved if self.saved is not None else self.initial)
+
+    def confirm_discard(self):
+        if self.confirming or self.page.service.busy:
+            return False
+        if not self.dirty():
+            return True
+        self.confirming = True
+        before = self.snapshot()
+        try:
+            answer = QMessageBox.question(self.page, tx('未保存的规划项目'),
+                tx('当前规划项目有未保存的更改，是否先保存？'),
+                QMessageBox.StandardButton.Save | QMessageBox.StandardButton.Discard | QMessageBox.StandardButton.Cancel,
+                QMessageBox.StandardButton.Cancel)
+            if self.page.service.busy or before != self.snapshot():
+                self.page.feedback.emit(tx('规划内容或任务状态已变化，请重新操作。'), 'info')
+                return False
+            if answer == QMessageBox.StandardButton.Save:
+                return self.save() and not self.dirty()
+            return answer == QMessageBox.StandardButton.Discard
+        finally:
+            self.confirming = False
 
     def error(self, exc):
         self.page.feedback.emit(tx('规划项目操作失败：{0}', describe_error(exc)), 'error')
@@ -112,6 +146,8 @@ class ProjectController:
             return False
         try:
             load_project(selected)  # Reject damaged input before offering to replace work.
+            if not self.confirm_discard():
+                return False
             if QMessageBox.question(self.page, tx('恢复规划项目'),
                     tx('恢复将替换当前清单和规划参数。请先保存需要保留的内容，是否继续？'),
                     QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,

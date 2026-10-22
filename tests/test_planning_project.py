@@ -84,12 +84,15 @@ class ProjectUiTests(unittest.TestCase):
     def setUp(self):
         self.w=MainWindow();self.w.show();self.page=self.w.subnet_list_page
         self.c=self.page.project_controller
+        protection=patch.object(self.c, 'confirm_discard', return_value=True)
+        protection.start();self.addCleanup(protection.stop)
         self.path=Path(self.tmp.name)/'ui.json'
         self.page.editor.setPlainText('# source\n::1/128')
         self.w.tabs.setCurrentWidget(self.page)
         QApplication.processEvents()
 
     def tearDown(self):
+        self.w.subnet_list_page.project_controller.saved = self.w.subnet_list_page.project_controller.snapshot()
         self.app.language_manager.apply('zh_CN',persist=False)
         self.w.close();self.w.deleteLater()
         QCoreApplication.sendPostedEvents(None,QEvent.Type.DeferredDelete);QApplication.processEvents()

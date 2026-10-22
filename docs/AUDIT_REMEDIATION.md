@@ -11,7 +11,7 @@
 - 🌐 冲突与恢复消息同步提供中英文，更新日志完整记录以上内容；原有菜单截图清理保留。
 - ⏳ **Qt 升级未完成**：官方 PyPI 最新 wheel 仍为 6.11.2，无 6.11.3 分发包；保留可安装依赖，不虚报升级完成。详见 docs/DEPENDENCY_STATUS.md。
 
-440 项测试通过，源码及实际 Linux 单文件各通过 23 项自检；Windows 实机验收仍待完成。既有文件的协作锁不强制约束所有第三方应用，最终极短竞争窗口及网络文件系统限制见 docs/SAVE_CONFLICTS.md。
+440 项测试通过，源码及实际 Linux 单文件各通过 23 项自检；Windows 实机验证仍待完成。既有文件的协作锁不强制约束所有第三方应用，最终极短竞争窗口及网络文件系统限制见 docs/SAVE_CONFLICTS.md。
 
 ## English
 
@@ -24,4 +24,4 @@ All changes retain V1.10. This revision addresses A01, A02 and A03:
 - 🌐 Conflict/recovery messages and release notes are bilingual. Menu-only screenshots remain removed.
 - ⏳ **Qt upgrade remains pending**: official PyPI still provides 6.11.2 as latest, with no 6.11.3 distribution. Installable requirements are retained without claiming an upgrade. See docs/DEPENDENCY_STATUS.md.
 
-All 440 tests passed. Source and actual Linux onefile each passed 23 workflows. Native Windows acceptance remains pending. Cooperative locks do not force every third-party writer to comply; final race-window and network-filesystem limits are documented in docs/SAVE_CONFLICTS.md.
+All 440 tests passed. Source and actual Linux onefile each passed 23 workflows. Native Windows verification remains pending. Cooperative locks do not force every third-party writer to comply; final race-window and network-filesystem limits are documented in docs/SAVE_CONFLICTS.md.

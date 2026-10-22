@@ -51,7 +51,7 @@ Host samples are not Windows performance guarantees. Event-loop samples include 
 
 New targets use atomic no-overwrite publication. Existing files use optimistic revision checks and cooperative locking. An uncooperative writer can still race in the final check-to-replace interval; network filesystems depend on server semantics. This is not a mandatory transaction lock on every application.
 
-## Windows 验收及依赖 / Windows Acceptance and Dependency Status
+## Windows 验证及依赖 / Windows Verification and Dependency Status
 
 仍须验证 Windows 命名互斥、实际文件占用、NTFS/exFAT/网络目录、DPI 和日常使用。完整解压后运行 build.cmd 生成新 EXE，再运行 verify.cmd。功能自检通过不代表 Qt 安全升级已完成。
 

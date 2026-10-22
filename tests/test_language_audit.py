@@ -64,6 +64,7 @@ class LanguageAuditTests(unittest.TestCase):
         self.dialogs=[]
 
     def tearDown(self):
+        self.w.subnet_list_page.project_controller.saved = self.w.subnet_list_page.project_controller.snapshot()
         for d in self.dialogs:d.close();d.deleteLater()
         self.app.language_manager.apply('zh_CN',persist=False)
         self.w.plan_controller.path=None;self.w.close();self.w.deleteLater()

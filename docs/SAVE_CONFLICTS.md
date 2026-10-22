@@ -10,7 +10,7 @@
 - 符号链接、目录及其他非普通目标不允许覆盖。完整恢复文件不会被自动删除，使用者确认内容后自行保留或清理。
 - 方案保存对话框期间如内容变化，拒绝旧快照；写入后发生的变化仍保持未保存标记。
 
-边界：既有文件的保护是版本核验加协作锁，不是对所有第三方应用的强制事务锁。无协作写入者仍可能在最终版本核验与原子替换之间的极短窗口竞争；远程文件系统还受服务器语义影响。Windows、NTFS/exFAT、网络目录及实际占用行为须在本机验收。新建目标的原子无覆盖操作不依赖 exists 检查结果。
+边界：既有文件的保护是版本核验加协作锁，不是对所有第三方应用的强制事务锁。无协作写入者仍可能在最终版本核验与原子替换之间的极短窗口竞争；远程文件系统还受服务器语义影响。Windows、NTFS/exFAT、网络目录及实际占用行为须在本机验证。新建目标的原子无覆盖操作不依赖 exists 检查结果。
 
 ## English
 
@@ -22,4 +22,4 @@ Plans, text saves and bulk TXT/XLSX exports share core/file_commit.py. The appro
 - Symbolic links, directories and other nonregular targets cannot be overwritten. Complete recovery files remain until the user manages them.
 - Plan changes during save dialogs invalidate the snapshot. Changes after writing retain dirty state.
 
-Limits: existing-file protection combines optimistic version validation and cooperative locking; it is not a mandatory transaction lock on every third-party application. An uncooperative writer can still race in the very short final check-to-replace interval. Network filesystems also depend on server semantics. Windows, NTFS/exFAT, network paths and actual file locking require host acceptance. Atomic no-overwrite creation does not rely on an exists check.
+Limits: existing-file protection combines optimistic version validation and cooperative locking; it is not a mandatory transaction lock on every third-party application. An uncooperative writer can still race in the very short final check-to-replace interval. Network filesystems also depend on server semantics. Windows, NTFS/exFAT, network paths and actual file locking require host verification. Atomic no-overwrite creation does not rely on an exists check.

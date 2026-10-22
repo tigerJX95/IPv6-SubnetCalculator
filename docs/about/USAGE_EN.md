@@ -6,7 +6,7 @@
 - Separate JSON preserves the original list (comments and blank lines included), parent network, allocation prefix, requested count and result tab. Unfinished drafts are supported.
 - Files are validated before replacement confirmation. Restoring clears derived results; run checks or planning again. This format is separate from calculation plans; Ctrl+S/Ctrl+O still operate calculation plans.
 - Reuses save conflict protection and rejects stale actions when inputs or tasks change during dialogs. Changes to saved projects are marked as unsaved.
-- Projects require manual saving. Closing does not yet auto-save or prompt for unsaved planning projects.
+- Projects require manual saving. Before closing or opening another project, save, discard or cancel unsaved planning changes. Cancelled or failed saves preserve current work. Tab navigation alone does not trigger a reminder.
 - Qt pins retain the verified baseline. The pending security upgrade is not resolved by this feature release.
 
 
@@ -97,3 +97,11 @@ The Send Back for Checking icon returns complete planning results to Subnet List
 Calculate the parent and occupied list in Free Space, then open Allocation. Enter a target prefix (64 or /64) and a count from 1 to 5,000. Click the calculation icon or press Enter. The target prefix must be at least as long as the parent prefix. Capacity counts aligned CIDR blocks; candidates start at the lowest available address. Insufficient capacity produces an exact count without partial suggestions.
 
 Suggestions are not reserved. Copy CIDRs or a report, or save TXT. Confirm the append icon to retain existing content and comments, append candidates as occupied networks and recalculate free space. Record, byte and physical-line limits reject the append without changing input. Changes to the list, parent or request parameters invalidate old suggestions. Calculation plans and network device configuration are unaffected.
+
+
+## List lookup and coverage comparison
+
+- Added address membership lookup: list all containing networks and original line numbers, longest prefix first, including duplicates and containing entries.
+- Added coverage comparison: compare the current list with pasted or imported TXT / planning project lists, with exact added, removed and common address counts and complete ranges. Equivalent CIDR splits do not create false changes.
+- Open both tools from the lookup icon at the top of Subnet List. They use a snapshot from when the window opened and support copying and conflict-safe TXT report saving. Editing inputs clears old results.
+- Each list retains the 5,000-record, 1 MiB and 20,000-line limits. Empty lists support all-added or all-removed comparisons. Correct invalid records before querying or comparing.
