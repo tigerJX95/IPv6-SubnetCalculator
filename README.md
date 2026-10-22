@@ -154,3 +154,7 @@ IPv6SubnetCalculator 是一款适用于 Windows 的离线 IPv6 子网计算工�
 界面使用 PyQt6 和 Qt 6。相关版权、许可及上游链接见 [第三方组件说明](THIRD_PARTY_NOTICES.md)。
 
 ![Planning project](docs/screenshots/planning_project_zh.png)
+
+## 自动质量检查
+
+自动运行 Python 静态检查、Windows／Linux 回归测试与依赖漏洞扫描。查看[检查说明](docs/QUALITY_CHECKS.md)。
