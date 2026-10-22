@@ -171,3 +171,7 @@ Third-party components retain their own copyrights and licenses; this project's 
 ## 🙏 Third-Party Components
 
 The interface uses PyQt6 and Qt 6. Copyright, license information, and upstream links are listed in [Third-Party Notices](THIRD_PARTY_NOTICES.md).
+
+## Automated quality checks
+
+Python static checks, Windows/Linux regression tests and dependency vulnerability audits run through GitHub Actions. See [quality checks](docs/QUALITY_CHECKS.md).

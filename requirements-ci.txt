@@ -1,0 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Tools used by .github/workflows/quality.yml; not application dependencies.
+ruff==0.17.1
+pip-audit==2.10.1

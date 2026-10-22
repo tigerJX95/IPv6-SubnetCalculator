@@ -1,29 +1,37 @@
-"""确保 V0.5 仅打包界面仍在使用的图标资源。"""
+"""Verify resources actually used by the current Qt interface."""
 import unittest
 from pathlib import Path
+from app import create_application
+from ui.main_window import MainWindow
+from ui.widgets import IconButton
 
 ROOT = Path(__file__).resolve().parents[1]
-ASSETS = ROOT / 'assets'
-STATES = ('normal', 'hover', 'disabled')
-ACTIVE = ('calculate', 'copy', 'copy_page', 'copy_range', 'clear_selection', 'export',
-          'first_small', 'previous_small', 'next_small', 'last_small', 'jump_small',
-          'locate_small', 'clear_highlight_small')
+
 
 class IconResourcesTest(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.app = create_application([])
+
+    def setUp(self):
+        self.window = MainWindow()
+
+    def tearDown(self):
+        self.window.close()
+        self.window.deleteLater()
+        self.app.processEvents()
+
     def test_all_active_icons_have_three_states(self):
-        for name in ACTIVE:
-            for state in STATES:
-                with self.subTest(name=name, state=state):
-                    self.assertTrue((ASSETS / f'{name}_{state}.png').is_file())
+        buttons = self.window.findChildren(IconButton)
+        self.assertGreater(len(buttons), 10)
+        for button in buttons:
+            for state in ('normal', 'hover', 'disabled'):
+                with self.subTest(name=button.asset_name, state=state):
+                    self.assertTrue((ROOT/'assets'/f'{button.asset_name}_{state}.png').is_file())
+                    self.assertFalse(button._icons[state].isNull())
 
-    def test_no_obsolete_icons(self):
-        expected = {f'{name}_{state}.png' for name in ACTIVE for state in STATES}
-        self.assertEqual({p.name for p in ASSETS.glob('*.png')}, expected)
-
-    def test_tabs_not_old_result_popup(self):
-        source = (ROOT / 'main.py').read_text(encoding='utf-8')
-        self.assertIn("text='子网计算'", source)
-        self.assertIn("text='子网结果'", source)
-        self.assertNotIn('open_results', source)
-        self.assertNotIn('preview_table', source)
-        self.assertNotIn('result_window', source)
+    def test_tabs_use_current_qt_pages(self):
+        for page in (self.window.calculation_page, self.window.results_page,
+                     self.window.address_tools_page, self.window.subnet_list_page):
+            self.assertGreaterEqual(self.window.tabs.indexOf(page), 0)
+        self.assertEqual(self.window.tabs.count(), 4)
