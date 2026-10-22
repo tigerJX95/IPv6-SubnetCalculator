@@ -19,7 +19,7 @@
 from ui.localized_widgets import QGroupBox, QLabel, QLineEdit
 from core.localized_text import text as tx, join_text as jt
 from PyQt6.QtCore import Qt, QSize, pyqtSignal
-from PyQt6.QtWidgets import QWidget, QScrollArea, QVBoxLayout, QGridLayout
+from PyQt6.QtWidgets import QWidget, QScrollArea, QVBoxLayout, QGridLayout, QSizePolicy
 from app_info import DEFAULT_NETWORK
 from core.ipv6_core import InputError
 from core.address_conversion import convert_address
@@ -86,6 +86,8 @@ class AddressToolsPage(QWidget):
                                             (tx('完整展开'), 'expanded'), (tx('二进制 · 128 位'), 'binary')), 1):
             grid.addWidget(QLabel(tx('{0}：',label)), row, 0)
             field = value_label()
+            # Long IPv6 strings must wrap within the available viewport width.
+            field.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred)
             if key == 'binary':
                 field.setFont(data_font(dense=True))
             grid.addWidget(field, row, 1, 1, 2)
@@ -124,6 +126,8 @@ class AddressToolsPage(QWidget):
         self.relation_fields = {}
         for row, key in enumerate(('a', 'b', 'counts'), 3):
             field = value_label()
+            # Long IPv6 strings must wrap within the available viewport width.
+            field.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred)
             grid.addWidget(field, row, 0, 1, 4)
             self.relation_fields[key] = field
         self.relation_detail = QLabel(tx('识别相同、包含、相邻或完全独立；输入主机位会自动规范化。'))
@@ -218,3 +222,4 @@ class AddressToolsPage(QWidget):
     def copy_relation(self):
         if self.relation is not None:
             self.clipboard.copy_text(self.relation.as_text(), tx('关系分析已复制到剪贴板。'), self)
+
