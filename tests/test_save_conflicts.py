@@ -80,7 +80,7 @@ class SaveConflictCoreTests(unittest.TestCase):
         import core.file_commit as module
         publish=module._publish_new
         def race(temp,destination):
-            if destination==self.path:self.path.write_text('rival at publication')
+            if Path(destination)==capture_file(self.path).path:self.path.write_text('rival at publication')
             return publish(temp,destination)
         with patch.object(module,'_publish_new',side_effect=race),self.assertRaises(SaveConflict):save_text_atomic(self.path,'ours')
         self.assertEqual(self.path.read_text(),'rival at publication')

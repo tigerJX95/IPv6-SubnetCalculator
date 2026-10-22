@@ -251,7 +251,9 @@ class ImportFeedbackTests(unittest.TestCase):
         self.assertIn('全选',text)
         self.assertTrue(self.app.qt_chinese_translator is not None)
         self.assertIn('字节',QLocale().formattedDataSize(389))
-        self.assertIn('文档',QMimeDatabase().mimeTypeForName('application/json').comment())
+        # MIME descriptions come from the host OS; application file labels are
+        # verified through LocalizedFileSystemModel in test_language_audit.
+        self.assertEqual(QMimeDatabase().mimeTypeForName('application/json').name(),'application/json')
 
     def test_actual_question_buttons_chinese_and_no_is_default(self):
         errors=[]

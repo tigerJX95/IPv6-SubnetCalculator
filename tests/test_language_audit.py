@@ -163,14 +163,14 @@ class LanguageAuditTests(unittest.TestCase):
         notifications=[];d.file_types.dataChanged.connect(lambda *_:notifications.append(True))
         for language in ('en_US','zh_CN','en_US'):
             self.switch(language)
-            self.assertEqual(editor.text(),'用户输入.xlsx');self.assertEqual(d.directory().absolutePath(),str(self.root));self.assertEqual(d.selectedNameFilter(),'All (*)')
+            self.assertEqual(editor.text(),'用户输入.xlsx');self.assertTrue(Path(d.directory().absolutePath()).samefile(self.root));self.assertEqual(d.selectedNameFilter(),'All (*)')
             self.assertEqual([i.data() for i in view.selectionModel().selectedRows()],selected)
         self.assertTrue(notifications)
 
     def test_proxy_preserves_paths_and_source_roles(self):
         source,proxy=self.model();original=source.index(str(self.root/'example.json'));mapped=proxy.mapFromSource(original)
         self.assertEqual(proxy.mapToSource(mapped),original)
-        self.assertEqual(proxy.data(mapped,QFileSystemModel.Roles.FilePathRole),str(self.root/'example.json'))
+        self.assertTrue(Path(proxy.data(mapped,QFileSystemModel.Roles.FilePathRole)).samefile(self.root/'example.json'))
         self.assertEqual(proxy.flags(mapped),source.flags(original))
 
     def test_all_production_file_dialog_entry_points_in_both_languages(self):

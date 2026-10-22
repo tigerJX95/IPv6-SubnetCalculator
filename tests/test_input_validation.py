@@ -47,7 +47,10 @@ class InputValidationTests(unittest.TestCase):
                 calculate('2026:1015:abcd::/' + prefix, '64')
 
     def test_ipv4_mapped_not_regressed(self):
-        self.assertEqual(str(validate_ipv6_address('::ffff:192.0.2.1')), '::ffff:192.0.2.1')
+        from ipaddress import IPv4Address, IPv6Address
+        address = validate_ipv6_address('::ffff:192.0.2.1')
+        self.assertEqual(address, IPv6Address('::ffff:c000:201'))
+        self.assertEqual(address.ipv4_mapped, IPv4Address('192.0.2.1'))
 
     def test_location_validates(self):
         r = calculate('2026:1015:abcd::/48', '64')
