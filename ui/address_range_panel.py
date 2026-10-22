@@ -17,7 +17,7 @@
 
 """地址范围转换面板，独立维护验证、复制与清单发送。"""
 from PyQt6.QtCore import pyqtSignal
-from PyQt6.QtWidgets import QGridLayout
+from PyQt6.QtWidgets import QGridLayout, QHBoxLayout
 from ui.localized_widgets import QGroupBox, QLabel, QLineEdit, QPlainTextEdit
 from core.address_range import range_to_cidrs
 from core.ipv6_core import InputError
@@ -51,12 +51,15 @@ class AddressRangePanel(QGroupBox):
         self.copy_button=IconButton('copy_page',tx('复制转换后的完整 CIDR 清单'))
         self.report_button=IconButton('copy',tx('复制地址范围及 CIDR 转换报告'))
         self.transfer_button=IconButton('check_list',tx('将转换结果送入子网清单并检查；替换已有输入前确认'))
-        for col,button in enumerate((self.convert_button,self.copy_button,self.report_button,self.transfer_button),2):grid.addWidget(button,1,col)
+        actions=QHBoxLayout()
+        for button in (self.convert_button,self.copy_button,self.report_button,self.transfer_button):actions.addWidget(button)
+        actions.addStretch()
+        grid.addLayout(actions,2,0,1,2)
         self.summary=QLabel(tx('输入首末 IPv6 地址，生成不超出范围的最简 CIDR 清单。'));self.summary.setWordWrap(True)
-        grid.addWidget(self.summary,2,0,1,6)
+        grid.addWidget(self.summary,3,0,1,2)
         self.output=QPlainTextEdit();self.output.setReadOnly(True);self.output.setFont(data_font());self.output.setFixedHeight(110)
         self.output.setAccessibleName(tx('地址范围 CIDR 结果'))
-        grid.addWidget(self.output,3,0,1,6)
+        grid.addWidget(self.output,4,0,1,2)
         self.convert_button.clicked.connect(self.convert)
         self.copy_button.clicked.connect(self.copy_cidrs)
         self.report_button.clicked.connect(self.copy_report)
