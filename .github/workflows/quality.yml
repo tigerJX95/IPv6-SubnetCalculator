@@ -66,7 +66,7 @@ jobs:
       - name: Run all regression tests
         run: |
           mkdir -p verification/ci
-          python -m unittest discover -s tests -v 2>&1 | tee verification/ci/tests.log
+          python tools/run_regression.py --report verification/ci/regression.json --run-id "${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.os }}" 2>&1 | tee verification/ci/tests.log
       - name: Run application self-check
         if: ${{ !cancelled() }}
         run: |
@@ -109,3 +109,4 @@ jobs:
           path: dependency-audit.json
           if-no-files-found: warn
           retention-days: 7
+
