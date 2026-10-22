@@ -176,8 +176,12 @@ class InspectionUiTests(unittest.TestCase):
 
     def test_save_conflict_preserves_external_output(self):
         self.path.write_text('original'); self.p.run()
+        before = self.path.stat()
         def changed(*args, **kwargs):
+            import os
             self.path.write_text('external')
+            # Filesystem timestamp granularity must not make this race timing-dependent.
+            os.utime(self.path, ns=(before.st_atime_ns, before.st_mtime_ns + 2_000_000_000))
             return QMessageBox.StandardButton.Yes
         with patch('ui.list_output_controller.QFileDialog.getSaveFileName', return_value=(str(self.path), '')), patch('ui.list_output_controller.QMessageBox.question', side_effect=changed): self.p.save()
         self.assertEqual(self.path.read_text(), 'external')
@@ -187,3 +191,4 @@ class InspectionUiTests(unittest.TestCase):
         with patch.object(self.page.clipboard, 'copy_text', return_value=True) as copied:
             self.p.copy()
         self.assertIn('IPv6 清单覆盖差异报告', str(copied.call_args.args[0]))
+
