@@ -1,3 +1,11 @@
+## V1.13 translation maintenance
+
+See [I18N_MAINTENANCE.md](I18N_MAINTENANCE.md) for TS/QM regeneration, build checks and source-scan scope. Formatting and exception regressions are in `tests/test_translation_catalog.py`. Runtime self-checks validate the catalog record and messages without installing the audit translator or changing the active locale.
+
+## V1.13 inspection output
+
+`CidrOutput` counts all exact blocks using interval decomposition and retains at most 5,000 CIDRs. Incomplete lists refuse serialization. Lookup output deduplicates normalized networks without aggregation; coverage output aggregates each selected mathematical set exactly. Output actions retain result, category and output identity across save dialogs. New regression coverage: `tests/test_inspection_output.py`.
+
 # V1.12 清单分析扩展 / List Analysis Extensions
 
 新增模块 `core/list_inspection.py`、`ui/list_inspection_dialog.py`。地址归属查询保留重复及包含记录，最长前缀优先；覆盖比较先归并区间，再做差集和交集，不枚举地址。独立窗口持有只读清单快照；查询和比较输入不持久化，导出报告复用现有保存冲突保护。JSON 格式不变。

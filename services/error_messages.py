@@ -16,13 +16,13 @@
 # along with IPv6SubnetCalculator. If not, see <https://www.gnu.org/licenses/>.
 
 """将文件系统异常转换为中文；保留错误码和路径便于排查。"""
-from core.localized_text import text as tx, join_text as jt
+from core.localized_text import text as tx, exception_text
 import errno
 
 
 def describe_error(exc):
     if not isinstance(exc,OSError):
-        return str(exc)
+        return exception_text(exc)
     descriptions={errno.ENOENT:tx('找不到文件或目录，请检查路径。'),errno.EACCES:tx('没有访问权限，或文件正被其他程序占用。'),
         errno.EPERM:tx('当前操作不被允许，请检查访问权限。'),errno.ENOSPC:tx('磁盘空间不足，请清理空间后重试。'),
         errno.EROFS:tx('目标位置为只读，请选择可写目录。'),errno.EISDIR:tx('所选路径是文件夹，请选择文件。'),

@@ -1933,10 +1933,6 @@ Saved to: {1}</translation>
             <translation>Choose a valid location mode.</translation>
         </message>
         <message>
-            <source>\s*(?:-|～|~|至)\s*</source>
-            <translation>\s*(?:-|～|~|至)\s*</translation>
-        </message>
-        <message>
             <source>请输入包含起止两端的范围，例如：{0}</source>
             <translation>Enter a range including both endpoints, for example: {0}</translation>
         </message>
@@ -3139,6 +3135,50 @@ Check the destination, then save using another filename.</translation>
         <message>
             <source>地址归属查询与清单覆盖差异比较</source>
             <translation>Address membership and list coverage comparison</translation>
+        </message>
+        <message>
+            <source>结果超过 {0:,} 条 CIDR，不能输出部分清单；请保存完整范围报告。</source>
+            <translation>The result exceeds {0:,} CIDRs. Partial lists cannot be exported; save the complete range report instead.</translation>
+        </message>
+        <message>
+            <source>输出 CIDR 类别</source>
+            <translation>CIDR output category</translation>
+        </message>
+        <message>
+            <source>新增覆盖 CIDR</source>
+            <translation>Added coverage CIDRs</translation>
+        </message>
+        <message>
+            <source>移除覆盖 CIDR</source>
+            <translation>Removed coverage CIDRs</translation>
+        </message>
+        <message>
+            <source>共同覆盖 CIDR</source>
+            <translation>Common coverage CIDRs</translation>
+        </message>
+        <message>
+            <source>匹配网段 CIDR（去重，保留包含项）</source>
+            <translation>Matching CIDRs (deduplicated, retaining containment)</translation>
+        </message>
+        <message>
+            <source>复制完整 CIDR 清单</source>
+            <translation>Copy the complete CIDR list</translation>
+        </message>
+        <message>
+            <source>共 {0:,} 条 CIDR，超过 5,000 条；请保存完整范围报告。</source>
+            <translation>The result has {0:,} CIDRs, exceeding 5,000. Save the complete range report instead.</translation>
+        </message>
+        <message>
+            <source>所选结果为空，没有可输出的 CIDR。</source>
+            <translation>The selected result is empty; no CIDRs are available for output.</translation>
+        </message>
+        <message>
+            <source>完整 CIDR：{0:,} 条，可复制或保存后重新导入清单。</source>
+            <translation>Complete CIDRs: {0:,}. Copy or save them to import into Subnet List.</translation>
+        </message>
+        <message>
+            <source>CIDR 清单已复制。</source>
+            <translation>CIDR list copied.</translation>
         </message>
     </context>
     <context>

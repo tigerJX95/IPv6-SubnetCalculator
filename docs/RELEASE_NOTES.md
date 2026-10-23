@@ -1,3 +1,40 @@
+## ✨ V1.13 CIDR 输出与翻译维护
+
+- 地址归属查询支持复制及保存匹配网段 CIDR：规范化、去重，按最长前缀优先排列，保留包含项；原报告仍保留原始行号及重复记录。
+- 覆盖比较可分别选择新增、移除、共同覆盖，生成精确覆盖结果的最简 CIDR 清单，支持复制及 TXT 保存后重新导入。
+- 显示所选类别的 CIDR 条数。空结果不生成空清单；超过 5,000 条时禁用纯 CIDR 输出，完整地址范围报告仍可保存。
+- 修改输入立即清除结果；保存期间切换类别或重新计算会中止旧结果保存。沿用现有覆盖确认及保存冲突保护。
+- 同步中英文界面及离线说明，保留已合并的 GitHub Actions 质量检查。Qt 安全升级仍待兼容运行库发布，本版不包含 Qt 漏洞修复。
+
+- 修正 verify.cmd 仍查找 V1.12 程序的问题；验证目标改为从 APP_VERSION 自动读取，与构建输出名称一致。
+
+### 🌐 翻译维护与异常显示
+
+- 新增 TS/QM 一致性检查：核对翻译条目、上下文、完成状态、重复项及格式占位符；配套生成记录可发现翻译修改后漏编译或资源不匹配。
+- 新增源码翻译遗漏扫描，检查 `text()` 及其导入别名、显式翻译调用和常用界面文本入口；检查接入构建前流程，回归测试及程序自检继续验证翻译资源。
+- 新增翻译编译维护脚本，先在临时目录编译并检查，再更新 QM 及生成记录；编译或检查失败时保留原 QM。
+- 翻译格式错误时回退原始消息，避免因占位符错误或译文行数变化引起显示异常；嵌套错误及后台清单错误保留翻译结构，文件路径及用户输入保留原文。
+- 将范围分隔符正则移出翻译目录，输入语法不参与翻译。新增维护说明及针对资源损坏、漏翻译、异常显示的回归检查。
+
+## ✨ V1.13 CIDR Output and Translation Maintenance
+
+- Copy or save matching CIDRs from address lookup: normalized, deduplicated and ordered by longest prefix, retaining containing networks. Reports still preserve original line numbers and duplicate records.
+- Select added, removed or common coverage and produce its exact minimal CIDR list. Copy or save TXT for reimport into Subnet List.
+- Show the selected CIDR count. Empty categories cannot produce empty files; results exceeding 5,000 CIDRs disable list output while complete range reports remain available.
+- Editing inputs invalidates output. Changing category or recalculating during a save dialog aborts stale output; overwrite confirmation and save conflict protection still apply.
+- Updated bilingual UI and offline help. Retains the merged GitHub Actions checks. The Qt security upgrade is pending a compatible runtime release; this version does not fix Qt vulnerabilities.
+
+- Fixed verify.cmd still targeting V1.12. The verification executable name now follows APP_VERSION, matching the build output.
+
+### 🌐 Translation Maintenance and Error Display
+
+- Added TS/QM consistency checks for messages, contexts, completion state, duplicates and format fields. Generation records detect missing recompilation and mismatched resources.
+- Added source coverage checks for `text()` aliases, explicit translation calls and common UI text setters. Checks run before building; regression tests and application self-checks also validate catalog resources.
+- Added a translation maintenance script that compiles and validates in a temporary directory before updating QM and its generation record. Failed compilation or validation preserves the existing QM.
+- Malformed translation formats and missing translated lines fall back to the original message. Nested exceptions and background list errors retain localized structure; filenames and user content remain unchanged.
+- Removed the range-separator regular expression from the catalog so parsing syntax is not translated. Added maintenance documentation and regression checks for damaged resources, missing translations and error display.
+
+
 # V1.12 清单查询与覆盖比较 / List Lookup and Coverage Comparison
 
 - 新增地址归属查询：输入 IPv6 地址，按最长前缀优先列出清单中所有匹配网段及原始行号，保留重复及包含项。

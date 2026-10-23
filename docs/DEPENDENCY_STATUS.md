@@ -1,6 +1,6 @@
 # Qt 依赖状态 / Qt Dependency Status
 
-核对日期 / Checked: 2026-10-21
+核对日期 / Checked: 2026-10-23
 
 | 项目 / Item | 状态 / Status |
 |---|---|
@@ -24,3 +24,5 @@ Sources:
 - [Qt 原始公告 / original advisory](https://www.qt.io/blog/security-advisory-cve-2026-101201)
 - [PyQt6-Qt6 官方元数据 / official metadata](https://pypi.org/pypi/PyQt6-Qt6/json)
 - [PyQt6 官方元数据 / official metadata](https://pypi.org/pypi/PyQt6/json)
+
+2026-10-23：再次检查 Qt 官方安全公告（最新 10 月 21 日）和 PyPI（PyQt6-Qt6 最新 6.11.2），仍无兼容修复 wheel。/ Rechecked official Qt security notices (latest October 21) and PyPI (PyQt6-Qt6 latest 6.11.2); a compatible fixed wheel is still unavailable.

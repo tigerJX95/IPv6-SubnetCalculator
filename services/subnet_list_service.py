@@ -59,7 +59,8 @@ class _ListThread(QThread):
         except ListCheckCancelled:
             self.outcome = ('cancel', None)
         except Exception as exc:
-            self.outcome = ('error', str(exc))
+            from services.error_messages import describe_error
+            self.outcome = ('error', describe_error(exc))
 
 
 class SubnetListService(QObject):

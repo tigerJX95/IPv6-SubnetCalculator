@@ -2,10 +2,37 @@
 # Copyright (C) 2026 IPv6SubnetCalculator contributors
 """Address membership and exact coverage comparison, without address enumeration."""
 from dataclasses import dataclass
-from ipaddress import IPv6Address
+from ipaddress import IPv6Address, IPv6Network
 from core.localized_text import text as tx, join_text as jt
-from core.ipv6_core import validate_ipv6_address
-from core.subnet_planning import _records, _union
+from core.ipv6_core import validate_ipv6_address, InputError
+from core.subnet_planning import _records, _union, _cidrs
+from core.subnet_list import MAX_LIST_RECORDS
+
+
+@dataclass(frozen=True)
+class CidrOutput:
+    cidrs: tuple
+    count: int
+
+    @property
+    def complete(self):
+        return len(self.cidrs) == self.count
+
+    def as_text(self):
+        if not self.complete:
+            raise InputError(tx('结果超过 {0:,} 条 CIDR，不能输出部分清单；请保存完整范围报告。', MAX_LIST_RECORDS))
+        return '\n'.join(map(str, self.cidrs))
+
+
+def coverage_cidrs(ranges):
+    """Count every block, retaining at most the importable list limit."""
+    details = []
+    count = 0
+    for address, prefix in _cidrs(ranges, None):
+        count += 1
+        if len(details) < MAX_LIST_RECORDS:
+            details.append(IPv6Network((address, prefix)))
+    return CidrOutput(tuple(details), count)
 
 
 def difference(first, second):
@@ -44,6 +71,11 @@ class Membership:
     address: IPv6Address
     matches: tuple
 
+    def cidr_output(self):
+        # Preserve specificity order and containing networks; remove duplicates only.
+        cidrs = tuple(dict.fromkeys(record.network for record in self.matches))
+        return CidrOutput(cidrs, len(cidrs))
+
     def as_text(self):
         lines = [tx('IPv6 地址归属查询'), tx('查询地址：{0}', self.address),
                  tx('匹配网段：{0:,} 条（保留重复及包含项）', len(self.matches)),
@@ -70,6 +102,11 @@ class CoverageComparison:
     added: tuple
     removed: tuple
     common: tuple
+
+    def cidr_output(self, category):
+        if category not in ('added', 'removed', 'common'):
+            raise ValueError('Unknown coverage category')
+        return coverage_cidrs(getattr(self, category))
 
     def as_text(self):
         lines = [tx('IPv6 清单覆盖差异报告'),

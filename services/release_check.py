@@ -105,6 +105,10 @@ class ReleaseCheck(QObject):
         self.schedule(self.check_resources_and_boundaries)
 
     def check_resources_and_boundaries(self):
+        from services.translation_catalog import audit_catalog
+        catalog = audit_catalog(resource_path('.'))
+        self.require(not catalog['errors'], 'Translation catalog checks failed: '+'; '.join(catalog['errors']))
+        self.checks.append('translation_catalog_integrity_and_templates')
         from ui.widgets import IconButton
         self.window.show()
         self.require(self.window.tabs.count() == 4, '工具标签页缺失')
@@ -252,12 +256,18 @@ class ReleaseCheck(QObject):
         inspection.lookup.input.setText('::1')
         self.require(inspection.lookup.run(), 'Membership lookup failed')
         self.require(len(inspection.lookup.result.matches) == 2, 'Membership omitted a containing network')
+        self.require(inspection.lookup.cidr_output.as_text() == '::/127\n::/0', 'Membership CIDR output incorrect')
+        self.checks.append('membership_cidr_output_preserves_containment')
         self.checks.append('list_address_membership_preserves_all_matches')
         inspection.comparison.source = '::/127'
         inspection.comparison.input.setPlainText('::1/128\n::2/128')
         self.require(inspection.comparison.run(), 'Coverage comparison failed')
         result = inspection.comparison.result
         self.require(result.added == ((2, 2),) and result.removed == ((0, 0),), 'Coverage delta incorrect')
+        for index, expected in [(0, '::2/128'), (1, '::/128'), (2, '::1/128')]:
+            inspection.comparison.category.setCurrentIndex(index)
+            self.require(inspection.comparison.cidr_output.as_text() == expected, 'Coverage CIDR category incorrect')
+        self.checks.append('coverage_cidr_categories_exact_and_importable')
         inspection.comparison.input.setPlainText('::/0')
         self.require(inspection.comparison.result is None, 'Edited comparison retained stale result')
         inspection.deleteLater()

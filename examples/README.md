@@ -1,3 +1,9 @@
+## V1.13 CIDR output / CIDR 输出
+
+Import `CoverageBaseline.txt` as the current list, open coverage comparison, and import `CoverageCandidate.txt`. Added output must match `CoverageAdded_CIDRs.txt`; removed is `2001:db8::/64`, common is `2001:db8:0:1::/64`. The saved pure CIDR list can be imported again.
+
+将 `CoverageBaseline.txt` 导入当前清单，在覆盖比较中导入 `CoverageCandidate.txt`。新增输出应与 `CoverageAdded_CIDRs.txt` 一致，移除为 `2001:db8::/64`，共同为 `2001:db8:0:1::/64`。保存的纯 CIDR 清单可再次导入。
+
 # 示例文件 / Examples
 
 | 简体中文 / Chinese | English | 用途 / Purpose |

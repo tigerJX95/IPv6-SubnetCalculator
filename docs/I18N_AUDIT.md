@@ -1,3 +1,17 @@
+# V1.13 翻译机制整合 / Translation Integration
+
+日期 / Date: 2026-10-23
+
+以已完成 V1.13 源码 ZIP 为基线，逐文件核对后整合；原 CIDR 输出实现和专项回归保留。此前逐条 TS/QM 测试仍保留，新增可独立运行的构建检查、源码模板覆盖检查与格式错误回退。
+
+The completed V1.13 ZIP was compared with the working tree before integration. CIDR output features and regression tests remain. Existing per-entry catalog tests are retained and complemented by standalone build checks, source coverage checks and malformed-translation fallback.
+
+已确认可复现的健壮性问题：错误译文使用 `{1}` 替代 `{0}` 时可能触发 IndexError；多行源文选取第二行而译文只含一行时也可能触发 IndexError。现已回退原文，并保留对无效源模板的错误报告。目录检查的缺口属于维护检查不足。本次未确认新的安全漏洞，不把潜在依赖风险写成已修复漏洞；Qt 风险状态保持待处理。
+
+Confirmed reproducible robustness issues: a translated field `{1}` replacing `{0}` could raise IndexError, and a translated multiline message with fewer lines could also raise IndexError when a later line was selected. Both now fall back to source content; invalid source templates still raise programming errors. Catalog-check gaps are maintenance limitations. No new security vulnerability is claimed; pending native Qt risks are not marked fixed.
+
+实现、使用方法及静态扫描边界见 [I18N_MAINTENANCE.md](I18N_MAINTENANCE.md)，最终验证记录见 [VALIDATION.md](VALIDATION.md)。下方保留既有版本检查记录。
+
 # V1.9 双语窗口检查 / Bilingual Window Audit
 
 日期 / Date: 2026-10-20

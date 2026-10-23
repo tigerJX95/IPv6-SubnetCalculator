@@ -74,7 +74,7 @@ def resolve_locator_range(mode: str, value: str, network: IPv6Network, prefix: i
     if mode not in (tx('按 IPv6 地址范围'), tx('按子网序号范围')):
         raise InputError(tx('请选择有效的定位方式。'))
     import re
-    parts = re.split(tx('\\s*(?:-|～|~|至)\\s*'), value)
+    parts = re.split(r'\s*(?:-|～|~|至)\s*', value)
     if len(parts) != 2 or not all(parts):
         example = '1000-1500' if mode == tx('按子网序号范围') else '2026:1015:abcd::1 - 2026:1015:abcd:2::1'
         raise InputError(tx('请输入包含起止两端的范围，例如：{0}', example))

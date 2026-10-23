@@ -22,6 +22,11 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from services.build_info import current_build_info
+from tools.check_i18n import check_project
 
 if __name__ == '__main__':
+    result = check_project(ROOT)
+    if result['errors']:
+        raise SystemExit('Translation checks failed:\n'+'\n'.join(result['errors']))
+    print(f"Translation checks passed: {result['catalog_messages']} catalog messages")
     (ROOT/'build_manifest.json').write_text(json.dumps(current_build_info(), indent=2), encoding='utf-8')

@@ -1,3 +1,13 @@
+## V1.13 — 2026-10-23
+
+- 完整回归 541 项通过，包含原 CIDR 输出 17 项专项测试和本次新增 27 项翻译与异常测试。/ 541 regression tests passed, retaining 17 CIDR-output tests and adding 27 translation/error tests.
+- 源码及 Linux 单文件程序各通过 30 项自检，版本与源码指纹一致。/ Source and Linux one-file application each passed 30 self-checks with matching version and source SHA-256.
+- 762 条有效 TS/QM 翻译逐条一致；源码扫描检查 62 个文件、864 处翻译调用。/ 762 active catalog messages match QM; source coverage checks inspected 62 files and 864 translation calls.
+- 覆盖 TS 漏编译、缺失／损坏 QM、空／未完成译文、重复上下文源文、格式字段变化、源码遗漏、编译失败保留原资源及译文格式回退。/ Covers stale compilation, missing/corrupt QM, empty/unfinished/duplicate entries, format-field changes, missing source translations, failed compilation preserving resources and runtime fallback.
+- 原 CIDR 输出实现及专项测试文件未修改；中英文、深浅主题和最小窗口回归通过。/ Original CIDR output implementation and focused test files are unchanged; language/theme/minimum-window regression passed.
+- Ruff、空白检查及 pip check 通过。/ Ruff, whitespace checks and pip check passed.
+- 最终记录见 `validation/v1.13/`；Windows 构建及实机验证仍待完成，Qt 依赖不变，安全升级仍待处理。/ See `validation/v1.13/`; Windows build/desktop checks and the Qt security upgrade remain pending. Dependencies are unchanged.
+
 # V1.12 修订验证记录 / Enhanced Revision Validation
 
 日期 / Date: 2026-10-22
