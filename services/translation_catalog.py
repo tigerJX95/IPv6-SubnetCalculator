@@ -16,8 +16,11 @@ RECORD_PATH = 'assets/i18n/app_en.catalog.json'
 
 def pair_record(root):
     root = Path(root)
+    # Git/editor newline conversion must not invalidate unchanged TS content.
+    # QM is binary: never normalize it or weaken its byte-for-byte check.
+    ts = (root/TS_PATH).read_bytes().replace(b'\r\n', b'\n').replace(b'\r', b'\n')
     return dict(schema=1, language='en_US',
-                ts_sha256=hashlib.sha256((root/TS_PATH).read_bytes()).hexdigest(),
+                ts_sha256=hashlib.sha256(ts).hexdigest(),
                 qm_sha256=hashlib.sha256((root/QM_PATH).read_bytes()).hexdigest())
 
 
