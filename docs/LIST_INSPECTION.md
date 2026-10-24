@@ -1,3 +1,21 @@
+## ✨ V1.14 空闲容量总览
+
+- 在“子网清单”顶部查询窗口新增“空闲容量总览”页：输入父网段，一次统计父前缀至 /128 各级可分配的完整、对齐子网数量。
+- 显示空闲地址数、占用并集容量、最大可用子网，以及各前缀下无法组成完整子网的零散地址数；同等大小的最大子网取地址最小者。
+- 使用全部空闲范围计算，不受 5,000 条 CIDR 预览截断影响；容量使用精确整数，不枚举 IPv6 地址。每一行都是同一空闲空间的不同划分，不能跨行相加。
+- 支持双语报告复制及 TXT 保存，沿用覆盖确认和文件冲突保护；修改父网段立即清除结果。基于打开窗口时的清单快照，不修改原项目，关闭后重开可使用最新清单。
+- 占用清单必须全部有效且位于父网段内；空清单表示父网段全空闲。总览输入及结果不保存到规划项目 JSON，需要留存时保存报告。
+- 保留 V1.13 CIDR 输出、翻译审计和跨平台换行修复。Qt 运行库保持现有版本，本次不包含 Qt 安全升级。
+
+## ✨ V1.14 Free Capacity Overview
+
+- Added a Free Capacity Overview tab in the Subnet List lookup window. Enter a parent network to count complete, aligned available subnets at every prefix from the parent prefix through /128.
+- Shows free addresses, occupied union size, the largest available subnet and fragmented addresses that cannot form a complete subnet at each prefix. Equal-sized largest subnets use the lowest address.
+- Uses complete free ranges even when the 5,000-CIDR preview is truncated. Counts are exact integers without enumerating IPv6 addresses. Rows partition the same free space differently and must not be added together.
+- Copy bilingual reports or save TXT with overwrite confirmation and conflict protection. Editing the parent clears results. The list snapshot is taken when the window opens; original projects are unchanged. Reopen to use an updated list.
+- All occupied records must be valid and contained within the parent; an empty list leaves the entire parent free. Overview inputs and results are not stored in planning project JSON; save the report to retain them.
+- Retains V1.13 CIDR output, translation auditing and checkout newline fixes. Qt runtime dependencies are unchanged; this update does not include a Qt security upgrade.
+
 ## ✨ V1.13 查询与比较结果 CIDR 输出
 
 - 地址归属查询支持复制及保存匹配网段 CIDR：规范化、去重，按最长前缀优先排列，保留包含项；原报告仍保留原始行号及重复记录。

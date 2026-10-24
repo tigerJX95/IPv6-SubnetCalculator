@@ -1,0 +1,4 @@
+# Parent: 2001:db8::/60
+# Occupied networks / 已占用网段
+2001:db8::/66
+2001:db8:0:2::/64

@@ -8,6 +8,8 @@
 
 - 修正 verify.cmd 仍查找 V1.12 程序的问题；验证目标改为从 APP_VERSION 自动读取，与构建输出名称一致。
 
+- 修复 Windows 检出时 LF／CRLF 转换导致翻译生成记录误报过期的问题；TS 按统一换行计算摘要，QM 继续严格按原始字节校验，并明确 Git 的 TS／QM 文件属性。
+
 ### 🌐 翻译维护与异常显示
 
 - 新增 TS/QM 一致性检查：核对翻译条目、上下文、完成状态、重复项及格式占位符；配套生成记录可发现翻译修改后漏编译或资源不匹配。
@@ -25,6 +27,8 @@
 - Updated bilingual UI and offline help. Retains the merged GitHub Actions checks. The Qt security upgrade is pending a compatible runtime release; this version does not fix Qt vulnerabilities.
 
 - Fixed verify.cmd still targeting V1.12. The verification executable name now follows APP_VERSION, matching the build output.
+
+- Fixed false stale-catalog failures after Windows LF/CRLF checkout conversion. TS hashes normalize text newlines; QM hashes remain byte-exact. Git attributes explicitly distinguish TS text and QM binary files.
 
 ### 🌐 Translation Maintenance and Error Display
 

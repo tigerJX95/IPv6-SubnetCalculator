@@ -67,6 +67,27 @@ class CatalogAuditTests(unittest.TestCase):
         self.assertIn('TS/QM translation differs', errors)
         self.assertIn('generation record is stale', errors)
 
+    def test_windows_crlf_checkout_preserves_catalog_record(self):
+        expected = pair_record(self.root)
+        path = self.root/TS_PATH
+        path.write_bytes(path.read_bytes().replace(b'\r\n', b'\n').replace(b'\n', b'\r\n'))
+        self.assertEqual(pair_record(self.root), expected)
+        self.assertEqual(audit_catalog(self.root)['errors'], [])
+
+    def test_lone_cr_text_newlines_preserve_catalog_record(self):
+        expected = pair_record(self.root)
+        path = self.root/TS_PATH
+        path.write_bytes(path.read_bytes().replace(b'\r\n', b'\n').replace(b'\n', b'\r'))
+        self.assertEqual(pair_record(self.root), expected)
+        self.assertEqual(audit_catalog(self.root)['errors'], [])
+
+    def test_qm_binary_changes_still_invalidate_record(self):
+        expected = pair_record(self.root)
+        path = self.root/QM_PATH
+        path.write_bytes(path.read_bytes()+b'\r\n')
+        self.assertNotEqual(pair_record(self.root)['qm_sha256'], expected['qm_sha256'])
+        self.assertIn('generation record is stale', self.errors())
+
     def test_unfinished_translation_rejected_even_when_nonempty(self):
         self.message.find('translation').set('type', 'unfinished')
         self.write_ts()

@@ -2,9 +2,9 @@
 
 ## 文件与机制 / Files and mechanism
 
-中文模板位于 `text()` 调用，英文译文独立维护于 `assets/i18n/app_en.ts`，运行时 Qt 加载 `app_en.qm`。`app_en.catalog.json` 记录生成时 TS/QM 的 SHA-256，便于发现漏编译和错配；它不是数字签名或安全认证。核心计算和序列化使用原始数据。现有语言仍为简体中文和 English。
+中文模板位于 `text()` 调用，英文译文独立维护于 `assets/i18n/app_en.ts`，运行时 Qt 加载 `app_en.qm`。`app_en.catalog.json` 记录生成时 TS/QM 的 SHA-256（TS 统一 LF 换行，QM 按原始字节），便于发现漏编译和错配；它不是数字签名或安全认证。核心计算和序列化使用原始数据。现有语言仍为简体中文和 English。
 
-Chinese templates are marked with `text()`; English translations are maintained separately in `assets/i18n/app_en.ts`. Qt loads `app_en.qm` at runtime. `app_en.catalog.json` records the generated pair's SHA-256 to detect stale or mismatched files; it is not a digital signature or authenticity mechanism. Calculations and serialization use original data. Supported languages remain Simplified Chinese and English.
+Chinese templates are marked with `text()`; English translations are maintained separately in `assets/i18n/app_en.ts`. Qt loads `app_en.qm` at runtime. `app_en.catalog.json` records the generated pair's SHA-256 (LF-normalized TS text and byte-exact QM) to detect stale or mismatched files; it is not a digital signature or authenticity mechanism. Calculations and serialization use original data. Supported languages remain Simplified Chinese and English.
 
 ## 更新 / Updating
 

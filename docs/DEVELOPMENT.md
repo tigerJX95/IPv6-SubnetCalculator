@@ -1,3 +1,9 @@
+## V1.14 capacity overview
+
+`core/subnet_capacity.py` calculates all prefix capacities from complete free-space intervals. `aligned_blocks()` is shared with allocation suggestions to preserve alignment semantics. Counts use integers, with at most 129 report rows and no address enumeration. The existing bounded list parser validates occupied records and parent containment.
+
+`CapacityPanel` reuses the read-only inspection snapshot and report output controller. Parent edits invalidate results. Save operations validate result identity after dialogs and use the existing file version conflict checks. The overview is independent from project JSON and does not mutate allocation parameters.
+
 ## V1.13 translation maintenance
 
 See [I18N_MAINTENANCE.md](I18N_MAINTENANCE.md) for TS/QM regeneration, build checks and source-scan scope. Formatting and exception regressions are in `tests/test_translation_catalog.py`. Runtime self-checks validate the catalog record and messages without installing the audit translator or changing the active locale.

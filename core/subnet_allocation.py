@@ -71,14 +71,8 @@ def suggest_subnets(free, prefix, count):
     requested = _number(count, 1, MAX_ALLOCATION_SUGGESTIONS,
         tx('请求数量须为 1 至 {0:,} 的整数。', MAX_ALLOCATION_SUGGESTIONS), 'count')
     block = 1 << (128-target)
-    aligned = []
-    capacity = 0
-    for start, end in free.free_ranges:
-        first = ((start+block-1)//block)*block
-        available = max(0, (end-first+1)//block)
-        if available:
-            capacity += available
-            aligned.append((first, available))
+    aligned = aligned_blocks(free.free_ranges, target)
+    capacity = sum(available for _, available in aligned)
     suggestions = []
     if capacity >= requested:
         remaining = requested
@@ -89,3 +83,15 @@ def suggest_subnets(free, prefix, count):
             if not remaining:
                 break
     return AllocationResult(free, target, requested, capacity, tuple(suggestions))
+
+
+def aligned_blocks(ranges, prefix):
+    """Return aligned first addresses and counts, without enumerating subnets."""
+    block = 1 << (128-prefix)
+    aligned = []
+    for start, end in ranges:
+        first = ((start+block-1)//block)*block
+        available = max(0, (end-first+1)//block)
+        if available:
+            aligned.append((first, available))
+    return tuple(aligned)

@@ -525,13 +525,16 @@ test_duplicate_context_source_rejected (test_translation_catalog.CatalogAuditTes
 test_dynamic_template_and_invalid_python_do_not_pass (test_translation_catalog.CatalogAuditTests.test_dynamic_template_and_invalid_python_do_not_pass) ... ok
 test_failed_compilation_preserves_shipped_qm_and_record (test_translation_catalog.CatalogAuditTests.test_failed_compilation_preserves_shipped_qm_and_record) ... ok
 test_format_fields_specifiers_and_conversions_checked (test_translation_catalog.CatalogAuditTests.test_format_fields_specifiers_and_conversions_checked) ... ok
+test_lone_cr_text_newlines_preserve_catalog_record (test_translation_catalog.CatalogAuditTests.test_lone_cr_text_newlines_preserve_catalog_record) ... ok
 test_missing_or_invalid_generation_record_fails (test_translation_catalog.CatalogAuditTests.test_missing_or_invalid_generation_record_fails) ... ok
 test_missing_or_invalid_ts_reported_without_traceback (test_translation_catalog.CatalogAuditTests.test_missing_or_invalid_ts_reported_without_traceback) ... ok
+test_qm_binary_changes_still_invalidate_record (test_translation_catalog.CatalogAuditTests.test_qm_binary_changes_still_invalidate_record) ... ok
 test_removed_ts_message_still_requires_regeneration (test_translation_catalog.CatalogAuditTests.test_removed_ts_message_still_requires_regeneration) ... ok
 test_source_alias_missing_from_catalog_detected (test_translation_catalog.CatalogAuditTests.test_source_alias_missing_from_catalog_detected) ... ok
 test_unfinished_translation_rejected_even_when_nonempty (test_translation_catalog.CatalogAuditTests.test_unfinished_translation_rejected_even_when_nonempty) ... ok
 test_unwrapped_display_literal_detected (test_translation_catalog.CatalogAuditTests.test_unwrapped_display_literal_detected) ... ok
 test_user_data_comments_and_native_qt_context_not_flagged (test_translation_catalog.CatalogAuditTests.test_user_data_comments_and_native_qt_context_not_flagged) ... ok
+test_windows_crlf_checkout_preserves_catalog_record (test_translation_catalog.CatalogAuditTests.test_windows_crlf_checkout_preserves_catalog_record) ... ok
 test_wrong_context_rejected_by_qm_lookup (test_translation_catalog.CatalogAuditTests.test_wrong_context_rejected_by_qm_lookup) ... ok
 test_background_localized_error_can_render_after_language_change (test_translation_catalog.TranslationFailureTests.test_background_localized_error_can_render_after_language_change) ... ok
 test_changed_format_specification_or_conversion_falls_back (test_translation_catalog.TranslationFailureTests.test_changed_format_specification_or_conversion_falls_back) ... ok
@@ -609,6 +612,6 @@ test_all_active_icons_have_three_states (test_v05_resources.IconResourcesTest.te
 test_tabs_use_current_qt_pages (test_v05_resources.IconResourcesTest.test_tabs_use_current_qt_pages) ... ok
 
 ----------------------------------------------------------------------
-Ran 541 tests in 77.624s
+Ran 544 tests in 91.726s
 
 OK

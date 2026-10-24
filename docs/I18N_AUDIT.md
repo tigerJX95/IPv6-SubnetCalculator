@@ -77,3 +77,9 @@ The Allocation page localizes labels, tooltips, capacity status, errors, table h
 
 英文翻译资源共 682 条完成、0 条未完成。Windows 实机验证仍按独立清单执行。
 The English catalog contains 682 finished entries and no unfinished entries. Windows verification remains a separate task.
+
+## Windows 换行兼容修正 / Newline Compatibility Fix
+
+GitHub Actions 第 15 轮中，Ubuntu 通过，Windows 的 541 项测试仅生成记录校验失败（另跳过 1 项 POSIX 专用测试）。原因是 TS 以原始字节计算摘要，与 Windows 的 CRLF 检出冲突。现仅对 TS 换行规范化，并将 TS 标为 LF 文本、QM 标为二进制；不忽略实际译文或 QM 内容变化。新增三项回归已覆盖。
+
+Actions run 15 passed on Ubuntu but failed the catalog-generation record check on Windows (one existing POSIX-only skip). Raw TS byte hashing conflicted with CRLF checkout. TS newline normalization and explicit Git text/binary attributes resolve the false failure while retaining translation and QM integrity checks. Three new regressions cover these cases.

@@ -3180,6 +3180,46 @@ Check the destination, then save using another filename.</translation>
             <source>CIDR 清单已复制。</source>
             <translation>CIDR list copied.</translation>
         </message>
+        <message>
+            <source>IPv6 空闲容量总览</source>
+            <translation>IPv6 Free Capacity Overview</translation>
+        </message>
+        <message>
+            <source>最大可用子网（同等大小取地址最小者）：{0}</source>
+            <translation>Largest available subnet (lowest address for equal sizes): {0}</translation>
+        </message>
+        <message>
+            <source>各行是同一空闲空间的不同划分方式，容量不能跨行相加。</source>
+            <translation>Each row partitions the same free space differently; capacities across rows must not be added.</translation>
+        </message>
+        <message>
+            <source>零散地址仍为空闲，但无法组成该前缀下完整且对齐的子网。</source>
+            <translation>Fragmented addresses remain free but cannot form complete, aligned subnets at that prefix.</translation>
+        </message>
+        <message>
+            <source>前缀｜可分配子网数｜零散地址数</source>
+            <translation>Prefix | Available subnets | Fragmented addresses</translation>
+        </message>
+        <message>
+            <source>/{0}｜{1:,}｜{2:,}</source>
+            <translation>/{0} | {1:,} | {2:,}</translation>
+        </message>
+        <message>
+            <source>输入父网段，按当前清单快照统计每个前缀的完整可分配容量。</source>
+            <translation>Enter a parent network to count complete available subnets at every prefix using the current list snapshot.</translation>
+        </message>
+        <message>
+            <source>容量总览父网段</source>
+            <translation>Capacity overview parent network</translation>
+        </message>
+        <message>
+            <source>计算空闲容量总览</source>
+            <translation>Calculate free capacity overview</translation>
+        </message>
+        <message>
+            <source>空闲容量总览</source>
+            <translation>Free Capacity Overview</translation>
+        </message>
     </context>
     <context>
         <name>Export</name>

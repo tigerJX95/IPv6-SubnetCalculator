@@ -23,7 +23,7 @@ class InspectionPanel(QWidget):
         self.page, self.source, self.comparison = page, source, comparison
         self.result = None
         layout = QVBoxLayout(self)
-        hint = QLabel(tx('粘贴对比清单，或导入 TXT／规划项目 JSON。留空表示空清单。') if comparison
+        hint = self.hint = QLabel(tx('粘贴对比清单，或导入 TXT／规划项目 JSON。留空表示空清单。') if comparison
                       else tx('输入一个 IPv6 地址，查询基准清单中所有包含它的网段。'))
         hint.setWordWrap(True)
         layout.addWidget(hint)
@@ -163,6 +163,45 @@ class InspectionPanel(QWidget):
             result.as_text(), lambda: self.result is result)
 
 
+class CapacityPanel(InspectionPanel):
+    """Read-only snapshot analysis, reusing report copy/save conflict protection."""
+    def __init__(self, page, source):
+        super().__init__(page, source)
+        self.hint.setText(tx('输入父网段，按当前清单快照统计每个前缀的完整可分配容量。'))
+        self.input.setAccessibleName(tx('容量总览父网段'))
+        self.input.setPlaceholderText('2001:db8::/48')
+        self.input.setMaxLength(200)
+        self.input.setText(page.planning.parent_input.text())
+        self.run_button.setToolTip(tx('计算空闲容量总览'))
+        self.run_button.setAccessibleName(tx('计算空闲容量总览'))
+        for widget in (self.category, self.copy_cidrs_button, self.save_cidrs_button, self.cidr_status):
+            widget.hide()
+
+    def refresh_cidrs(self):
+        self.cidr_output = None
+        self.copy_cidrs_button.setEnabled(False)
+        self.save_cidrs_button.setEnabled(False)
+
+    def run(self):
+        from core.subnet_capacity import capacity_overview
+        self.invalidate()
+        try:
+            self.result = capacity_overview(self.source, self.value())
+        except InputError as exc:
+            self.report.setPlainText(tx('无法规划：')+describe_error(exc))
+            return False
+        self.report.setPlainText(self.result.as_text())
+        self.copy_button.setEnabled(True)
+        self.save_button.setEnabled(True)
+        return True
+
+    def save(self):
+        result = self.result
+        if result is not None:
+            self.page.output_controller._save('IPv6_CapacityOverview.txt', result.as_text(),
+                                             lambda: self.result is result)
+
+
 class ListInspectionDialog(QDialog):
     def __init__(self, page):
         super().__init__(page)
@@ -180,6 +219,8 @@ class ListInspectionDialog(QDialog):
         self.comparison = InspectionPanel(page, source, comparison=True)
         tabs.addTab(self.lookup, tx('地址归属查询'))
         tabs.addTab(self.comparison, tx('覆盖差异比较'))
+        self.capacity = CapacityPanel(page, source)
+        tabs.addTab(self.capacity, tx('空闲容量总览'))
         layout.addWidget(tabs)
 
 

@@ -1,7 +1,7 @@
 {
   "environment": {
     "app_version": "1.13",
-    "source_sha256": "bad4aaffaf7649f37edfe5248643e4d74f3fea8ce270e45497fd3d87adf88cf6",
+    "source_sha256": "769ae09d39d074dd7494bdc7abd4b224b41ccd8f2b0331beb9a78d3c3c67d671",
     "python": "3.12.14",
     "os": "Linux",
     "platform": "Linux-6.18.55-x86_64-with-glibc2.39",
@@ -44,19 +44,19 @@
     "cancel_preserves_original_and_cleans_temporary_file"
   ],
   "navigation_cycles": 100,
-  "elapsed_seconds": 6.4609,
+  "elapsed_seconds": 6.8661,
   "event_loop": {
-    "ticks": 67,
-    "maximum_observed_gap_ms": 991.948
+    "ticks": 82,
+    "maximum_observed_gap_ms": 628.865
   },
   "background_event_loop": {
     "txt": {
-      "ticks": 0,
-      "maximum_observed_gap_ms": 0
+      "ticks": 16,
+      "maximum_observed_gap_ms": 437.045
     },
     "xlsx": {
       "ticks": 1,
-      "maximum_observed_gap_ms": 406.076
+      "maximum_observed_gap_ms": 460.213
     }
   }
 }

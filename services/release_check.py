@@ -270,6 +270,16 @@ class ReleaseCheck(QObject):
         self.checks.append('coverage_cidr_categories_exact_and_importable')
         inspection.comparison.input.setPlainText('::/0')
         self.require(inspection.comparison.result is None, 'Edited comparison retained stale result')
+        inspection.capacity.source = '::/128\n::3/128'
+        inspection.capacity.input.setText('::/126')
+        self.require(inspection.capacity.run(), 'Capacity overview failed')
+        capacity = inspection.capacity.result
+        self.require(capacity.rows[1].capacity == 0 and capacity.rows[1].fragmented_addresses == 2,
+                     'Capacity ignored address alignment')
+        self.require(str(capacity.largest) == '::1/128', 'Largest free subnet incorrect')
+        inspection.capacity.input.setText('::/0')
+        self.require(inspection.capacity.result is None, 'Edited parent retained stale capacity')
+        self.checks.append('free_capacity_all_prefixes_alignment_and_invalidation')
         inspection.deleteLater()
         self.checks.append('list_coverage_comparison_exact_delta_and_invalidation')
 
