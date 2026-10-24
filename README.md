@@ -11,7 +11,7 @@
 - 占用清单必须全部有效且位于父网段内；空清单表示父网段全空闲。总览输入及结果不保存到规划项目 JSON，需要留存时保存报告。
 - 保留 V1.13 CIDR 输出、翻译审计和跨平台换行修复。Qt 运行库保持现有版本，本次不包含 Qt 安全升级。
 
-![Free Capacity Overview](docs/screenshots/capacity_en_US_light.png)
+![Free Capacity Overview](docs/screenshots/capacity_zh_CN_light.png)
 
 ## ✨ V1.13 查询与比较结果 CIDR 输出
 
