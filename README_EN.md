@@ -9,7 +9,7 @@
 - All occupied records must be valid and contained within the parent; an empty list leaves the entire parent free. Overview inputs and results are not stored in planning project JSON; save the report to retain them.
 - Retains V1.13 CIDR output, translation auditing and checkout newline fixes. Qt runtime dependencies are unchanged; this update does not include a Qt security upgrade.
 
-![Free Capacity Overview](docs/screenshots/capacity_zh_CN_light.png)
+![Free Capacity Overview](docs/screenshots/capacity_en_US_light.png)
 
 ## ✨ V1.13 CIDR Output for Lookup and Coverage Results
 
